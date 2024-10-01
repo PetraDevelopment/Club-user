@@ -1,8 +1,8 @@
+import 'package:club_user/location/map_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'Controller/NavigationController.dart';
 import 'package:get/get.dart';
-
 import 'Splach/PlayGroundSplach.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

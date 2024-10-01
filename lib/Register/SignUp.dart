@@ -430,7 +430,7 @@ class SignUpPagePageState extends State<SignUpPage>
                                 LengthLimitingTextInputFormatter(11),
                               ],
                               textInputAction: TextInputAction.done,
-                              keyboardType: TextInputType.phone, // Updated keyboard type for phone input
+                              keyboardType: TextInputType.datetime, // Updated keyboard type for phone input
                               textAlign: TextAlign.right, // Align text to the right
                               decoration: InputDecoration(
                                 hintText: 'رقم التليفون'.tr,

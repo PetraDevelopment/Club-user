@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../Controller/NavigationController.dart';
+import '../Favourite_model/AddPlaygroundModel.dart';
 import '../Home/HomePage.dart';
+import '../Menu/menu.dart';
 import '../PlayGround_Name/PlayGroundName.dart';
 import 'package:get/get.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
+import '../playground_model/AddPlaygroundModel.dart';
 class FavouritePage extends StatefulWidget {
   @override
   State<FavouritePage> createState() {
@@ -16,6 +19,76 @@ class FavouritePage extends StatefulWidget {
 
 class FavouritePageState extends State<FavouritePage> {
   final NavigationController navigationController = Get.put(NavigationController());
+  late List<AddPlayGroundModel> allplaygrounds = [];
+  String idddddd='';
+  List<Favouritemodel>favlist=[];
+  Future<void> getfavdata() async {
+    try {
+      CollectionReference fav =
+      FirebaseFirestore.instance.collection("Favourite");
+
+      QuerySnapshot querySnapshot = await fav.get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (QueryDocumentSnapshot document in querySnapshot.docs) {
+          Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
+          Favouritemodel favourite = Favouritemodel.fromMap(userData);
+
+          favlist.add(favourite);
+          print("Fav Id : ${document.id}"); // Print the latest playground
+
+          print('Fav list: $favlist');
+          print("allplaygrounds[i] : ${favlist.last}"); // Print the latest playground
+// Store the document ID in the AddPlayGroundModel object
+          // user.id = document.id;
+          favourite.id = document.id;
+          print("favouriteid${favourite.id}");
+          print("favourite${favourite.playground_id}");
+
+          // Store the document ID in the AddPlayGroundModel object
+          // idddddd1 = document.id;
+          // idddddd2=document.id;
+          // print("Docummmmmm$idddddd1    gggg$idddddd2");
+        }
+      }
+    } catch (e) {
+      print("Error getting playground: $e");
+    }
+  }
+  Future<void> getPlaygroundbyname() async {
+    try {
+      CollectionReference playerchat =
+      FirebaseFirestore.instance.collection("AddPlayground");
+
+      QuerySnapshot querySnapshot = await playerchat.get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (QueryDocumentSnapshot document in querySnapshot.docs) {
+          Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
+          AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
+
+          allplaygrounds.add(user);
+          print("PlayGroung Id : ${document.id}"); // Print the latest playground
+
+          print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
+
+          // Store the document ID in the AddPlayGroundModel object
+          idddddd = document.id;
+        }
+      }
+    } catch (e) {
+      print("Error getting playground: $e");
+    }
+  }
+  @override
+  void initState() {
+    super.initState();
+    getfavdata();
+    // Now you can access the user1 list
+    // print('User data44444: ${user1[0].name}');
+    setState(() {}); // Call setState to rebuild the widget tree
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -76,15 +149,16 @@ class FavouritePageState extends State<FavouritePage> {
           child: Center(
             child: Column(
               children: [
-                for (var i = 0; i < 5; i++)
+                for (var i = 0; i < favlist.length ; i++)
                   GestureDetector(
                     onTap: (){
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PlaygroundName(),
-                        ),
-                      );
+                      print("favlist${favlist[i].user_phone}");
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => PlaygroundName(idddddd),
+                      //   ),
+                      // );
                     },
                     child: Padding(
                       padding: const EdgeInsets.only(right: 8.0,left: 8),
@@ -106,8 +180,8 @@ class FavouritePageState extends State<FavouritePage> {
                                 ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
-                                  child: Image.asset(
-                                    'assets/images/newwadi.png',
+                                  child: Image.network(
+                                  favlist[0].img!,
                                     // height: 163,
                                     // width: 274,
                                     fit: BoxFit.cover, // Ensure image covers the container
@@ -142,7 +216,7 @@ class FavouritePageState extends State<FavouritePage> {
                                 right: 40,
                                 left: 55,
                                 child: Text(
-                                  'ملعب وادى دجـــلة',
+                                  favlist[0].playground_name!,
                                   style: TextStyle(
                                     fontFamily: 'Cairo',
                                     fontSize: 16,
@@ -188,10 +262,10 @@ class FavouritePageState extends State<FavouritePage> {
             // Handle navigation based on index
             switch (index) {
             case 0:
-              // Get.to(() => menupage())?.then((_) {
-              //   navigationController
-              //       .updateIndex(0); // Update index when navigating back
-              // });
+              Get.to(() => menupage())?.then((_) {
+                navigationController
+                    .updateIndex(0); // Update index when navigating back
+              });
               break;
               case 1:
                 Get.to(() => FavouritePage())?.then((_) {

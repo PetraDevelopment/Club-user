@@ -1,4 +1,6 @@
 class AddPlayGroundModel {
+  String?id;
+  bool?favourite;
   String? playgroundName;
   String? playType;
   String? address;
@@ -15,6 +17,8 @@ class AddPlayGroundModel {
 
   AddPlayGroundModel({
     this.playgroundName,
+    this.id,
+    this.favourite,
     this.playType,
     this.address,
     this.location,
@@ -31,6 +35,8 @@ class AddPlayGroundModel {
   // Factory constructor to create the model from a Map
   factory AddPlayGroundModel.fromMap(Map<String, dynamic> map) {
     return AddPlayGroundModel(
+      id: '',
+      favourite: false,
       playgroundName: map['groundName'],
       playType: map['playType'],
       address: map['address'],

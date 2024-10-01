@@ -1,3 +1,4 @@
+import 'package:club_user/Menu/menu.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -81,16 +82,16 @@ class AppBarandNavigationBTN extends StatelessWidget {
                     SizedBox(width: 8),
                     GestureDetector(
                       onTap: () {
-                        controller.selectCategory('تنس');
+                        controller.selectCategory("كرة تنس");
                         // Reset the "كرة قدم" container color
-                        controller.selectedCategory.value = 'تنس';
+                        controller.selectedCategory.value = "كرة تنس";
                       },
                       child: Container(
                         height: 27,
                         width: 86,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20.0),
-                          color: controller.selectedCategory.value == 'تنس'
+                          color: controller.selectedCategory.value == "كرة تنس"
                               ? Color(0xFF106A35)
                               : Color(0xFFE4EFFF),
                         ),
@@ -101,7 +102,7 @@ class AppBarandNavigationBTN extends StatelessWidget {
                               fontFamily: 'Cairo',
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: controller.selectedCategory.value == 'تنس'
+                              color: controller.selectedCategory.value == "كرة تنس"
                                   ? Colors.white
                                   : Color(0xFF334154)
                               ,
@@ -112,13 +113,13 @@ class AppBarandNavigationBTN extends StatelessWidget {
                     ),
                     SizedBox(width: 8,),
                     GestureDetector(
-                      onTap: () => controller.selectCategory('كرة طائرة'),
+                      onTap: () => controller.selectCategory("كرة طايره"),
                       child: Container(
                         height: 27,
                         width: 86,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20.0),
-                          color:controller.selectedCategory.value == 'كرة طائرة' ? Color(0xFF106A35)
+                          color:controller.selectedCategory.value == "كرة طايره" ? Color(0xFF106A35)
                               : Color(0xFFE4EFFF),
                         ),
                         child: Center(
@@ -128,7 +129,7 @@ class AppBarandNavigationBTN extends StatelessWidget {
                                 fontFamily: 'Cairo',
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
-                                color:controller.selectedCategory.value == 'كرة طائرة' ?
+                                color:controller.selectedCategory.value == "كرة طايره" ?
                                 Colors.white : Color(0xFF334154)
 
                             ),
@@ -238,7 +239,7 @@ class AppBarandNavigationBTN extends StatelessWidget {
             // Handle navigation based on index
             switch (index) {
             case 0:
-              Get.to(() => FavouritePage())?.then((_) {
+              Get.to(() => menupage())?.then((_) {
                 navigationController
                     .updateIndex(0); // Update index when navigating back
               });

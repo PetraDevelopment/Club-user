@@ -1,23 +1,30 @@
+import 'package:club_user/location/map_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../Controller/NavigationController.dart';
 import '../Favourite/Favourite_page.dart';
+import '../Favourite_model/AddPlaygroundModel.dart';
 import '../Home/HomePage.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 import '../Home/Userclass.dart';
+import '../Menu/menu.dart';
 import '../Register/SignInPage.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import '../booking_playground/try/book_playground_page.dart';
+import '../playground_model/AddPlaygroundModel.dart';
 import '../shimmer_effect/shimmer_lines.dart';
 
 class PlaygroundName extends StatefulWidget {
+  String? id;
+  PlaygroundName(this.id);
   @override
   State<PlaygroundName> createState() {
     return PlaygroundNameState();
@@ -37,9 +44,112 @@ class PlaygroundNameState extends State<PlaygroundName>
       _isLoading = false; // set flag to false when data is loaded
     });
   }
-
+List<Favouritemodel>favlist=[];
   late List<User1> user1 = [];
+  String idddddd='';
+  Future<void> _sendData() async {
 
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      // Not connected to any network
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'لا يوجد اتصال بالإنترنت'.tr,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Cairo',
+              fontSize: 15.0,
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+          backgroundColor: Color(0xFF1F8C4B),
+        ),
+      );
+      return null;
+    }
+    if (allplaygrounds.isNotEmpty && allplaygrounds[0].favourite==true) {
+      await FirebaseFirestore.instance.collection('Favourite').add({
+        'playground_id':  widget.id!,
+        'playground_name':allplaygrounds[0].playgroundName!,
+        'user_phone': user?.phoneNumber!,
+        'img':allplaygrounds[0].img!
+
+      });
+
+
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'هذا الحساب حدث به خطا', // "There was an error with this account"
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor:Color(0xFF1F8C4B),
+        ),
+      );
+    }
+  }
+  Future<void> getfavdata() async {
+    try {
+      CollectionReference fav =
+      FirebaseFirestore.instance.collection("Favourite");
+
+      QuerySnapshot querySnapshot = await fav.get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (QueryDocumentSnapshot document in querySnapshot.docs) {
+          Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
+          Favouritemodel favourite = Favouritemodel.fromMap(userData);
+
+          favlist.add(favourite);
+          print("Fav Id : ${document.id}"); // Print the latest playground
+
+          print("allplaygrounds[i] : ${favlist.last}"); // Print the latest playground
+// Store the document ID in the AddPlayGroundModel object
+          // user.id = document.id;
+          favourite.id = document.id;
+          print("favourite${favourite.id}");
+          // Store the document ID in the AddPlayGroundModel object
+          // idddddd1 = document.id;
+          // idddddd2=document.id;
+          // print("Docummmmmm$idddddd1    gggg$idddddd2");
+        }
+      }
+    } catch (e) {
+      print("Error getting playground: $e");
+    }
+  }
+
+  late List<AddPlayGroundModel> allplaygrounds = [];
+  Future<void> getPlaygroundbyid() async {
+    try {
+      CollectionReference playerchat =
+      FirebaseFirestore.instance.collection("AddPlayground");
+
+      QuerySnapshot querySnapshot = await playerchat.get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (QueryDocumentSnapshot document in querySnapshot.docs) {
+          if (document.id == widget.id) {
+            Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
+            AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
+
+            allplaygrounds.add(user);
+            print("PlayGroung Id : ${document.id}"); // Print the latest playground
+
+            print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
+
+            // Store the document ID in the AddPlayGroundModel object
+            idddddd = document.id;
+            print("Docummmmmm$idddddd");
+          }
+        }
+      }
+    } catch (e) {
+      print("Error getting playground: $e");
+    }
+  }
   Future<void> getUserByPhone(String phoneNumber) async {
     try {
       // Normalize the phone number by stripping the country code
@@ -47,7 +157,7 @@ class PlaygroundNameState extends State<PlaygroundName>
 
       // Reference to the Firestore collection
       CollectionReference playerchat =
-          FirebaseFirestore.instance.collection('PlayersChat');
+          FirebaseFirestore.instance.collection('Users');
 
       // Get the documents in the collection where phone number matches
       QuerySnapshot querySnapshot = await playerchat
@@ -105,8 +215,10 @@ class PlaygroundNameState extends State<PlaygroundName>
   @override
   void initState() {
     super.initState();
+    getfavdata();
+    getPlaygroundbyid();
     _loadUserData();
-
+    print("Docummmmmmentis${widget.id}");
     // Now you can access the user1 list
     // print('User data44444: ${user1[0].name}');
     setState(() {}); // Call setState to rebuild the widget tree
@@ -128,11 +240,16 @@ class PlaygroundNameState extends State<PlaygroundName>
                     bottomLeft: Radius.circular(20.0),
                     bottomRight: Radius.circular(20.0),
                   ),
-                  child: Image.asset(
-                    'assets/images/newground.png',
+                  child: allplaygrounds.isNotEmpty? Image.network(
+                    allplaygrounds[0].img!,
                     height: 250,
                     width: double.infinity,
-                    fit: BoxFit.fill, // Ensure the image covers the container
+                    fit: BoxFit.cover, // Ensure the image covers the container
+                  ):Image.asset(
+                    'assets/images/newwadi.png',
+                    height: 250,
+                    width: double.infinity,
+                    fit: BoxFit.fill, // Ensure image covers the container
                   ),
                 ),
                 // Gradient overlay container to add shadow or overlay effect
@@ -186,18 +303,46 @@ class PlaygroundNameState extends State<PlaygroundName>
             SizedBox(
               height: 22,
             ),
-            Padding(
-              padding:
-                  const EdgeInsets.only(right: 20, left: 13, top: 8, bottom: 8),
-              child: Text(
-                'ملعب وادى دجـــلة',
-                style: TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF064821),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    allplaygrounds[0].favourite=true;
+                    print("hghhhhh${widget.id}");
+                 await   _sendData();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 20.0),
+                      child: Icon(
+                        allplaygrounds.isNotEmpty&&   allplaygrounds[0].favourite! ? Icons.favorite_outlined : Icons.favorite_outline_rounded,
+                        color: Color(0xFFB3261E),
+                        size: 25,
+                      )                  ),
                 ),
-              ),
+
+                Padding(
+                  padding:
+                      const EdgeInsets.only(right: 20, left: 13, top: 8, bottom: 8),
+                  child:  allplaygrounds.isNotEmpty?Text(
+                    allplaygrounds[0].playgroundName!,
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF064821),
+                    ),
+                  ): Text(
+                    'ملعب وادى دجـــلة',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF064821),
+                    ),
+                  ),
+                ),
+              ],
             ),
             SizedBox(
               height: 10,
@@ -226,7 +371,15 @@ class PlaygroundNameState extends State<PlaygroundName>
                     children: [
                       Row(
                         children: [
-                          Text(
+                          allplaygrounds.isNotEmpty?Text(
+                            allplaygrounds[0].playType!,
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF106A35),
+                            ),
+                          ):   Text(
                             'كرة الطائرة',
                             style: TextStyle(
                               fontFamily: 'Cairo',
@@ -248,18 +401,32 @@ class PlaygroundNameState extends State<PlaygroundName>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Text(
-                            '   20x50 م ',
-                            textDirection: TextDirection.rtl,
-                            // Ensures the text direction is RTL
+                    allplaygrounds.isNotEmpty ? Text(
+                      allplaygrounds[0].width!.length<5 && allplaygrounds[0].length!.length<5?
+                      '   ${allplaygrounds[0].width!}x${allplaygrounds[0].length!} م ':
 
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF106A35),
-                            ),
-                          ),
+                      '   ${allplaygrounds[0].width!.substring(0,4)}x${allplaygrounds[0].length!.substring(0,4)} م ',
+                      textDirection: TextDirection.rtl,
+                      // Ensures the text direction is RTL
+
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF106A35),
+                      ),
+                    ):
+                    Text(
+    '   20x50 م ',
+                      textDirection: TextDirection.rtl,
+                      // Ensures the text direction is RTL
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF106A35),
+                      ),
+                    ),
                           SizedBox(width: 8),
                           Image.asset(
                             "assets/images/size.png",
@@ -282,7 +449,16 @@ class PlaygroundNameState extends State<PlaygroundName>
               child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                 Padding(
                   padding: const EdgeInsets.only(left: 8.0),
-                  child: Text(
+                  child:allplaygrounds.isNotEmpty? Text(
+                    'السعر : ' + '${allplaygrounds[0].bookTypes?[0].costPerHour} / ساعة',
+                    textDirection: TextDirection.rtl,
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF106A35),
+                    ),
+                  ):Text(
                     'السعر : ' + '300 / ساعة',
                     textDirection: TextDirection.rtl,
                     style: TextStyle(
@@ -324,15 +500,25 @@ class PlaygroundNameState extends State<PlaygroundName>
                             child: Icon(Icons.share,
                                 color: Colors.white, size: 20)),
                         SizedBox(width: 40,),
-                        Container(
-                            height: 30,
-                            width: 30,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5.0),
-                                shape: BoxShape.rectangle,
-                                color: Color(0xFF106A35)),
-                            child: Icon(Icons.location_on_outlined,
-                                color: Colors.white, size: 20)),
+                        GestureDetector(
+                          onTap: (){
+                            print("locattttion${allplaygrounds[0].location!}");
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(builder: (context) => MapsPage(location: ,)),
+                            // );
+
+                          },
+                          child: Container(
+                              height: 30,
+                              width: 30,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(5.0),
+                                  shape: BoxShape.rectangle,
+                                  color: Color(0xFF106A35)),
+                              child: Icon(Icons.location_on_outlined,
+                                  color: Colors.white, size: 20)),
+                        ),
                       ],
                     ),
                   ),
@@ -341,15 +527,23 @@ class PlaygroundNameState extends State<PlaygroundName>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(
-                        'أسيوط الجديدة',
+                      allplaygrounds.isNotEmpty? Text(
+                       allplaygrounds[0].location!.length>15? allplaygrounds[0].location!.substring(0,15):allplaygrounds[0].location!,
                         style: TextStyle(
                           fontFamily: 'Cairo',
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: Color(0xFF106A35),
                         ),
-                      ),
+                      ):  Text(
+    'أسيوط الجديدة',
+    style: TextStyle(
+    fontFamily: 'Cairo',
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    color: Color(0xFF106A35),
+    ),
+    ),
                       SizedBox(width: 8), // Space between icon and text
                       Icon(Icons.location_on_outlined,
                           color: Color(0xFF106A35), size: 20),
@@ -363,9 +557,15 @@ class PlaygroundNameState extends State<PlaygroundName>
             SizedBox(
               height: 28,
             ),
+            allplaygrounds.isNotEmpty &&allplaygrounds[0].notes!=null &&allplaygrounds[0].notes!.isNotEmpty ?
+          Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
             Padding(
               padding: const EdgeInsets.only(right: 26.0, left: 26),
               child: Text(
+                textAlign: TextAlign.end,
                 "الملاحظات".tr,
                 style: TextStyle(
                     fontFamily: 'Cairo',
@@ -380,7 +580,7 @@ class PlaygroundNameState extends State<PlaygroundName>
             Padding(
               padding: const EdgeInsets.only(right: 26.0, left: 26),
               child: Text(
-                "يمكنك حجز الملعب لفترات تاتبعة لمؤسسات".tr,
+               allplaygrounds[0] .notes!,
                 style: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 14.0,
@@ -388,144 +588,153 @@ class PlaygroundNameState extends State<PlaygroundName>
                     color: Color(0xFF495A71)),
               ),
             ),
-            SizedBox(height: 30),
-            Padding(
-              padding: const EdgeInsets.only(right: 26.0, left: 26),
-              child: Text(
-                "المرفقات".tr,
-                style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF495A71)),
-              ),
-            ),
-            SizedBox(
-              height: 12,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 26),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+              SizedBox(height: 30),
+          ],):Container(),
+
+            allplaygrounds.isNotEmpty &&allplaygrounds[0].availableFacilities!=null &&allplaygrounds[0].availableFacilities!.isNotEmpty ?
+            Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 26.0, left: 26),
+                  child: Text(
+                    "المرفقات".tr,
+                    style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF495A71)),
+                  ),
+                ),
+                SizedBox(
+                  height: 12,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 26),
+                  child: Column(
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            'كافتيريا',
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF106A35),
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Image.asset(
-                            "assets/images/ion_cafe.png",
-                            color: Color(0xFF106A35),
-                            height: 20,
-                            width: 22,
-                          )
-                        ],
-                      ),
-                      SizedBox(width: 110,),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Text(
-                            'حمامات',
-                            textDirection: TextDirection.rtl,
-                            // Ensures the text direction is RTL
-
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF106A35),
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                'كافتيريا',
+                                style: TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF106A35),
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Image.asset(
+                                "assets/images/ion_cafe.png",
+                                color: Color(0xFF106A35),
+                                height: 20,
+                                width: 22,
+                              )
+                            ],
                           ),
-                          SizedBox(width: 8),
-                          Image.asset(
-                            "assets/images/bathroom.png",
-                            color: Color(0xFF106A35),
-                            height: 13,
-                            width: 16,
+                          SizedBox(width: 110,),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                'حمامات',
+                                textDirection: TextDirection.rtl,
+                                // Ensures the text direction is RTL
+
+                                style: TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF106A35),
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Image.asset(
+                                "assets/images/bathroom.png",
+                                color: Color(0xFF106A35),
+                                height: 13,
+                                width: 16,
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),// Adds space between the text and the image
-            SizedBox(
-              height: 12,
-            ),
+                ),// Adds space between the text and the image
+                SizedBox(
+                  height: 12,
+                ),
 
-            Padding(
-              padding: const EdgeInsets.only(right: 26),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                Padding(
+                  padding: const EdgeInsets.only(right: 26),
+                  child: Column(
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Text(
-                            'موقف سيارات',
-                            textDirection: TextDirection.rtl,
-                            // Ensures the text direction is RTL
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                'موقف سيارات',
+                                textDirection: TextDirection.rtl,
+                                // Ensures the text direction is RTL
 
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF106A35),
-                            ),
+                                style: TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF106A35),
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Image.asset(
+                                "assets/images/car-door.png",
+                                color: Color(0xFF106A35),
+                                height: 20,
+                                width: 25,
+                              ),
+                            ],
                           ),
-                          SizedBox(width: 8),
-                          Image.asset(
-                            "assets/images/car-door.png",
-                            color: Color(0xFF106A35),
-                            height: 20,
-                            width: 25,
+                          SizedBox(width: 40,),
+                          Row(
+                            children: [
+                              Text(
+                                'غرف تغيير الملابس',
+                                style: TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF106A35),
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Image.asset(
+                                "assets/images/materialcloth.png",
+                                color: Color(0xFF106A35),
+                                height: 20,
+                                width: 22,
+                              )
+                            ],
                           ),
+
+
                         ],
                       ),
-                      SizedBox(width: 40,),
-                      Row(
-                        children: [
-                          Text(
-                            'غرف تغيير الملابس',
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF106A35),
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Image.asset(
-                            "assets/images/materialcloth.png",
-                            color: Color(0xFF106A35),
-                            height: 20,
-                            width: 22,
-                          )
-                        ],
-                      ),
-
-
                     ],
                   ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 50,
-            ),
+                ),
+                SizedBox(
+                  height: 50,
+                ),
+              ],
+            ):Container(),
 
             GestureDetector(
               onTap: (){
@@ -572,7 +781,7 @@ class PlaygroundNameState extends State<PlaygroundName>
       ),
       bottomNavigationBar: CurvedNavigationBar(
         height: 60,
-        index: 0,
+        index: 2,
         // Use the dynamic index
           items: [
             Icon(Icons.more_horiz, color: Colors.white, size: 25),
@@ -595,10 +804,10 @@ class PlaygroundNameState extends State<PlaygroundName>
           // Handle navigation based on index
           switch (index) {
           case 0:
-            // Get.to(() => menupage())?.then((_) {
-            //   navigationController
-            //       .updateIndex(0); // Update index when navigating back
-            // });
+            Get.to(() => menupage())?.then((_) {
+              navigationController
+                  .updateIndex(0); // Update index when navigating back
+            });
             break;
             case 1:
               Get.to(() => FavouritePage())?.then((_) {

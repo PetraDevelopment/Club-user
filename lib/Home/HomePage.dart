@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 import '../Controller/NavigationController.dart';
 import '../Favourite/Favourite_page.dart';
+import '../Menu/menu.dart';
 import '../PlayGround_Name/PlayGroundName.dart';
 import '../Register/SignInPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -107,6 +108,7 @@ class HomePageState extends State<HomePage> {
     }
   }
 
+
   final Searchcontrol = TextEditingController();
   late List<AddPlayGroundModel> allplaygrounds = [];
   int _currentIndex = 3;
@@ -115,19 +117,28 @@ class HomePageState extends State<HomePage> {
 
   Future<void> getPlaygroundbyname() async {
     try {
-      CollectionReference playerchat = FirebaseFirestore.instance.collection("AddPlayground");
+      CollectionReference playerchat =
+      FirebaseFirestore.instance.collection("AddPlayground");
 
       QuerySnapshot querySnapshot = await playerchat.get();
 
       if (querySnapshot.docs.isNotEmpty) {
         for (QueryDocumentSnapshot document in querySnapshot.docs) {
-          Map<String, dynamic> playgroundData = document.data() as Map<String, dynamic>;
-          AddPlayGroundModel playground = AddPlayGroundModel.fromMap(playgroundData);
+          Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
+          AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
 
-          allplaygrounds.add(playground);
+          allplaygrounds.add(user);
+          print("PlayGroung Id : ${document.id}"); // Print the latest playground
 
-          print("Playground ID: ${document.id}");
-          print("Playground Data: $playground");
+          print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
+// Store the document ID in the AddPlayGroundModel object
+          // user.id = document.id;
+          user.id = document.id;
+          print("Docummmmmm${user.id}");
+          // Store the document ID in the AddPlayGroundModel object
+          // idddddd1 = document.id;
+          // idddddd2=document.id;
+          // print("Docummmmmm$idddddd1    gggg$idddddd2");
         }
       }
     } catch (e) {
@@ -645,16 +656,17 @@ class HomePageState extends State<HomePage> {
                   scrollDirection: Axis.horizontal,
                   reverse: true, // Reverses the scroll direction
 
-                  child: Row(
+                  child:allplaygrounds.isNotEmpty? Row(
 
                     children: [
-                      for (var i = 0; i < 5; i++)
+                      for (var i = 0; i < allplaygrounds.length; i++)
                         GestureDetector(
                           onTap: (){
+                            print("111114${allplaygrounds[i].id!}");
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => PlaygroundName(),
+                                builder: (context) => PlaygroundName(allplaygrounds[i].id!),
                               ),
                             );
                           },
@@ -675,8 +687,8 @@ class HomePageState extends State<HomePage> {
                                   ),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
-                                    child: Image.asset(
-                                      'assets/images/newwadi.png',
+                                    child: Image.network(
+                                      allplaygrounds[i].img!,
                                       height: 163,
                                       width: 274,
                                       fit: BoxFit.cover, // Ensure image covers the container
@@ -711,7 +723,7 @@ class HomePageState extends State<HomePage> {
                                   right: 40,
                                   left: 55,
                                   child: Text(
-                                    'ملعب وادى دجـــلة',
+                                    allplaygrounds[i].playgroundName!,
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
                                       fontSize: 16,
@@ -726,7 +738,7 @@ class HomePageState extends State<HomePage> {
                           ),
                         ),
                     ],
-                  ),
+                  ):Container(),
                 ),
 SizedBox(height: 20,),
                 Padding(
@@ -747,14 +759,18 @@ SizedBox(height: 20,),
 
                   child: Row(
                     children: [
-                      for (var i = 0; i<=5; i++)
+                      for (var i = 0; i < allplaygrounds.length; i++)
                         GestureDetector(
+
                           onTap: (){
+                            print("objectidddddd${allplaygrounds[i].id!}");
+
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => PlaygroundName(),
-                              ),
+                   builder: (context) => PlaygroundName(allplaygrounds[i].id!),
+
+    ),
                             );
                           },
                           child: Card(
@@ -774,8 +790,8 @@ SizedBox(height: 20,),
                                   ),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
-                                    child: Image.asset(
-                                      'assets/images/newwadi.png',
+                                    child: Image.network(
+                                      allplaygrounds[i].img!,
                                       height: 163,
                                       width: 274,
                                       fit: BoxFit.cover, // Ensure image covers the container
@@ -810,7 +826,7 @@ SizedBox(height: 20,),
                                   right: 40,
                                   left: 55,
                                   child: Text(
-                                    'ملعب وادى دجـــلة',
+                                  allplaygrounds[i].playgroundName!,
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
                                       fontSize: 16,
@@ -858,7 +874,7 @@ SizedBox(height: 20,),
             // Handle navigation based on index
             switch (index) {
               case 0:
-                Get.to(() => FavouritePage())?.then((_) {
+                Get.to(() => menupage())?.then((_) {
                   navigationController
                       .updateIndex(0); // Update index when navigating back
                 });

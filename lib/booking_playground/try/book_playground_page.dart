@@ -13,6 +13,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import '../../Controller/NavigationController.dart';
 import '../../Favourite/Favourite_page.dart';
 import '../../Home/HomePage.dart';
+import '../../Menu/menu.dart';
 import '../../Splach/LoadingScreen.dart';
 import '../../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import '../AddbookingModel/AddbookingModel.dart';
@@ -669,7 +670,7 @@ class book_playground_pageState extends State<book_playground_page>
           // Handle navigation based on index
           switch (index) {
           case 0:
-            Get.to(() => FavouritePage())?.then((_) {
+            Get.to(() => menupage())?.then((_) {
               navigationController
                   .updateIndex(0); // Update index when navigating back
             });
