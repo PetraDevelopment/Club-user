@@ -204,7 +204,7 @@ print("user${user?.phoneNumber}");
         ),
 
         body: _isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator(color: Color(0xFF4AD080),))
             : SingleChildScrollView(
           child: Center(
             child: Column(
