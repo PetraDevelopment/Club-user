@@ -307,18 +307,23 @@ List<Favouritemodel>favlist=[];
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
-                  onTap: () async {
-                    allplaygrounds[0].favourite=true;
-                    print("hghhhhh${widget.id}");
-                 await   _sendData();
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 20.0),
-                      child: Icon(
-                        allplaygrounds.isNotEmpty&&   allplaygrounds[0].favourite! ? Icons.favorite_outlined : Icons.favorite_outline_rounded,
-                        color: Color(0xFFB3261E),
-                        size: 25,
-                      )                  ),
+    onTap: () async {
+    setState(() {
+    allplaygrounds[0].favourite = true;
+    });
+    print("hghhhhh${widget.id}");
+    await _sendData();
+    },
+    child: Padding(
+    padding: const EdgeInsets.only(left: 20.0),
+    child: Icon(
+    allplaygrounds.isNotEmpty && allplaygrounds[0].favourite!
+    ? Icons.favorite
+        : Icons.favorite_outline,
+    color: const Color(0xFF4AD080),
+    size: 25,
+    ),
+    ),
                 ),
 
                 Padding(
@@ -363,80 +368,83 @@ List<Favouritemodel>favlist=[];
             Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 30.0),
+                Container(
+  width:   MediaQuery.of(context).size.width,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 30.0),
 
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Row(
-                        children: [
-                          allplaygrounds.isNotEmpty?Text(
-                            allplaygrounds[0].playType!,
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF106A35),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Row(
+                          children: [
+                            allplaygrounds.isNotEmpty?Text(
+                              allplaygrounds[0].playType!,
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF106A35),
+                              ),
+                            ):   Text(
+                              'كرة الطائرة',
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF106A35),
+                              ),
                             ),
-                          ):   Text(
-                            'كرة الطائرة',
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
+                            SizedBox(width: 8),
+                            Image.asset(
+                              "assets/images/volly.png",
                               color: Color(0xFF106A35),
+                              height: 20,
+                              width: 22,
+                            )
+                          ],
+                        ),
+                        SizedBox(width: 100,),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                      allplaygrounds.isNotEmpty ? Text(
+                        allplaygrounds[0].width!.length<5 && allplaygrounds[0].length!.length<5?
+                        '   ${allplaygrounds[0].width!}x${allplaygrounds[0].length!} م ':
+
+                        '   ${allplaygrounds[0].width!.substring(0,4)}x${allplaygrounds[0].length!.substring(0,4)} م ',
+                        textDirection: TextDirection.rtl,
+                        // Ensures the text direction is RTL
+
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF106A35),
+                        ),
+                      ):
+                      Text(
+                      '   20x50 م ',
+                        textDirection: TextDirection.rtl,
+                        // Ensures the text direction is RTL
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF106A35),
+                        ),
+                      ),
+                            SizedBox(width: 8),
+                            Image.asset(
+                              "assets/images/size.png",
+                              color: Color(0xFF106A35),
+                              height: 13,
+                              width: 16,
                             ),
-                          ),
-                          SizedBox(width: 8),
-                          Image.asset(
-                            "assets/images/volly.png",
-                            color: Color(0xFF106A35),
-                            height: 20,
-                            width: 22,
-                          )
-                        ],
-                      ),
-                      SizedBox(width: 100,),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                    allplaygrounds.isNotEmpty ? Text(
-                      allplaygrounds[0].width!.length<5 && allplaygrounds[0].length!.length<5?
-                      '   ${allplaygrounds[0].width!}x${allplaygrounds[0].length!} م ':
-
-                      '   ${allplaygrounds[0].width!.substring(0,4)}x${allplaygrounds[0].length!.substring(0,4)} م ',
-                      textDirection: TextDirection.rtl,
-                      // Ensures the text direction is RTL
-
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF106A35),
-                      ),
-                    ):
-                    Text(
-    '   20x50 م ',
-                      textDirection: TextDirection.rtl,
-                      // Ensures the text direction is RTL
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF106A35),
-                      ),
+                          ],
+                        ),
+                      ],
                     ),
-                          SizedBox(width: 8),
-                          Image.asset(
-                            "assets/images/size.png",
-                            color: Color(0xFF106A35),
-                            height: 13,
-                            width: 16,
-                          ),
-                        ],
-                      ),
-                    ],
                   ),
                 ),
               ],
@@ -528,7 +536,7 @@ List<Favouritemodel>favlist=[];
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       allplaygrounds.isNotEmpty? Text(
-                       allplaygrounds[0].location!.length>15? allplaygrounds[0].location!.substring(0,15):allplaygrounds[0].location!,
+                       allplaygrounds[0].location!.length>15? allplaygrounds[0].location!.substring(0,10):allplaygrounds[0].location!,
                         style: TextStyle(
                           fontFamily: 'Cairo',
                           fontSize: 14,
@@ -536,14 +544,14 @@ List<Favouritemodel>favlist=[];
                           color: Color(0xFF106A35),
                         ),
                       ):  Text(
-    'أسيوط الجديدة',
-    style: TextStyle(
-    fontFamily: 'Cairo',
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-    color: Color(0xFF106A35),
-    ),
-    ),
+                'أسيوط الجديدة',
+                style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF106A35),
+                ),
+                ),
                       SizedBox(width: 8), // Space between icon and text
                       Icon(Icons.location_on_outlined,
                           color: Color(0xFF106A35), size: 20),
