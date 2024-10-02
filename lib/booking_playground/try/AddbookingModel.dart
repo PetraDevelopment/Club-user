@@ -17,7 +17,7 @@ class AddbookingModel {
     this.rentTheBall,
     this.availableTime,
     this.notavailable,
-this.Day_of_booking,
+    this.Day_of_booking,
     this.availableDate,
     this.selectedTimes,
   });
@@ -60,7 +60,6 @@ this.Day_of_booking,
       'Rent_the_ball': rentTheBall,
       'availableTime': availableTime?.isNotEmpty == true ? availableTime : [],
       'not_available': notavailable?.isNotEmpty == true ? notavailable : [],
-
       'availableDate': availableDate?.isNotEmpty == true ? availableDate : [],
       'selectedTimes': selectedTimes?.isNotEmpty == true ? selectedTimes : [], // Include this
       'notavailable': availableDate?.isNotEmpty == true ? availableDate : [],

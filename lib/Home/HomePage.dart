@@ -14,6 +14,7 @@ import '../Register/SignInPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
+import '../my_reservation/my_reservation.dart';
 import '../playground_model/AddPlaygroundModel.dart';
 import 'Userclass.dart';
 import 'carousel_slider.dart';
@@ -108,7 +109,7 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-
+ int selectedIndex=3;
   final Searchcontrol = TextEditingController();
   late List<AddPlayGroundModel> allplaygrounds = [];
   int _currentIndex = 3;
@@ -146,6 +147,7 @@ class HomePageState extends State<HomePage> {
     }
   }
   final NavigationController navigationController = Get.put(NavigationController());
+  double opacity = 1.0;
 
   @override
   Widget build(BuildContext context) {
@@ -156,6 +158,7 @@ class HomePageState extends State<HomePage> {
       },
       child: Scaffold(
         backgroundColor: Colors.white,
+
         body: Padding(
           padding: const EdgeInsets.only(top: 66.0),
           child: SingleChildScrollView(
@@ -740,7 +743,7 @@ class HomePageState extends State<HomePage> {
                     ],
                   ):Container(),
                 ),
-SizedBox(height: 20,),
+      SizedBox(height: 20,),
                 Padding(
                   padding: const EdgeInsets.only(right: 25,left: 26,top: 10,bottom: 10,),
                   child: Text(
@@ -770,7 +773,7 @@ SizedBox(height: 20,),
                               MaterialPageRoute(
                    builder: (context) => PlaygroundName(allplaygrounds[i].id!),
 
-    ),
+          ),
                             );
                           },
                           child: Card(
@@ -863,14 +866,27 @@ SizedBox(height: 20,),
             Image.asset('assets/images/home.png',
                 height: 21, width: 21, color: Colors.white),
           ],
+          // buttonBackgroundColor: Colors.transparent, // Set button background color to transparent
+          // backgroundColor: Colors.transparent, // Set background color to transparent
+
           color: Color(0xFF064821),
           buttonBackgroundColor: Color(0xFFBACCE6),
           backgroundColor: Colors.white,
+
+
           animationCurve: Curves.easeInOut,
           animationDuration: Duration(milliseconds: 600),
           onTap: (index) {
-            navigationController
-                .updateIndex(index); // Update the index dynamically
+            setState(() {
+              selectedIndex = index;
+              // Update opacity based on the selected index
+              opacity= 0.5;
+            });
+            // setState(() {
+            //   navigationController.updateIndex(index);
+            //   // Update opacity based on the selected index
+            //   opacity = index == 2 ? 0.9 : 1.0;
+            // });// Update the index dynamically
             // Handle navigation based on index
             switch (index) {
               case 0:
@@ -881,7 +897,7 @@ SizedBox(height: 20,),
                 break;
 
               case 1:
-                Get.to(() => FavouritePage())?.then((_) {
+                Get.to(() => my_reservation())?.then((_) {
                   navigationController
                       .updateIndex(1); // Update index when navigating back
                 });

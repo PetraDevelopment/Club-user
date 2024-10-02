@@ -5,8 +5,8 @@ import 'Controller/NavigationController.dart';
 import 'package:get/get.dart';
 import 'Splach/PlayGroundSplach.dart';
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
 
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: FirebaseOptions(
         apiKey: "AIzaSyAr4vHDaUehgTeW1Utt7Vp9xefjNIjXWdQ",

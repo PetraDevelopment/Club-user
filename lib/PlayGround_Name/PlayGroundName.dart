@@ -19,6 +19,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import '../booking_playground/try/book_playground_page.dart';
+import '../my_reservation/my_reservation.dart';
 import '../playground_model/AddPlaygroundModel.dart';
 import '../shimmer_effect/shimmer_lines.dart';
 
@@ -120,6 +121,7 @@ List<Favouritemodel>favlist=[];
       print("Error getting playground: $e");
     }
   }
+  double opacity = 1.0; // Initial opacity value
 
   late List<AddPlayGroundModel> allplaygrounds = [];
   Future<void> getPlaygroundbyid() async {
@@ -292,8 +294,7 @@ List<Favouritemodel>favlist=[];
                         color: Colors.white, size: 25),
                     onPressed: () {
                       print("Back button pressed"); // Debugging statement
-                      Navigator.of(context)
-                          .pop(); // Navigate back to the previous page
+                      Get.back();// Navigate back to the previous page
                     },
                   ),
                 ),
@@ -511,10 +512,10 @@ List<Favouritemodel>favlist=[];
                         GestureDetector(
                           onTap: (){
                             print("locattttion${allplaygrounds[0].location!}");
-                            // Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(builder: (context) => MapsPage(location: ,)),
-                            // );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => Maps()),
+                            );
 
                           },
                           child: Container(
@@ -536,7 +537,7 @@ List<Favouritemodel>favlist=[];
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       allplaygrounds.isNotEmpty? Text(
-                       allplaygrounds[0].location!.length>15? allplaygrounds[0].location!.substring(0,10):allplaygrounds[0].location!,
+                       allplaygrounds[0].location!.length>12? allplaygrounds[0].location!.substring(0,10):allplaygrounds[0].location!,
                         style: TextStyle(
                           fontFamily: 'Cairo',
                           fontSize: 14,
@@ -746,12 +747,13 @@ List<Favouritemodel>favlist=[];
 
             GestureDetector(
               onTap: (){
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => book_playground_page(),
-                  ),
-                );
+                print("ppppppppppppppppppppppppp${widget.id}");
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //     builder: (context) => book_playground_page(widget.id),
+                //   ),
+                // );
               },
               child: Center(
                 child: Container(
@@ -790,6 +792,7 @@ List<Favouritemodel>favlist=[];
       bottomNavigationBar: CurvedNavigationBar(
         height: 60,
         index: 2,
+
         // Use the dynamic index
           items: [
             Icon(Icons.more_horiz, color: Colors.white, size: 25),
@@ -808,7 +811,11 @@ List<Favouritemodel>favlist=[];
         animationDuration: Duration(milliseconds: 600),
         onTap: (index) {
           navigationController
-              .updateIndex(index); // Update the index dynamically
+              .updateIndex(index);
+          setState(() {
+            // Update opacity based on the selected index
+            opacity = index == 2 ? 0.5 : 1.0;
+          });// Update the index dynamically
           // Handle navigation based on index
           switch (index) {
           case 0:
@@ -818,7 +825,7 @@ List<Favouritemodel>favlist=[];
             });
             break;
             case 1:
-              Get.to(() => FavouritePage())?.then((_) {
+              Get.to(() => my_reservation())?.then((_) {
                 navigationController
                     .updateIndex(1); // Update index when navigating back
               });

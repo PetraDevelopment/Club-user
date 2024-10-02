@@ -5,6 +5,7 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import '../../Controller/NavigationController.dart';
 import '../../Favourite/Favourite_page.dart';
 import '../../Home/HomePage.dart';
+import '../../my_reservation/my_reservation.dart';
 import 'GetxController.dart';
 
 class AppBarandNavigationBTN extends StatelessWidget {
@@ -245,7 +246,7 @@ class AppBarandNavigationBTN extends StatelessWidget {
               });
               break;
               case 1:
-                Get.to(() => FavouritePage())?.then((_) {
+                Get.to(() => my_reservation())?.then((_) {
                   navigationController
                       .updateIndex(1); // Update index when navigating back
                 });

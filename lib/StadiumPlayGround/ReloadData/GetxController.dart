@@ -124,7 +124,7 @@ class SportsController extends GetxController {
           SizedBox(height: 28),
           _buildStadiumCard(
             volybool[i].img, // Image, fallback if null
-            '${volybool[i].playgroundName} ${volybool[i].playType}',volybool[i].id! // Name and type
+            '${volybool[i].playgroundName}',volybool[i].id! // Name and type
           ),
           SizedBox(height: 22),
         ]);
@@ -134,7 +134,7 @@ class SportsController extends GetxController {
           SizedBox(height: 28),
           _buildStadiumCard(
             football[i].img!, // Image, fallback if null
-            '${football[i].playgroundName} ${football[i].playType}',football[i].id! // Name and type
+            '${football[i].playgroundName}',football[i].id! // Name and type
           ),
           SizedBox(height: 22),
         ]);
@@ -145,7 +145,7 @@ class SportsController extends GetxController {
           SizedBox(height: 28),
           _buildStadiumCard(
             basketball[i].img!, // Image, fallback if null
-            '${basketball[i].playgroundName} ${basketball[i].playType}',basketball[i].id!,  // Name and type
+            '${basketball[i].playgroundName}',basketball[i].id!,  // Name and type
           ),
           SizedBox(height: 22),
         ]);
@@ -155,7 +155,7 @@ class SportsController extends GetxController {
           SizedBox(height: 28),
           _buildStadiumCard(
             tennis[i].img!, // Image, fallback if null
-            '${tennis[i].playgroundName} ${tennis[i].playType}', tennis[i].id!, // Name and type
+            '${tennis[i].playgroundName}', tennis[i].id!, // Name and type
           ),
           SizedBox(height: 22),
         ]);
