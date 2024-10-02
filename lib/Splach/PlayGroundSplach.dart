@@ -97,7 +97,7 @@ class PlayGroundSplashState extends State<PlayGroundSplach>
 
     if (phone.isNotEmpty) {
       CollectionReference playerChat =
-      FirebaseFirestore.instance.collection('PlayersChat');
+      FirebaseFirestore.instance.collection('Users');
       playerChatSubscription = playerChat.snapshots().listen((snapshot) {
         bool phoneExists = snapshot.docs.any((doc) => doc['phone'] == phone);
 
@@ -110,17 +110,7 @@ class PlayGroundSplashState extends State<PlayGroundSplach>
         }
       });
 
-      // playerChatSubscription = playerChat.snapshots().listen((snapshot) {
-      //   bool phoneExists = snapshot.docs.any((doc) => doc['phone'] == phone);
-      //
-      //   if (!phoneExists) {
-      //     // Phone number has been deleted, navigate to SignUpPage
-      //     Navigator.pushReplacement(
-      //       context,
-      //       MaterialPageRoute(builder: (context) => SignUpPage()),
-      //     );
-      //   }
-      // });
+
     }
   }
 
@@ -128,6 +118,7 @@ class PlayGroundSplashState extends State<PlayGroundSplach>
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String phone = prefs.getString('phoneotp') ?? '';
     String Phone011=prefs.getString('phonev')??'';
+    print("Phone011$Phone011");
     print('shared phone $phone');
 
     if (!mounted) return; // Ensure the widget is still mounted

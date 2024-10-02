@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import '../Controller/NavigationController.dart';
 import '../Favourite_model/AddPlaygroundModel.dart';
 import '../Home/HomePage.dart';
@@ -7,6 +7,7 @@ import '../Menu/menu.dart';
 import '../PlayGround_Name/PlayGroundName.dart';
 import 'package:get/get.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import '../playground_model/AddPlaygroundModel.dart';
@@ -21,7 +22,10 @@ class FavouritePageState extends State<FavouritePage> {
   final NavigationController navigationController = Get.put(NavigationController());
   late List<AddPlayGroundModel> allplaygrounds = [];
   String idddddd='';
+  bool _isLoading = true;
   List<Favouritemodel>favlist=[];
+  User? user = FirebaseAuth.instance.currentUser;
+
   Future<void> getfavdata() async {
     try {
       CollectionReference fav =
@@ -33,27 +37,38 @@ class FavouritePageState extends State<FavouritePage> {
         for (QueryDocumentSnapshot document in querySnapshot.docs) {
           Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
           Favouritemodel favourite = Favouritemodel.fromMap(userData);
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          String Phone011=prefs.getString('phonev')??'';
+          print("phone011$Phone011");
+print("user${user?.phoneNumber}");
+          if (favourite.user_phone?.replaceAll(RegExp(r'\D'), '') == user?.phoneNumber?.replaceAll(RegExp(r'\D'), '') ||
+              favourite.user_phone?.replaceAll(RegExp(r'\D'), '') == Phone011.replaceAll(RegExp(r'\D'), '')) {
+            favlist.add(favourite);
+            print("Fav Id : ${document.id}"); // Print the latest playground
 
-          favlist.add(favourite);
-          print("Fav Id : ${document.id}"); // Print the latest playground
-
-          print('Fav list: $favlist');
-          print("allplaygrounds[i] : ${favlist.last}"); // Print the latest playground
-// Store the document ID in the AddPlayGroundModel object
-          // user.id = document.id;
-          favourite.id = document.id;
-          print("favouriteid${favourite.id}");
-          print("favourite${favourite.playground_id}");
-
-          // Store the document ID in the AddPlayGroundModel object
-          // idddddd1 = document.id;
-          // idddddd2=document.id;
-          // print("Docummmmmm$idddddd1    gggg$idddddd2");
+            print('Fav list: $favlist');
+            print("allplaygrounds[i] : ${favlist.last}"); // Print the latest playground
+            // Store the document ID in the AddPlayGroundModel object
+            favourite.id = document.id;
+            print("favouriteid${favourite.id}");
+            print("favourite${favourite.playground_id}");
+          } else {
+            print("this user not have favourite playground");
+          }
         }
       }
     } catch (e) {
       print("Error getting playground: $e");
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
+  }
+  @override
+  void initState() {
+    super.initState();
+    getfavdata();
   }
   Future<void> getPlaygroundbyname() async {
     try {
@@ -80,14 +95,7 @@ class FavouritePageState extends State<FavouritePage> {
       print("Error getting playground: $e");
     }
   }
-  @override
-  void initState() {
-    super.initState();
-    getfavdata();
-    // Now you can access the user1 list
-    // print('User data44444: ${user1[0].name}');
-    setState(() {}); // Call setState to rebuild the widget tree
-  }
+
 
 
   @override
@@ -144,12 +152,64 @@ class FavouritePageState extends State<FavouritePage> {
             ),
           ),
         ),
-        body: SingleChildScrollView(
+        bottomNavigationBar: CurvedNavigationBar(
+          height: 60,
+          index: 3,
+          // Use the dynamic index
+          items: [
+            Icon(Icons.more_horiz, color: Colors.white, size: 25),
 
+            Image.asset('assets/images/calendar.png',
+                height: 21, width: 21, color: Colors.white),
+            Image.asset('assets/images/stade.png',
+                height: 21, width: 21, color: Colors.white),
+            Image.asset('assets/images/home.png',
+                height: 21, width: 21, color: Colors.white),
+          ],
+          color: Color(0xFF064821),
+          buttonBackgroundColor: Color(0xFFBACCE6),
+          backgroundColor: Colors.white,
+          animationCurve: Curves.easeInOut,
+          animationDuration: Duration(milliseconds: 600),
+          onTap: (index) {
+            navigationController
+                .updateIndex(index); // Update the index dynamically
+            // Handle navigation based on index
+            switch (index) {
+              case 0:
+                Get.to(() => menupage())?.then((_) {
+                  navigationController
+                      .updateIndex(0); // Update index when navigating back
+                });
+                break;
+              case 1:
+                Get.to(() => FavouritePage())?.then((_) {
+                  navigationController
+                      .updateIndex(1); // Update index when navigating back
+                });
+
+                break;
+              case 2:
+                Get.to(() => AppBarandNavigationBTN())?.then((_) {
+                  navigationController.updateIndex(2);
+                });
+                break;
+              case 3:
+              // Get.to(() => HomePage())?.then((_) {
+              //   navigationController.updateIndex(3);
+              // });
+                break;
+            }
+          },
+        ),
+
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
           child: Center(
             child: Column(
               children: [
-                for (var i = 0; i < favlist.length + 1; i++)
+                for (var i = 0; i < favlist.length; i++)
                   GestureDetector(
                     onTap: (){
                       print("favlist${favlist[i].user_phone}");
@@ -180,10 +240,10 @@ class FavouritePageState extends State<FavouritePage> {
                                 ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
-                                  child: Image.network(
-                                  favlist[0].img!,
-                                    // height: 163,
-                                    // width: 274,
+                                  child:Image.network(
+                                    favlist[i].img!,
+                                    height: 163,
+                                    width: MediaQuery.of(context).size.width,
                                     fit: BoxFit.cover, // Ensure image covers the container
                                   ),
                                 ),
@@ -235,58 +295,7 @@ class FavouritePageState extends State<FavouritePage> {
               ],
             ),
           ),
-        ),
-
-        bottomNavigationBar: CurvedNavigationBar(
-          height: 60,
-          index: 3,
-          // Use the dynamic index
-          items: [
-            Icon(Icons.more_horiz, color: Colors.white, size: 25),
-
-            Image.asset('assets/images/calendar.png',
-                height: 21, width: 21, color: Colors.white),
-            Image.asset('assets/images/stade.png',
-                height: 21, width: 21, color: Colors.white),
-            Image.asset('assets/images/home.png',
-                height: 21, width: 21, color: Colors.white),
-          ],
-          color: Color(0xFF064821),
-          buttonBackgroundColor: Color(0xFFBACCE6),
-          backgroundColor: Colors.white,
-          animationCurve: Curves.easeInOut,
-          animationDuration: Duration(milliseconds: 600),
-          onTap: (index) {
-            navigationController
-                .updateIndex(index); // Update the index dynamically
-            // Handle navigation based on index
-            switch (index) {
-            case 0:
-              Get.to(() => menupage())?.then((_) {
-                navigationController
-                    .updateIndex(0); // Update index when navigating back
-              });
-              break;
-              case 1:
-                Get.to(() => FavouritePage())?.then((_) {
-                  navigationController
-                      .updateIndex(1); // Update index when navigating back
-                });
-
-                break;
-              case 2:
-                Get.to(() => AppBarandNavigationBTN())?.then((_) {
-                  navigationController.updateIndex(2);
-                });
-                break;
-              case 3:
-              // Get.to(() => HomePage())?.then((_) {
-              //   navigationController.updateIndex(3);
-              // });
-                break;
-            }
-          },
-        ),
+        )
 
 
       ),

@@ -678,6 +678,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                       SharedPreferences prefs =
                       await SharedPreferences.getInstance();
                       await prefs.clear();
+                      FirebaseAuth.instance.signOut();
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
