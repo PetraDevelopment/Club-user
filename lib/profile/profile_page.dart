@@ -1,14 +1,19 @@
+import 'dart:io';
+
 import 'package:club_user/shimmer_effect/shimmer_lines.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../Controller/NavigationController.dart';
 import '../../Home/HomePage.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../Register/SignInPage.dart';
 import '../../Register/SignUp.dart';
@@ -18,64 +23,23 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Favourite/Favourite_page.dart';
 import '../Home/Userclass.dart';
 import '../my_reservation/my_reservation.dart';
+
 class Profilepage extends StatefulWidget {
   @override
   State<Profilepage> createState() {
     return ProfilepageState();
   }
 }
-class ProfilepageState extends State<Profilepage> with SingleTickerProviderStateMixin {
+
+class ProfilepageState extends State<Profilepage>
+    with SingleTickerProviderStateMixin {
   User? user = FirebaseAuth.instance.currentUser;
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
-  void _sendData() async {
-    final name = _nameController.text;
-    final phoneNumber = _phoneNumberController.text;
 
-    final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
-      // Not connected to any network
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'لا يوجد اتصال بالإنترنت'.tr,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'Cairo',
-              fontSize: 15.0,
-              fontWeight: FontWeight.normal,
-            ),
-          ),
-          backgroundColor: Color(0xFF1F8C4B),
-        ),
-      );
-      return null;
-    }
-    if (name.isNotEmpty && phoneNumber.isNotEmpty) {
-      await FirebaseFirestore.instance.collection('Users').add({
-        'name': name,
-        'phone': phoneNumber,
-
-      });
-      _nameController.clear();
-      _phoneNumberController.clear();
-
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'هذا الحساب حدث به خطا', // "There was an error with this account"
-            textAlign: TextAlign.center,
-          ),
-          backgroundColor:Color(0xFF1F8C4B),
-        ),
-      );
-    }
-  }
-
-
-  final NavigationController navigationController = Get.put(NavigationController());
+  final NavigationController navigationController =
+      Get.put(NavigationController());
 
   bool _isLoading = true; // flag to control shimmer effect
   Future<void> _loadData() async {
@@ -85,8 +49,124 @@ class ProfilepageState extends State<Profilepage> with SingleTickerProviderState
       _isLoading = false; // set flag to false when data is loaded
     });
   }
-  late List<User1> user1 = [];
 
+  late List<User1> user1 = [];
+  bool _isUploading = false;
+  String img_profile = '';
+  File? selectedImages;
+
+  Future<void> takePhoto() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      setState(() {
+        selectedImages = File(pickedFile.path); // Update the selected image
+        // img_profile = pickedFile.path; // Update the img_profile variable
+      });
+    }
+  }
+
+  Future<void> uploadImagesAndSaveUrls() async {
+    File? image = await pickImageFromGallery();
+    if (image == null) return;
+
+    setState(() {
+      selectedImages = image; // Update the selected image
+      // img_profile = image.path.toString(); // Update the img_profile variable
+    });
+
+    String downloadUrl = await _uploadImage(image);
+    print("downloadUrl$downloadUrl");
+    img_profile = downloadUrl;
+  }
+
+  Future<File?> pickImageFromGallery() async {
+    final XFile? image =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    return image != null ? File(image.path) : null;
+  }
+
+  Future<String> _uploadImage(File image) async {
+    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+    Reference storageRef =
+        FirebaseStorage.instance.ref().child('Users/$fileName');
+    await storageRef.putFile(image);
+    String downloadUrl = await storageRef.getDownloadURL();
+    img_profile = downloadUrl;
+    return downloadUrl;
+  }
+
+  Future<void> _storeImageUrls(
+      String name, String phone, String profileImageUrl) async {
+    CollectionReference usersRef =
+        FirebaseFirestore.instance.collection('Users');
+
+    try {
+      // Query the Firestore database to find the user's document based on their phone number
+      QuerySnapshot querySnapshot =
+          await usersRef.where('phone', isEqualTo: phone).get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Update the user's document with the new image URL
+        DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+        await documentSnapshot.reference.update({
+          'name': name,
+          'phone': phone,
+          'profile_image': profileImageUrl,
+        });
+        print('User  data updated successfully.');
+      } else {
+        // If the user's document is not found, create a new document
+        await usersRef.add({
+          'name': name,
+          'phone': phone,
+          'profile_image': profileImageUrl,
+        });
+        print('User  data added successfully.');
+      }
+    } catch (e) {
+      print('Error updating user data: $e');
+    }
+  }
+  Future<void> _updateName(String name) async {
+    CollectionReference usersRef =
+    FirebaseFirestore.instance.collection('Users');
+
+    try {
+      // Query the Firestore database to find the user's document based on their phone number
+      QuerySnapshot querySnapshot =
+      await usersRef.where('phone', isEqualTo: _phoneNumberController.text).get();
+      String existingName = user1[0].name!;
+      if (name == existingName) {
+        print("Name is already up to date");
+      }
+
+      else{
+        if (querySnapshot.docs.isNotEmpty) {
+          // Update the user's document with the new image URL
+          DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+          await documentSnapshot.reference.update({
+            'name': name,
+            'phone': _phoneNumberController.text,
+            'profile_image': img_profile,
+          });
+          print('User  data updated successfully.');
+        }
+        else {
+          // If the user's document is not found, create a new document
+          await usersRef.add({
+            'name': name,
+            'phone': _phoneNumberController.text,
+            'profile_image': img_profile,
+          });
+          print('User  data added successfully.');
+        }
+      }
+    }
+    catch (e) {
+      print('Error updating user data: $e');
+    }
+  }
   void _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? phoneValue = prefs.getString('phonev');
@@ -95,7 +175,6 @@ class ProfilepageState extends State<Profilepage> with SingleTickerProviderState
     if (phoneValue != null && phoneValue.isNotEmpty) {
       await getUserByPhone(phoneValue);
     } else if (user?.phoneNumber != null) {
-
       await getUserByPhone(user!.phoneNumber.toString());
     } else {
       print("No phone number available.");
@@ -105,20 +184,26 @@ class ProfilepageState extends State<Profilepage> with SingleTickerProviderState
   Future<void> getUserByPhone(String phoneNumber) async {
     try {
       String normalizedPhoneNumber = phoneNumber.replaceFirst('+20', '0');
-      CollectionReference playerchat = FirebaseFirestore.instance.collection('Users');
+      CollectionReference playerchat =
+          FirebaseFirestore.instance.collection('Users');
 
-      QuerySnapshot querySnapshot = await playerchat.where('phone', isEqualTo: normalizedPhoneNumber).get();
+      QuerySnapshot querySnapshot = await playerchat
+          .where('phone', isEqualTo: normalizedPhoneNumber)
+          .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        Map<String, dynamic> userData = querySnapshot.docs.first.data() as Map<String, dynamic>;
+        Map<String, dynamic> userData =
+            querySnapshot.docs.first.data() as Map<String, dynamic>;
         User1 user = User1.fromMap(userData);
 
         // Update the list and UI inside setState
         setState(() {
           user1.add(user);
-          if (user1.isNotEmpty) { // Check if user1 is not empty
+          if (user1.isNotEmpty) {
+            // Check if user1 is not empty
             _phoneNumberController.text = user1[0].phoneNumber!;
-            _nameController.text=user1[0].name!;
+            _nameController.text = user1[0].name!;
+            img_profile = user1[0].img!;
           }
         });
 
@@ -131,15 +216,16 @@ class ProfilepageState extends State<Profilepage> with SingleTickerProviderState
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => SigninPage()),
-              (Route<dynamic> route) => false,
+          (Route<dynamic> route) => false,
         );
       }
     } catch (e) {
       print("Error getting user: $e");
     }
   }
+
   @override
-  void  initState()  {
+  void initState() {
     super.initState();
     _loadUserData();
     _loadData();
@@ -155,7 +241,8 @@ class ProfilepageState extends State<Profilepage> with SingleTickerProviderState
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
         child: Padding(
-          padding: EdgeInsets.only(top: 25.0,bottom: 12,right: 8,left: 8), // Add padding to the top of the title
+          padding: EdgeInsets.only(top: 25.0, bottom: 12, right: 8, left: 8),
+          // Add padding to the top of the title
           child: AppBar(
             backgroundColor: Colors.white,
             surfaceTintColor: Colors.transparent,
@@ -167,7 +254,8 @@ class ProfilepageState extends State<Profilepage> with SingleTickerProviderState
                 fontWeight: FontWeight.w700,
               ),
             ),
-            centerTitle: true, // Center the title horizontally
+            centerTitle: true,
+            // Center the title horizontally
             leading: IconButton(
               onPressed: () {
                 Get.back();
@@ -178,363 +266,402 @@ class ProfilepageState extends State<Profilepage> with SingleTickerProviderState
                     ? Icons.arrow_forward_ios
                     : Icons.arrow_back_ios_new_rounded,
                 size: 24,
-                color:  Color(0xFF62748E),
+                color: Color(0xFF62748E),
               ),
             ),
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 12.0),
-                child: Image.asset('assets/images/notification.png', height: 28, width: 28,),
+                child: Image.asset(
+                  'assets/images/notification.png',
+                  height: 28,
+                  width: 28,
+                ),
               ),
-
             ],
           ),
         ),
       ),
       body: Directionality(
-
-        textDirection: TextDirection.rtl,
-        child:  SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 15.0,bottom: 15,right: 22,left: 22),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Stack(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10.0),
-                        child: Align(
+          textDirection: TextDirection.rtl,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                  top: 15.0, bottom: 15, right: 22, left: 22),
+              child:
+                  Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                Stack(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10.0),
+                      child: Align(
                           alignment: Alignment.topCenter,
-                          child:    Center(
-                            child: Container(
-                              width: 164,
-                              height: 164,
-                              child: Image.asset(
-                                "assets/images/profile_img.png",
+                          child: selectedImages == null
+                              ? img_profile == ''
+                                  ? Container(
+                                      width: 164,
+                                      height: 164,
+                                      child: Image.asset(
+                                        "assets/images/profile_img.png",
+                                      ),
+                                    )
+                                  : ClipOval(
+                                      child: Image(
+                                        image: NetworkImage(img_profile),
+                                        width: 164,
+                                        height: 164,
+                                        fit: BoxFit.fitWidth,
+                                      ),
+                                    )
+                              : ClipOval(
+                                  child: Image.file(
+                                  selectedImages!,
+                                  height: 164,
+                                  width: 164,
+                                  fit: BoxFit.cover,
+                                )) // Display selected image
 
-                              ),
-                            ),
                           ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 129,
-                        left: 220,
-                        child: Container(
-                          height: 35,
-                          width: 35,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20.0),
-                            shape: BoxShape.rectangle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.white.withOpacity(0.9),
-                                // Increase opacity for a darker shadow
-                                spreadRadius: 0,
-                                // Increase spread to make the shadow larger
-                                blurRadius: 5,
-                                // Increase blur radius for a more diffused shadow
-                                offset: Offset(0, 0), // Increase offset for a more pronounced shadow effect
-                              ),
-                            ],),
-                          child: FloatingActionButton(
-                            onPressed: () {
-                              // Get.to(() => AddNewPlayGround()); // Use GetX navigation
-                            },
-                            child: Icon(Icons.add, color: Colors.white,size: 26,),
-                            backgroundColor:Color(0xFF064821),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30), // Adjust the circular shape here
-                            ),
-                            // elevation: 6.0, // Adjust the elevation if needed
-                          ),
-                        ),
-                      )
-
-
-                    ],
-                  ),
-                  SizedBox(height: 16,),
-
-                  SizedBox(
-                    height: 12,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      RichText(
-                        textAlign: TextAlign.right,
-                        text: TextSpan(
-                          style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 14.0,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF495A71)
-                          ),
-                          children: [
-
-                            TextSpan(
-                              text: 'الأسم ',
-                            ),
-                          ],
-                        ),
-                      ),
-                      Text("")
-                    ],
-                  ),
-
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20.0),
-                      shape: BoxShape.rectangle,
-                      color: Colors.white70,
-                      border: Border.all(
-                        color: Color(0xFF9AAEC9), // Border color
-                        width: 1.0, // Border width
-                      ),
                     ),
-                    alignment: Alignment.centerRight,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Container(
-                          margin: EdgeInsets.symmetric(horizontal: 20.0),
-                          child: Image.asset(
-                            'assets/images/name.png',
-                            height: 19,
-                            width: 19,
-                            color: Color(0xFF495A71),
-                          ),
-
-                        ),
-                        Expanded(
-                          child:TextField(
-                            controller: _nameController,
-                            cursorColor: Color(0xFF064821),
-                            textInputAction: TextInputAction.next,
-                            keyboardType: TextInputType.text,
-                            textAlign: TextAlign.right, // Align text to the right
-                            decoration: InputDecoration(
-                              hintText: 'الأسم'.tr,
-                              hintStyle: TextStyle(
-                                fontFamily: 'Cairo',
-                                color: Color(0xFF495A71),
-                              ),
-                              border: InputBorder.none,
-                            ),
-
-                            onEditingComplete: () async {
-                              // Move focus to the next text field
-                              FocusScope.of(context).nextFocus();
-                            },
-                          ),
-                        ),
-
-                      ],
-                    ),
-                  ),
-                  if (_nameController.text.length >0 && _nameController.text.length <2)
-                    Text(
-                      // textAlign: TextAlign.end,
-                      "برجاء ادخال الاسم",
-                      style: TextStyle(
-                        color: Colors.red.shade900, // Error message color
-                        fontSize: 12.0,
-                        fontFamily: 'Cairo',
-                      ),
-                    ),
-                  //phone
-                  SizedBox(
-                    height: 12,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      RichText(
-                        textAlign: TextAlign.right,
-                        text: TextSpan(
-                          style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 14.0,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF495A71)
-                          ),
-                          children: [
-
-                            TextSpan(
-                              text: 'رقم التليفون ',
-                            ),
-                          ],
-                        ),
-                      ),
-                      Text(""),
-                    ],
-                  ),
-
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20.0),
-                      shape: BoxShape.rectangle,
-                      color: Colors.white70,
-                      border: Border.all(
-                        color: Color(0xFF9AAEC9), // Border color
-                        width: 1.0, // Border width
-                      ),
-                    ),
-                    alignment: Alignment.centerRight,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Container(
-                          margin: EdgeInsets.symmetric(horizontal: 20.0),
-                          child: Image.asset(
-                            'assets/images/call.png',
-                            height: 19,
-                            width: 19,
-                            color: Color(0xFF495A71),
-                          ),
-                        ),
-                        Expanded(
-                          child: TextField(
-                            controller: _phoneNumberController,
-                            cursorColor: Color(0xFF064821),
-                            inputFormatters: [
-                              LengthLimitingTextInputFormatter(11),
-                            ],
-                            textInputAction: TextInputAction.done,
-                            keyboardType: TextInputType.datetime, // Updated keyboard type for phone input
-                            textAlign: TextAlign.right, // Align text to the right
-                            decoration: InputDecoration(
-                              hintText: 'رقم التليفون'.tr,
-                              hintStyle: TextStyle(
-                                fontFamily: 'Cairo',
-                                color: Color(0xFF495A71),
-                              ),
-                              border: InputBorder.none,
-                            ),
-                            onChanged: (value) {
-                              // Phone = value;
-                              // print("phoneeee" + " " + Phone);
-                              // setState(() {
-                              //   validatePhone(value);
-                              // });
-                            },
-                            onSubmitted: (value) {
-                              // Move focus to the next text field
-                              // FocusScope.of(context).nextFocus();
-                            },
-                          ),
-                        ),
-
-                      ],
-                    ),
-                  ),
-                  if (PhoneErrorText.isNotEmpty)
-                    Text(
-                      PhoneErrorText,
-                      style: TextStyle(
-                        color: Colors.red.shade900, // Error message color
-                        fontSize: 12.0,
-                        fontFamily: 'Cairo',
-                      ),
-                    ),
-                  SizedBox(
-                    height: 100,
-                  ),
-
-
-                  //btttttttttttttttttn
-                  GestureDetector(
-                    onTap: () async {
-                      // // Check if any field is empty or if the passwords do not match
-                      // if (_nameController.text.isEmpty ||
-                      //     _phoneNumberController.text.isEmpty) {
-                      //   setState(() {
-                      //     // Show a SnackBar with the error message
-                      //     ScaffoldMessenger.of(context).showSnackBar(
-                      //       SnackBar(
-                      //         content: Text(
-                      //           'برجاء ادخال جميع البيانات', // "Please enter all the data"
-                      //           textAlign: TextAlign.center,
-                      //         ),
-                      //         backgroundColor: Color(0xFF1F8C4B),
-                      //       ),
-                      //     );
-                      //     // Ensure `isLoading` is set to false when there's a validation error
-                      //     isLoading = false;
-                      //   });
-                      // } else {
-                      //   setState(() {
-                      //     // Clear any existing error message
-                      //
-                      //     isLoading = true;  // Set loading to true since we're starting an operation
-                      //   });
-                      //
-                      //   // Prevent multiple navigation attempts
-                      //   if (!_isNavigating) {
-                      //     _isNavigating = true; // Set the flag to true
-                      //
-                      //     // Validate phone number in Firestore
-                      //     await validatePhonefirebase(_phoneNumberController.text.trim(), context);
-                      //
-                      //     // Reset the flag after operation completes
-                      //     _isNavigating = false;
-                      //   }
-                      //
-                      //   setState(() {
-                      //     isLoading = true;  // Set loading to false after the operation completes
-                      //   });
-                      // }
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 50.0, right: 20, left: 20),
+                    Positioned(
+                      top: 129,
+                      left: 220,
                       child: Container(
-                        height: 50,
-                        width: 320,
+                        height: 35,
+                        width: 35,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30.0),
+                          borderRadius: BorderRadius.circular(20.0),
                           shape: BoxShape.rectangle,
-                          color: Color(0xFF064821), // Background color of the container
-                        ),
-                        child: Center(
-                          child: Text(
-                            'حفــــــظ'.tr,
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white, // Text color
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.9),
+                              // Increase opacity for a darker shadow
+                              spreadRadius: 0,
+                              // Increase spread to make the shadow larger
+                              blurRadius: 5,
+                              // Increase blur radius for a more diffused shadow
+                              offset: Offset(0,
+                                  0), // Increase offset for a more pronounced shadow effect
                             ),
+                          ],
+                        ),
+                        child: FloatingActionButton(
+                          onPressed: () {
+                            _showImageSourceDialog(); // Show dialog on tap
+                            // Get.to(() => AddNewPlayGround()); // Use GetX navigation
+                          },
+                          child: Icon(
+                            Icons.add,
+                            color: Colors.white,
+                            size: 26,
+                          ),
+                          backgroundColor: Color(0xFF064821),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                                30), // Adjust the circular shape here
+                          ),
+                          // elevation: 6.0, // Adjust the elevation if needed
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+                SizedBox(
+                  height: 16,
+                ),
+
+                SizedBox(
+                  height: 12,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    RichText(
+                      textAlign: TextAlign.right,
+                      text: TextSpan(
+                        style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF495A71)),
+                        children: [
+                          TextSpan(
+                            text: 'الأسم ',
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text("")
+                  ],
+                ),
+
+                SizedBox(
+                  height: 10,
+                ),
+                Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20.0),
+                    shape: BoxShape.rectangle,
+                    color: Colors.white70,
+                    border: Border.all(
+                      color: Color(0xFF9AAEC9), // Border color
+                      width: 1.0, // Border width
+                    ),
+                  ),
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        margin: EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Image.asset(
+                          'assets/images/name.png',
+                          height: 19,
+                          width: 19,
+                          color: Color(0xFF495A71),
+                        ),
+                      ),
+                      Expanded(
+                        child: TextField(
+                          controller: _nameController,
+                          cursorColor: Color(0xFF064821),
+                          textInputAction: TextInputAction.next,
+                          keyboardType: TextInputType.text,
+                          textAlign: TextAlign.right,
+                          // Align text to the right
+                          decoration: InputDecoration(
+                            hintText: 'الأسم'.tr,
+                            hintStyle: TextStyle(
+                              fontFamily: 'Cairo',
+                              color: Color(0xFF495A71),
+                            ),
+                            border: InputBorder.none,
+                          ),
+
+                          onEditingComplete: () async {
+                            // Move focus to the next text field
+                            FocusScope.of(context).nextFocus();
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (_nameController.text.length > 0 &&
+                    _nameController.text.length < 2)
+                  Text(
+                    // textAlign: TextAlign.end,
+                    "برجاء ادخال الاسم",
+                    style: TextStyle(
+                      color: Colors.red.shade900, // Error message color
+                      fontSize: 12.0,
+                      fontFamily: 'Cairo',
+                    ),
+                  ),
+                //phone
+                SizedBox(
+                  height: 12,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    RichText(
+                      textAlign: TextAlign.right,
+                      text: TextSpan(
+                        style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF495A71)),
+                        children: [
+                          TextSpan(
+                            text: 'رقم التليفون ',
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(""),
+                  ],
+                ),
+
+                SizedBox(
+                  height: 10,
+                ),
+                Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20.0),
+                    shape: BoxShape.rectangle,
+                    color: Colors.white70,
+                    border: Border.all(
+                      color: Color(0xFF9AAEC9), // Border color
+                      width: 1.0, // Border width
+                    ),
+                  ),
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        margin: EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Image.asset(
+                          'assets/images/call.png',
+                          height: 19,
+                          width: 19,
+                          color: Color(0xFF495A71),
+                        ),
+                      ),
+                      Expanded(
+                        child: TextField(
+                          controller: _phoneNumberController,
+                          readOnly: true,
+                          // cursorColor: Color(0xFF064821),
+                          // inputFormatters: [
+                          //   LengthLimitingTextInputFormatter(11),
+                          // ],
+                          // textInputAction: TextInputAction.done,
+                          // keyboardType: TextInputType.none, // Updated keyboard type for phone input
+                          textAlign: TextAlign.right,
+                          // Align text to the right
+                          decoration: InputDecoration(
+                            hintText: 'رقم التليفون'.tr,
+                            hintStyle: TextStyle(
+                              fontFamily: 'Cairo',
+                              color: Color(0xFF495A71),
+                            ),
+                            border: InputBorder.none,
+                          ),
+                          onChanged: (value) {
+                            // Phone = value;
+                            // print("phoneeee" + " " + Phone);
+                            // setState(() {
+                            //   validatePhone(value);
+                            // });
+                          },
+                          onSubmitted: (value) {
+                            // Move focus to the next text field
+                            // FocusScope.of(context).nextFocus();
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (PhoneErrorText.isNotEmpty)
+                  Text(
+                    PhoneErrorText,
+                    style: TextStyle(
+                      color: Colors.red.shade900, // Error message color
+                      fontSize: 12.0,
+                      fontFamily: 'Cairo',
+                    ),
+                  ),
+                SizedBox(
+                  height: 100,
+                ),
+
+                //btttttttttttttttttn
+                GestureDetector(
+                  onTap: () async {
+                  await  _updateName(_nameController.text);
+                    if (selectedImages != null) {
+                      setState(() {
+                        _isUploading = true;
+                      });
+                      // Upload the image to Firebase Storage
+                      String downloadUrl = await _uploadImage(selectedImages!);
+
+                      await _storeImageUrls(_nameController.text,
+                          _phoneNumberController.text, downloadUrl);
+                      setState(() {
+                        img_profile=downloadUrl;
+                      });
+                      await getUserByPhone(_phoneNumberController.text);
+                      setState(() {
+                        _isUploading = false;
+                      });
+                    } else {
+                      print('No image selected');
+                    }
+                    // // Check if any field is empty or if the passwords do not match
+                    // if (_nameController.text.isEmpty ||
+                    //     _phoneNumberController.text.isEmpty) {
+                    //   setState(() {
+                    //     // Show a SnackBar with the error message
+                    //     ScaffoldMessenger.of(context).showSnackBar(
+                    //       SnackBar(
+                    //         content: Text(
+                    //           'برجاء ادخال جميع البيانات', // "Please enter all the data"
+                    //           textAlign: TextAlign.center,
+                    //         ),
+                    //         backgroundColor: Color(0xFF1F8C4B),
+                    //       ),
+                    //     );
+                    //     // Ensure `isLoading` is set to false when there's a validation error
+                    //     isLoading = false;
+                    //   });
+                    // } else {
+                    //   setState(() {
+                    //     // Clear any existing error message
+                    //
+                    //     isLoading = true;  // Set loading to true since we're starting an operation
+                    //   });
+                    //
+                    //   // Prevent multiple navigation attempts
+                    //   if (!_isNavigating) {
+                    //     _isNavigating = true; // Set the flag to true
+                    //
+                    //     // Validate phone number in Firestore
+                    //     await validatePhonefirebase(_phoneNumberController.text.trim(), context);
+                    //
+                    //     // Reset the flag after operation completes
+                    //     _isNavigating = false;
+                    //   }
+                    //
+                    //   setState(() {
+                    //     isLoading = true;  // Set loading to false after the operation completes
+                    //   });
+                    // }
+                  },
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.only(top: 50.0, right: 20, left: 20),
+                    child: Container(
+                      height: 50,
+                      width: 320,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30.0),
+                        shape: BoxShape.rectangle,
+                        color: Color(
+                            0xFF064821), // Background color of the container
+                      ),
+                      child: Center(
+                        child: Text(
+                          'حفــــــظ'.tr,
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white, // Text color
                           ),
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(height: 5,),
-
-                ]
+                ),
+                SizedBox(
+                  height: 5,
+                ),
+              ]),
             ),
-
-          ),
-
-        )
-      ),
+          )),
       bottomNavigationBar: CurvedNavigationBar(
         height: 60,
         index: 0,
         // Use the dynamic index
         items: [
           Icon(Icons.more_horiz, color: Colors.white, size: 25),
-
           Image.asset('assets/images/calendar.png',
               height: 21, width: 21, color: Colors.white),
           Image.asset('assets/images/stade.png',
@@ -553,10 +680,10 @@ class ProfilepageState extends State<Profilepage> with SingleTickerProviderState
           // Handle navigation based on index
           switch (index) {
             case 0:
-            // Get.to(() => menupage())?.then((_) {
-            //   navigationController
-            //       .updateIndex(0); // Update index when navigating back
-            // });
+              // Get.to(() => menupage())?.then((_) {
+              //   navigationController
+              //       .updateIndex(0); // Update index when navigating back
+              // });
               break;
             case 1:
               Get.to(() => my_reservation())?.then((_) {
@@ -578,9 +705,9 @@ class ProfilepageState extends State<Profilepage> with SingleTickerProviderState
           }
         },
       ),
-
     );
   }
+
   Future<bool> handleBackNavigation() async {
     int currentIndex = NavigationController().currentIndex.value;
 
@@ -595,4 +722,32 @@ class ProfilepageState extends State<Profilepage> with SingleTickerProviderState
     }
   }
 
+  //allow open gallery or camera
+  void _showImageSourceDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Select Image Source'),
+          content: Text('Choose an option to upload images.'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Camera'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                takePhoto(); // Call method to take a photo
+              },
+            ),
+            TextButton(
+              child: Text('Gallery'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                uploadImagesAndSaveUrls(); // Call method to pick images from gallery
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

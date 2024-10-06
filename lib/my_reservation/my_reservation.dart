@@ -58,7 +58,7 @@ class my_reservationState extends State<my_reservation>
 
       // Reference to the Firestore collection
       CollectionReference playerchat =
-      FirebaseFirestore.instance.collection('PlayersChat');
+      FirebaseFirestore.instance.collection('Users');
 
       // Get the documents in the collection where phone number matches
       QuerySnapshot querySnapshot = await playerchat

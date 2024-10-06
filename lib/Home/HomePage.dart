@@ -212,10 +212,25 @@ class HomePageState extends State<HomePage> {
                               ],
                             ),
                           ),
+                          user1.isNotEmpty && user1[0].img!=null? Padding(
+                            padding: const EdgeInsets.only(right: 34.0),
+                            child:ClipOval(
+                              child: Image(image:  NetworkImage(
+                                user1[0].img!,
+                              
+                                // Adjust size as needed
+                              ),     width: 63,
+                                height: 63,
+                                fit: BoxFit.fitWidth,),
+                            )
+                          ):
                           Padding(
                             padding: const EdgeInsets.only(right: 34.0),
+
                             child: Image.asset(
                               "assets/images/profile.png",
+                              width: 63,
+                              height: 63,
                               // Adjust size as needed
                             ),
                           ),
@@ -254,10 +269,25 @@ class HomePageState extends State<HomePage> {
                             ],
                           ),
                         ),
+
+                        user1.isNotEmpty && user1[0].img!=null? Padding(
+                            padding: const EdgeInsets.only(right: 34.0),
+                            child:ClipOval(
+                              child: Image(image:  NetworkImage(
+                                user1[0].img!,
+
+                                // Adjust size as needed
+                              ),    width: 63,
+                                height: 63,
+                                fit: BoxFit.fitWidth,),
+                            )
+                        ):
                         Padding(
                           padding: const EdgeInsets.only(right: 34.0),
                           child: Image.asset(
                             "assets/images/profile.png",
+                            width: 63,
+                            height: 63,
                             // Adjust size as needed
                           ),
                         ),

@@ -219,6 +219,8 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                         children: [
                           Image.asset(
                             "assets/images/profile.png",
+                            width: 63,
+                            height: 63,
                             // Adjust size as needed
                           ),
                           SizedBox(width: 10), // Adds space between the text and the image
@@ -264,9 +266,21 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                       mainAxisAlignment: MainAxisAlignment.start, // Aligns the content to the right
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Image.asset(
-                          "assets/images/profile.png",
-                          // Adjust size as needed
+                        user1.isNotEmpty && user1[0].img!=null? ClipOval(
+                          child: Image(image:  NetworkImage(
+                            user1[0].img!,
+
+                            // Adjust size as needed
+                          ),    width: 63,
+                            height: 63,
+                            fit: BoxFit.fitWidth,),
+                        ):
+                        Padding(
+                          padding: const EdgeInsets.only(right: 34.0),
+                          child: Image.asset(
+                            "assets/images/profile.png",
+                            // Adjust size as needed
+                          ),
                         ),
                         SizedBox(width: 10), // Adds space between the text and the image
 

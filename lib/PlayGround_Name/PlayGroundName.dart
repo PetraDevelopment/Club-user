@@ -514,7 +514,7 @@ List<Favouritemodel>favlist=[];
                             print("locattttion${allplaygrounds[0].location!}");
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => Maps()),
+                              MaterialPageRoute(builder: (context) => Maps(location: allplaygrounds[0].location!)),
                             );
 
                           },
