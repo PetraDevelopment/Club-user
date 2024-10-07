@@ -16,6 +16,8 @@ import '../Favourite/Favourite_page.dart';
 import '../Home/Userclass.dart';
 import '../My_group/my_group.dart';
 import '../my_reservation/my_reservation.dart';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../profile/profile_page.dart';
 class menupage extends StatefulWidget {
   @override
@@ -693,19 +695,107 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                 child: GestureDetector
                   (
                   onTap: () async {
-                    SharedPreferences prefs =
-                    await SharedPreferences.getInstance();
-                    await prefs.clear();
-                    FirebaseAuth.instance.signOut();
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              SigninPage()),
-                          (Route<dynamic> route) => false,
-                    );
+                    final connectivityResult =
+                        await Connectivity().checkConnectivity();
+                    if (connectivityResult != ConnectivityResult.none) {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Center(
+                                child: Text("تسجيل الخروج".tr,
+                                    style: TextStyle(
+                                      color: Color(0xFF374957),
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15,
+                                      fontFamily: 'Cairo',
+                                    ))),
+                            content: Text(
+                                "هل تريد التأكيد على تسجيل الخروج؟".tr,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Color(0xFF374957),
+                                  fontFamily: 'Cairo',
+                                )),
+                            actions: [
+                              Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                                children: [
 
+                                  ElevatedButton(
+                                    onPressed: () async {
+
+                                        SharedPreferences prefs =
+                                        await SharedPreferences.getInstance();
+                                        await prefs.clear();
+                                        FirebaseAuth.instance.signOut();
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  SigninPage()),
+                                              (Route<dynamic> route) => false,
+                                        );
+
+
+
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                      Color(0xFF064821),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                        BorderRadius.circular(20),
+                                      ),
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 12,
+                                        horizontal: 20,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      "تسجيل الخروج".tr,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: 'Cairo',
+                                      ),
+                                    ),
+                                  ),
+
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                      Color(0xFFFFBEC5),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                        BorderRadius.circular(20),
+                                      ),
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 12,
+                                        horizontal: 20,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      "إلغاء".tr,
+                                      style: TextStyle(
+                                        color: Color(0xFF334154),
+                                        fontFamily: 'Cairo',
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
                   },
+
+
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

@@ -3,6 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:share/share.dart';
 import '../Controller/NavigationController.dart';
 import '../Favourite/Favourite_page.dart';
 import '../Favourite_model/AddPlaygroundModel.dart';
@@ -499,15 +502,29 @@ List<Favouritemodel>favlist=[];
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Container(
+                        GestureDetector(
+                          onTap: () async {
+                            List<Location> locations = await locationFromAddress(allplaygrounds[0].location!);
+
+                            Location location = locations.first;
+                            double latitude = location.latitude;
+                            double longitude = location.longitude;
+
+                            String url = 'https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}';
+
+                            await Share.share(url);
+                          },
+                          child: Container(
                             height: 30,
                             width: 30,
                             decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5.0),
-                                shape: BoxShape.rectangle,
-                                color: Color(0xFF106A35)),
-                            child: Icon(Icons.share,
-                                color: Colors.white, size: 20)),
+                              borderRadius: BorderRadius.circular(5.0),
+                              shape: BoxShape.rectangle,
+                              color: Color(0xFF106A35),
+                            ),
+                            child: Icon(Icons.share, color: Colors.white, size: 20),
+                          ),
+                        ),
                         SizedBox(width: 40,),
                         GestureDetector(
                           onTap: (){
