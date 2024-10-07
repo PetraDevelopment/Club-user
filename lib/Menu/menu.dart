@@ -781,7 +781,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                                     child: Text(
                                       "إلغاء".tr,
                                       style: TextStyle(
-                                        color: Color(0xFF334154),
+                                        color: Colors.white,
                                         fontFamily: 'Cairo',
                                       ),
                                     ),
@@ -839,17 +839,97 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
 
               GestureDetector
                 (
-                // onTap: () async {
-                //
-                //   await deleteUser(user!.phoneNumber.toString());
-                //
-                // },
                 onTap: () async {
-                  if ( user1.isNotEmpty && user1[0].phoneNumber!.isNotEmpty) {
-                    await deleteUser(user1[0].phoneNumber.toString());
-                  } else {
-                    print("No phone number found for the user.");
-                    // You could handle cases where the phone number or user is null here.
+                  final connectivityResult =
+                  await Connectivity().checkConnectivity();
+                  if (connectivityResult != ConnectivityResult.none) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Center(
+                              child: Text("حذف الحساب".tr,
+                                  style: TextStyle(
+                                    color: Color(0xFF374957),
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15,
+                                    fontFamily: 'Cairo',
+                                  ))),
+                          content: Text(
+                              "هل تريد التأكيد على حذف حسابك ؟".tr,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Color(0xFF374957),
+                                fontFamily: 'Cairo',
+                              )),
+                          actions: [
+                            Row(
+                              mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
+                              children: [
+
+                                ElevatedButton(
+                                  onPressed: () async {
+
+                                    if ( user1.isNotEmpty && user1[0].phoneNumber!.isNotEmpty) {
+                                      await deleteUser(user1[0].phoneNumber.toString());
+                                    }
+                                    else {
+                                      print("No phone number found for the user.");
+                                      // You could handle cases where the phone number or user is null here.
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                    Color(0xFF064821),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                      BorderRadius.circular(20),
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: 20,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    " حذف الحساب".tr,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontFamily: 'Cairo',
+                                    ),
+                                  ),
+                                ),
+
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                    Color(0xFFFFBEC5),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                      BorderRadius.circular(20),
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: 20,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    "إلغاء".tr,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontFamily: 'Cairo',
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        );
+                      },
+                    );
                   }
                 },
 
