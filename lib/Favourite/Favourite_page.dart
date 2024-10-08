@@ -41,14 +41,13 @@ class FavouritePageState extends State<FavouritePage> {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           String Phone011=prefs.getString('phonev')??'';
           print("phone011$Phone011");
-print("user${user?.phoneNumber}");
+          print("user${user?.phoneNumber}");
           if (favourite.user_phone?.replaceAll(RegExp(r'\D'), '') == user?.phoneNumber?.replaceAll(RegExp(r'\D'), '') ||
               favourite.user_phone?.replaceAll(RegExp(r'\D'), '') == Phone011.replaceAll(RegExp(r'\D'), '')) {
             favlist.add(favourite);
-            print("Fav Id : ${document.id}"); // Print the latest playground
-
+            print("Fav Id : ${document.id}"); // Print the playground ID
             print('Fav list: $favlist');
-            print("allplaygrounds[i] : ${favlist.last}"); // Print the latest playground
+            print("allplaygrounds[i] : ${favourite}"); // Print the playground
             // Store the document ID in the AddPlayGroundModel object
             favourite.id = document.id;
             print("favouriteid${favourite.id}");
@@ -57,6 +56,7 @@ print("user${user?.phoneNumber}");
             print("this user not have favourite playground");
           }
         }
+        print("All Fav list: $favlist"); // Print all playgrounds
       }
     } catch (e) {
       print("Error getting playground: $e");
@@ -208,13 +208,13 @@ print("user${user?.phoneNumber}");
               for (var i = 0; i < favlist.length; i++)
                 GestureDetector(
                   onTap: (){
-                    print("favlist${favlist[i].user_phone}");
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => PlaygroundName(idddddd),
-                    //   ),
-                    // );
+                    print("favlist${favlist[i].playground_id}");
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PlaygroundName(favlist[i].playground_id),
+                      ),
+                    );
                   },
                   child: Padding(
                     padding: const EdgeInsets.only(right: 8.0,left: 8),

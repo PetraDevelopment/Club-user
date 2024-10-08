@@ -22,6 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../Favourite/Favourite_page.dart';
 import '../Home/Userclass.dart';
+import '../Splach/LoadingScreen.dart';
 import '../my_reservation/my_reservation.dart';
 
 class Profilepage extends StatefulWidget {
@@ -131,7 +132,9 @@ class ProfilepageState extends State<Profilepage>
   Future<void> _updateName(String name) async {
     CollectionReference usersRef =
     FirebaseFirestore.instance.collection('Users');
-
+    setState(() {
+      _isLoading = true;
+    });
     try {
       // Query the Firestore database to find the user's document based on their phone number
       QuerySnapshot querySnapshot =
@@ -151,7 +154,11 @@ class ProfilepageState extends State<Profilepage>
             'profile_image': img_profile,
           });
           print('User  data updated successfully.');
+          setState(() {
+            _isLoading = false;
+          });
         }
+
         else {
           // If the user's document is not found, create a new document
           await usersRef.add({
@@ -284,378 +291,345 @@ class ProfilepageState extends State<Profilepage>
       ),
       body: Directionality(
           textDirection: TextDirection.rtl,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                  top: 15.0, bottom: 15, right: 22, left: 22),
-              child:
-                  Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10.0),
-                      child: Align(
-                          alignment: Alignment.topCenter,
-                          child: selectedImages == null
-                              ? img_profile == ''
-                                  ? Container(
-                                      width: 164,
-                                      height: 164,
-                                      child: Image.asset(
-                                        "assets/images/profile_img.png",
-                                      ),
-                                    )
-                                  : ClipOval(
-                                      child: Image(
-                                        image: NetworkImage(img_profile),
+          child: Stack(
+            children:[ SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    top: 15.0, bottom: 15, right: 22, left: 22),
+                child:
+                    Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  Stack(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10.0),
+                        child: Align(
+                            alignment: Alignment.topCenter,
+                            child: selectedImages == null
+                                ? img_profile == ''
+                                    ? Container(
                                         width: 164,
                                         height: 164,
-                                        fit: BoxFit.fitWidth,
-                                      ),
-                                    )
-                              : ClipOval(
-                                  child: Image.file(
-                                  selectedImages!,
-                                  height: 164,
-                                  width: 164,
-                                  fit: BoxFit.cover,
-                                )) // Display selected image
+                                        child: Image.asset(
+                                          "assets/images/profile_img.png",
+                                        ),
+                                      )
+                                    : ClipOval(
+                                        child: Image(
+                                          image: NetworkImage(img_profile),
+                                          width: 164,
+                                          height: 164,
+                                          fit: BoxFit.fitWidth,
+                                        ),
+                                      )
+                                : ClipOval(
+                                    child: Image.file(
+                                    selectedImages!,
+                                    height: 164,
+                                    width: 164,
+                                    fit: BoxFit.cover,
+                                  )) // Display selected image
 
+                            ),
+                      ),
+                      Positioned(
+                        top: 129,
+                        left: 220,
+                        child: Container(
+                          height: 35,
+                          width: 35,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20.0),
+                            shape: BoxShape.rectangle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.9),
+                                // Increase opacity for a darker shadow
+                                spreadRadius: 0,
+                                // Increase spread to make the shadow larger
+                                blurRadius: 5,
+                                // Increase blur radius for a more diffused shadow
+                                offset: Offset(0,
+                                    0), // Increase offset for a more pronounced shadow effect
+                              ),
+                            ],
                           ),
-                    ),
-                    Positioned(
-                      top: 129,
-                      left: 220,
-                      child: Container(
-                        height: 35,
-                        width: 35,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20.0),
-                          shape: BoxShape.rectangle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.white.withOpacity(0.9),
-                              // Increase opacity for a darker shadow
-                              spreadRadius: 0,
-                              // Increase spread to make the shadow larger
-                              blurRadius: 5,
-                              // Increase blur radius for a more diffused shadow
-                              offset: Offset(0,
-                                  0), // Increase offset for a more pronounced shadow effect
+                          child: FloatingActionButton(
+                            onPressed: () {
+                              _showImageSourceDialog(); // Show dialog on tap
+                              // Get.to(() => AddNewPlayGround()); // Use GetX navigation
+                            },
+                            child: Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 26,
+                            ),
+                            backgroundColor: Color(0xFF064821),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  30), // Adjust the circular shape here
+                            ),
+                            // elevation: 6.0, // Adjust the elevation if needed
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                  SizedBox(
+                    height: 16,
+                  ),
+
+                  SizedBox(
+                    height: 12,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      RichText(
+                        textAlign: TextAlign.right,
+                        text: TextSpan(
+                          style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 14.0,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF495A71)),
+                          children: [
+                            TextSpan(
+                              text: 'الأسم ',
                             ),
                           ],
                         ),
-                        child: FloatingActionButton(
-                          onPressed: () {
-                            _showImageSourceDialog(); // Show dialog on tap
-                            // Get.to(() => AddNewPlayGround()); // Use GetX navigation
-                          },
-                          child: Icon(
-                            Icons.add,
-                            color: Colors.white,
-                            size: 26,
-                          ),
-                          backgroundColor: Color(0xFF064821),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                30), // Adjust the circular shape here
-                          ),
-                          // elevation: 6.0, // Adjust the elevation if needed
-                        ),
                       ),
-                    )
-                  ],
-                ),
-                SizedBox(
-                  height: 16,
-                ),
-
-                SizedBox(
-                  height: 12,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    RichText(
-                      textAlign: TextAlign.right,
-                      text: TextSpan(
-                        style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 14.0,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF495A71)),
-                        children: [
-                          TextSpan(
-                            text: 'الأسم ',
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text("")
-                  ],
-                ),
-
-                SizedBox(
-                  height: 10,
-                ),
-                Container(
-                  height: 48,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20.0),
-                    shape: BoxShape.rectangle,
-                    color: Colors.white70,
-                    border: Border.all(
-                      color: Color(0xFF9AAEC9), // Border color
-                      width: 1.0, // Border width
-                    ),
-                  ),
-                  alignment: Alignment.centerRight,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Image.asset(
-                          'assets/images/name.png',
-                          height: 19,
-                          width: 19,
-                          color: Color(0xFF495A71),
-                        ),
-                      ),
-                      Expanded(
-                        child: TextField(
-                          controller: _nameController,
-                          cursorColor: Color(0xFF064821),
-                          textInputAction: TextInputAction.next,
-                          keyboardType: TextInputType.text,
-                          textAlign: TextAlign.right,
-                          // Align text to the right
-                          decoration: InputDecoration(
-                            hintText: 'الأسم'.tr,
-                            hintStyle: TextStyle(
-                              fontFamily: 'Cairo',
-                              color: Color(0xFF495A71),
-                            ),
-                            border: InputBorder.none,
-                          ),
-
-                          onEditingComplete: () async {
-                            // Move focus to the next text field
-                            FocusScope.of(context).nextFocus();
-                          },
-                        ),
-                      ),
+                      Text("")
                     ],
                   ),
-                ),
-                if (_nameController.text.length > 0 &&
-                    _nameController.text.length < 2)
-                  Text(
-                    // textAlign: TextAlign.end,
-                    "برجاء ادخال الاسم",
-                    style: TextStyle(
-                      color: Colors.red.shade900, // Error message color
-                      fontSize: 12.0,
-                      fontFamily: 'Cairo',
-                    ),
-                  ),
-                //phone
-                SizedBox(
-                  height: 12,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    RichText(
-                      textAlign: TextAlign.right,
-                      text: TextSpan(
-                        style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 14.0,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF495A71)),
-                        children: [
-                          TextSpan(
-                            text: 'رقم التليفون ',
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(""),
-                  ],
-                ),
 
-                SizedBox(
-                  height: 10,
-                ),
-                Container(
-                  height: 48,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20.0),
-                    shape: BoxShape.rectangle,
-                    color: Colors.white70,
-                    border: Border.all(
-                      color: Color(0xFF9AAEC9), // Border color
-                      width: 1.0, // Border width
-                    ),
+                  SizedBox(
+                    height: 10,
                   ),
-                  alignment: Alignment.centerRight,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Image.asset(
-                          'assets/images/call.png',
-                          height: 19,
-                          width: 19,
-                          color: Color(0xFF495A71),
-                        ),
+                  Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20.0),
+                      shape: BoxShape.rectangle,
+                      color: Colors.white70,
+                      border: Border.all(
+                        color: Color(0xFF9AAEC9), // Border color
+                        width: 1.0, // Border width
                       ),
-                      Expanded(
-                        child: TextField(
-                          controller: _phoneNumberController,
-                          readOnly: true,
-                          // cursorColor: Color(0xFF064821),
-                          // inputFormatters: [
-                          //   LengthLimitingTextInputFormatter(11),
-                          // ],
-                          // textInputAction: TextInputAction.done,
-                          // keyboardType: TextInputType.none, // Updated keyboard type for phone input
-                          textAlign: TextAlign.right,
-                          // Align text to the right
-                          decoration: InputDecoration(
-                            hintText: 'رقم التليفون'.tr,
-                            hintStyle: TextStyle(
-                              fontFamily: 'Cairo',
-                              color: Color(0xFF495A71),
+                    ),
+                    alignment: Alignment.centerRight,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Image.asset(
+                            'assets/images/name.png',
+                            height: 19,
+                            width: 19,
+                            color: Color(0xFF495A71),
+                          ),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: _nameController,
+                            cursorColor: Color(0xFF064821),
+                            textInputAction: TextInputAction.next,
+                            keyboardType: TextInputType.text,
+                            textAlign: TextAlign.right,
+                            // Align text to the right
+                            decoration: InputDecoration(
+                              hintText: 'الأسم'.tr,
+                              hintStyle: TextStyle(
+                                fontFamily: 'Cairo',
+                                color: Color(0xFF495A71),
+                              ),
+                              border: InputBorder.none,
                             ),
-                            border: InputBorder.none,
+
+                            onEditingComplete: () async {
+                              // Move focus to the next text field
+                              FocusScope.of(context).nextFocus();
+                            },
                           ),
-                          onChanged: (value) {
-                            // Phone = value;
-                            // print("phoneeee" + " " + Phone);
-                            // setState(() {
-                            //   validatePhone(value);
-                            // });
-                          },
-                          onSubmitted: (value) {
-                            // Move focus to the next text field
-                            // FocusScope.of(context).nextFocus();
-                          },
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (PhoneErrorText.isNotEmpty)
-                  Text(
-                    PhoneErrorText,
-                    style: TextStyle(
-                      color: Colors.red.shade900, // Error message color
-                      fontSize: 12.0,
-                      fontFamily: 'Cairo',
+                      ],
                     ),
                   ),
-                SizedBox(
-                  height: 100,
-                ),
-
-                //btttttttttttttttttn
-                GestureDetector(
-                  onTap: () async {
-                  await  _updateName(_nameController.text);
-                    if (selectedImages != null) {
-                      setState(() {
-                        _isUploading = true;
-                      });
-                      // Upload the image to Firebase Storage
-                      String downloadUrl = await _uploadImage(selectedImages!);
-
-                      await _storeImageUrls(_nameController.text,
-                          _phoneNumberController.text, downloadUrl);
-                      setState(() {
-                        img_profile=downloadUrl;
-                      });
-                      await getUserByPhone(_phoneNumberController.text);
-                      setState(() {
-                        _isUploading = false;
-                      });
-                    } else {
-                      print('No image selected');
-                    }
-                    // // Check if any field is empty or if the passwords do not match
-                    // if (_nameController.text.isEmpty ||
-                    //     _phoneNumberController.text.isEmpty) {
-                    //   setState(() {
-                    //     // Show a SnackBar with the error message
-                    //     ScaffoldMessenger.of(context).showSnackBar(
-                    //       SnackBar(
-                    //         content: Text(
-                    //           'برجاء ادخال جميع البيانات', // "Please enter all the data"
-                    //           textAlign: TextAlign.center,
-                    //         ),
-                    //         backgroundColor: Color(0xFF1F8C4B),
-                    //       ),
-                    //     );
-                    //     // Ensure `isLoading` is set to false when there's a validation error
-                    //     isLoading = false;
-                    //   });
-                    // } else {
-                    //   setState(() {
-                    //     // Clear any existing error message
-                    //
-                    //     isLoading = true;  // Set loading to true since we're starting an operation
-                    //   });
-                    //
-                    //   // Prevent multiple navigation attempts
-                    //   if (!_isNavigating) {
-                    //     _isNavigating = true; // Set the flag to true
-                    //
-                    //     // Validate phone number in Firestore
-                    //     await validatePhonefirebase(_phoneNumberController.text.trim(), context);
-                    //
-                    //     // Reset the flag after operation completes
-                    //     _isNavigating = false;
-                    //   }
-                    //
-                    //   setState(() {
-                    //     isLoading = true;  // Set loading to false after the operation completes
-                    //   });
-                    // }
-                  },
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.only(top: 50.0, right: 20, left: 20),
-                    child: Container(
-                      height: 50,
-                      width: 320,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30.0),
-                        shape: BoxShape.rectangle,
-                        color: Color(
-                            0xFF064821), // Background color of the container
+                  if (_nameController.text.length > 0 &&
+                      _nameController.text.length < 2)
+                    Text(
+                      // textAlign: TextAlign.end,
+                      "برجاء ادخال الاسم",
+                      style: TextStyle(
+                        color: Colors.red.shade900, // Error message color
+                        fontSize: 12.0,
+                        fontFamily: 'Cairo',
                       ),
-                      child: Center(
-                        child: Text(
-                          'حفــــــظ'.tr,
+                    ),
+                  //phone
+                  SizedBox(
+                    height: 12,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      RichText(
+                        textAlign: TextAlign.right,
+                        text: TextSpan(
                           style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white, // Text color
+                              fontFamily: 'Cairo',
+                              fontSize: 14.0,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF495A71)),
+                          children: [
+                            TextSpan(
+                              text: 'رقم التليفون ',
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(""),
+                    ],
+                  ),
+
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20.0),
+                      shape: BoxShape.rectangle,
+                      color: Colors.white70,
+                      border: Border.all(
+                        color: Color(0xFF9AAEC9), // Border color
+                        width: 1.0, // Border width
+                      ),
+                    ),
+                    alignment: Alignment.centerRight,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Image.asset(
+                            'assets/images/call.png',
+                            height: 19,
+                            width: 19,
+                            color: Color(0xFF495A71),
+                          ),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: _phoneNumberController,
+                            readOnly: true,
+                            // cursorColor: Color(0xFF064821),
+                            // inputFormatters: [
+                            //   LengthLimitingTextInputFormatter(11),
+                            // ],
+                            // textInputAction: TextInputAction.done,
+                            // keyboardType: TextInputType.none, // Updated keyboard type for phone input
+                            textAlign: TextAlign.right,
+                            // Align text to the right
+                            decoration: InputDecoration(
+                              hintText: 'رقم التليفون'.tr,
+                              hintStyle: TextStyle(
+                                fontFamily: 'Cairo',
+                                color: Color(0xFF495A71),
+                              ),
+                              border: InputBorder.none,
+                            ),
+                            onChanged: (value) {
+                              // Phone = value;
+                              // print("phoneeee" + " " + Phone);
+                              // setState(() {
+                              //   validatePhone(value);
+                              // });
+                            },
+                            onSubmitted: (value) {
+                              // Move focus to the next text field
+                              // FocusScope.of(context).nextFocus();
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (PhoneErrorText.isNotEmpty)
+                    Text(
+                      PhoneErrorText,
+                      style: TextStyle(
+                        color: Colors.red.shade900, // Error message color
+                        fontSize: 12.0,
+                        fontFamily: 'Cairo',
+                      ),
+                    ),
+                  SizedBox(
+                    height: 100,
+                  ),
+
+                  //btttttttttttttttttn
+                  GestureDetector(
+                    onTap: () async {
+                    await  _updateName(_nameController.text);
+                      if (selectedImages != null) {
+                        setState(() {
+                          _isLoading = true;
+                        });
+                        // Upload the image to Firebase Storage
+                        String downloadUrl = await _uploadImage(selectedImages!);
+
+                        await _storeImageUrls(_nameController.text,
+                            _phoneNumberController.text, downloadUrl);
+                        setState(() {
+                          img_profile=downloadUrl;
+                        });
+                        await getUserByPhone(_phoneNumberController.text);
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      } else {
+                        print('No image selected');
+                      }
+
+                    },
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.only(top: 50.0, right: 20, left: 20),
+                      child: Container(
+                        height: 50,
+                        width: 320,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30.0),
+                          shape: BoxShape.rectangle,
+                          color: Color(
+                              0xFF064821), // Background color of the container
+                        ),
+                        child: Center(
+                          child: Text(
+                            'حفــــــظ'.tr,
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white, // Text color
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(
-                  height: 5,
-                ),
-              ]),
+                  SizedBox(
+                    height: 5,
+                  ),
+                ]),
+              ),
             ),
-          )),
+              ( _isLoading == true)
+    ? const Positioned(top: 0, child: Loading())
+        : Container(),]
+          ),),
       bottomNavigationBar: CurvedNavigationBar(
         height: 60,
         index: 0,
@@ -728,23 +702,31 @@ class ProfilepageState extends State<Profilepage>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Select Image Source'),
-          content: Text('Choose an option to upload images.'),
+          title: Text('اختر مصدر الصورة',textAlign: TextAlign.center, style: TextStyle(
+            fontFamily: 'Cairo',
+            fontSize: 20.0,
+            fontWeight: FontWeight.w500,
+            color: Colors.black,
+          ),),
           actions: <Widget>[
-            TextButton(
-              child: Text('Camera'),
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                takePhoto(); // Call method to take a photo
-              },
-            ),
-            TextButton(
-              child: Text('Gallery'),
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                uploadImagesAndSaveUrls(); // Call method to pick images from gallery
-              },
-            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+              TextButton(
+                child: Icon(Icons.camera_alt_outlined,color: Color(0xFF064821),),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                  takePhoto(); // Call method to take a photo
+                },
+              ),
+              TextButton(
+                child:  Icon(Icons.photo_library_outlined,color:Color(0xFF064821)),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                  uploadImagesAndSaveUrls(); // Call method to pick images from gallery
+                },
+              ),
+            ],)
           ],
         );
       },

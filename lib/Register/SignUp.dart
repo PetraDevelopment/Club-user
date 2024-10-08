@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,11 +12,13 @@ import 'OTP.dart';
 import 'SignInPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:path_provider/path_provider.dart';
 class SignUpPage extends StatefulWidget {
   @override
   State<SignUpPage> createState() {
-    return SignUpPagePageState();
+    return SignUpPageState();
   }
 }
 
@@ -24,34 +27,34 @@ late Animation<double> animation;
 //save data to firebase
 final TextEditingController _nameController = TextEditingController();
 final TextEditingController _phoneNumberController = TextEditingController();
-final TextEditingController _passwordController = TextEditingController();
-final TextEditingController confirmPasswordController = TextEditingController();
 bool _isNavigating = false; // Flag to prevent multiple navigation calls
 
-final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-bool _isPasswordVisible = false;
-bool _isPasswordVisibleconfirm = false;
+// Function to check if a phone number is valid
+bool isValidPhoneNumber(String phoneNumber) {
+  // Check if the phone number starts with a valid prefix (e.g., 01, 02, etc.)
+  String prefix = phoneNumber.substring(0, 2);
+  if (prefix != '01' && prefix != '02' && prefix != '03' && prefix != '04') {
+    return false;
+  }
 
+  // Check if the phone number has a valid length (e.g., 11 digits)
+  if (phoneNumber.length != 11) {
+    return false;
+  }
 
+  return true;
+}
 var Phone = '';
 
-class SignUpPagePageState extends State<SignUpPage>
+class SignUpPageState extends State<SignUpPage>
     with SingleTickerProviderStateMixin {
   //send data to firebase
-  String? _passwordError;
-  void _validatePasswords() {
-    setState(() {
-      if (_passwordController.text != confirmPasswordController.text) {
-        _passwordError = 'يجب ادخال نفس كلمه المرور'; // Passwords do not match
-      } else {
-        _passwordError = null; // Clear the error when they match
-      }
-    });
-  }
+
   bool isLoading = false;
 
   String NameErrorTxT ='';
+
   void validatePhone(String value) {
     if (value.isEmpty) {
       setState(() {
@@ -68,52 +71,6 @@ class SignUpPagePageState extends State<SignUpPage>
         // isLoading=false;
         PhoneErrorText = ''; // No error message for 3-letter names
       });
-    }
-  }
-
-  Future<void> validatePhonefirebase(String value, BuildContext context) async {
-    CollectionReference playerChat = FirebaseFirestore.instance.collection('Users');
-
-    QuerySnapshot querySnapshot = await playerChat.where('phone', isEqualTo: value).get();
-
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('phone', value);
-    print('shared phone ${prefs.getString('phone') ?? ''}');
-
-    // Check if the phone number was found
-    if (querySnapshot.docs.isNotEmpty) {
-      // Phone number exists, navigate to the Sign-in page
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'هذا الحساب موجود بالفعل برجاء تسجيل الدخول', // "This account already exists. Please sign in."
-            textAlign: TextAlign.center,
-          ),
-          backgroundColor: Color(0xFF1F8C4B),
-        ),
-      );
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => SigninPage()),
-      );
-      print('Phone number exists, navigating to Sign-in page');
-    } else {
-      // Phone number does not exist, proceed to send data and call verifyPhone
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'تم تسجيل الدخول بنجاج', // "Successfully registered"
-            textAlign: TextAlign.center,
-          ),
-          backgroundColor: Color(0xFF1F8C4B),
-        ),
-      );
-
-      _sendData(); // Function to send data to Firestore
-
-      // Call verifyPhone to initiate OTP verification
-      await verifyPhone(value.trim());  // Pass context here
     }
   }
   Future<void> verifyPhone(String phone) async {
@@ -167,11 +124,59 @@ class SignUpPagePageState extends State<SignUpPage>
       isLoading=true;
     });
   }
+  Future<void> validatePhonefirebase(String value, BuildContext context) async {
+    CollectionReference playerChat = FirebaseFirestore.instance.collection('Users');
+
+    QuerySnapshot querySnapshot = await playerChat.where('phone', isEqualTo: value).get();
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('phone', value);
+    print('shared phone ${prefs.getString('phone') ?? ''}');
+
+    // Check if the phone number was found
+    if (querySnapshot.docs.isNotEmpty) {
+      // Phone number exists, navigate to the Sign-in page
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'هذا الحساب موجود بالفعل برجاء تسجيل الدخول', // "This account already exists. Please sign in."
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Color(0xFF1F8C4B),
+        ),
+      );
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SigninPage()),
+      );
+      print('Phone number exists, navigating to Sign-in page');
+    } else {
+      // Phone number does not exist, proceed to send data and call verifyPhone
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'برجاء الانتظار', // "Successfully registered"
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Color(0xFF1F8C4B),
+        ),
+      );
+
+      _sendData(); // Function to send data to Firestore
+
+      // Call verifyPhone to initiate OTP verification
+      await verifyPhone(value.trim());  // Pass context here
+    }
+  }
+
   void _sendData() async {
     final name = _nameController.text;
     final phoneNumber = _phoneNumberController.text;
 
     final connectivityResult = await Connectivity().checkConnectivity();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
     if (connectivityResult == ConnectivityResult.none) {
       // Not connected to any network
       ScaffoldMessenger.of(context).showSnackBar(
@@ -188,14 +193,38 @@ class SignUpPagePageState extends State<SignUpPage>
           backgroundColor: Color(0xFF1F8C4B),
         ),
       );
-      return null;
+      return; // No need to return null; just return to exit the method.
     }
-    if (name.isNotEmpty && phoneNumber.isNotEmpty) {
-      await FirebaseFirestore.instance.collection('Users').add({
+    final storageRef = FirebaseStorage.instance.ref();
+    final profileImageRef = storageRef.child('profile_images/$phoneNumber.png');
+
+    // Load the image from the assets folder
+    final bytes = await rootBundle.load('assets/images/profile.png');
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/profile.png');
+    await file.writeAsBytes(bytes.buffer.asUint8List());
+
+    // Upload the image to Firebase Storage
+    await profileImageRef.putFile(file);
+
+    // Get the download URL
+    final downloadUrl = await profileImageRef.getDownloadURL();
+
+
+    if (name.isNotEmpty && phoneNumber.isNotEmpty ) {
+      // Add data to Firestore and get the document reference
+      DocumentReference docRef = await FirebaseFirestore.instance.collection('Users').add({
         'name': name,
         'phone': phoneNumber,
-
+        'profile_image':downloadUrl,
       });
+
+      // Get the document ID of phone number
+      String docId = docRef.id;
+      print("Document ID: $docId");
+      // prefs.setString('AdminId', docId);
+
+      // Clear the text fields
       _nameController.clear();
       _phoneNumberController.clear();
 
@@ -206,7 +235,7 @@ class SignUpPagePageState extends State<SignUpPage>
             'هذا الحساب حدث به خطا', // "There was an error with this account"
             textAlign: TextAlign.center,
           ),
-          backgroundColor:Color(0xFF1F8C4B),
+          backgroundColor: Color(0xFF1F8C4B),
         ),
       );
     }
@@ -474,17 +503,19 @@ class SignUpPagePageState extends State<SignUpPage>
                           fontFamily: 'Cairo',
                         ),
                       ),
+
+
+                    //passssssssssssssssssssword
                     SizedBox(
-                      height: 12,
+                      height: 50,
                     ),
 
 
-                    //btttttttttttttttttn
                     GestureDetector(
                       onTap: () async {
                         // Check if any field is empty or if the passwords do not match
                         if (_nameController.text.isEmpty ||
-                            _phoneNumberController.text.isEmpty) {
+                            _phoneNumberController.text.isEmpty ) {
                           setState(() {
                             // Show a SnackBar with the error message
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -499,7 +530,25 @@ class SignUpPagePageState extends State<SignUpPage>
                             // Ensure `isLoading` is set to false when there's a validation error
                             isLoading = false;
                           });
-                        } else {
+                        }
+                        else if (!isValidPhoneNumber(_phoneNumberController.text)) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                textAlign: TextAlign.center,
+                                'رقم الهاتف غير صحيح'.tr,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'Cairo',
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              backgroundColor: Color(0xFF1F8C4B),
+                            ),
+                          );
+                        }
+
+                        else {
                           setState(() {
                             // Clear any existing error message
 
@@ -569,6 +618,9 @@ class SignUpPagePageState extends State<SignUpPage>
                           ),
                         ),
                       ),
+                    ),
+                    SizedBox(
+                      height: 35,
                     ),
                   ]
               ),

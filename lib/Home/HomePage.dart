@@ -212,7 +212,7 @@ class HomePageState extends State<HomePage> {
                               ],
                             ),
                           ),
-                          user1.isNotEmpty && user1[0].img!=null? Padding(
+                          user1.isNotEmpty && user1[0].img!=null&&user1[0].img!=""? Padding(
                             padding: const EdgeInsets.only(right: 34.0),
                             child:ClipOval(
                               child: Image(image:  NetworkImage(
@@ -270,7 +270,7 @@ class HomePageState extends State<HomePage> {
                           ),
                         ),
 
-                        user1.isNotEmpty && user1[0].img!=null? Padding(
+                        user1.isNotEmpty && user1[0].img!=null&&user1[0].img!=""? Padding(
                             padding: const EdgeInsets.only(right: 34.0),
                             child:ClipOval(
                               child: Image(image:  NetworkImage(

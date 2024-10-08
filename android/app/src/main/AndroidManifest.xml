@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
-        android:label="club_user"
+        android:label="PlayGround_user"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

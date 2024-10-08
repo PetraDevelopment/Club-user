@@ -73,6 +73,15 @@ class SigninPageState extends State<SigninPage>
           builder: (context) => HomePage(),
         ),
       );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'تم التسجيل بنجاح', // "Successfully registered"
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Color(0xFF1F8C4B),
+        ),
+      );
     }
     else{
       await FirebaseAuth.instance.verifyPhoneNumber(

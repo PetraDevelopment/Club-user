@@ -52,10 +52,8 @@ List<Favouritemodel>favlist=[];
   late List<User1> user1 = [];
   String idddddd='';
   Future<void> _sendData() async {
-
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
-      // Not connected to any network
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -72,27 +70,60 @@ List<Favouritemodel>favlist=[];
       );
       return null;
     }
-    if (allplaygrounds.isNotEmpty && allplaygrounds[0].favourite==true) {
-      await FirebaseFirestore.instance.collection('Favourite').add({
-        'playground_id':  widget.id!,
-        'playground_name':allplaygrounds[0].playgroundName!,
-        'user_phone': user?.phoneNumber!,
-        'img':allplaygrounds[0].img!
 
-      });
+    // Assuming you have access to 'allplaygrounds', 'widget.id', 'user.phoneNumber', and 'context'
+    if (allplaygrounds.isNotEmpty) {
+      if (allplaygrounds[0].favourite == true) {
+        // Check if the playground is already a favorite
+        bool isFavorite = await checkIfFavoriteExists(widget.id!, user!.phoneNumber!);
 
-
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'هذا الحساب حدث به خطا', // "There was an error with this account"
-            textAlign: TextAlign.center,
+        if (isFavorite) {
+          // If the playground is already a favorite, update the existing record
+          await updateFavoritePlayground(widget.id!, favlist[0]);
+        } else {
+          // If the playground is not a favorite, add it to the favorites collection
+          await FirebaseFirestore.instance.collection('Favourite').add({
+            'playground_id': widget.id!,
+            'playground_name': allplaygrounds[0].playgroundName!,
+            'user_phone': user?.phoneNumber!,
+            'img': allplaygrounds[0].img!
+          });
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'هذا الحساب حدث به خطا',
+              textAlign: TextAlign.center,
+            ),
+            backgroundColor: Color(0xFF1F8C4B),
           ),
-          backgroundColor:Color(0xFF1F8C4B),
-        ),
-      );
+        );
+      }
     }
+  }
+
+  Future<bool> checkIfFavoriteExists(String playgroundId, String userPhone) async {
+    try {
+      // Query Firebase to check if the playground is already marked as a favorite
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('Favourite')
+          .where('playground_id', isEqualTo: playgroundId)
+          .where('user_phone', isEqualTo: userPhone)
+          .get();
+
+      // Check if any documents match the query
+      return snapshot.docs.isNotEmpty;
+    } catch (e) {
+      // Handle any errors that occur during the query process
+      print('Error checking if favorite exists: $e');
+      return false; // Return false in case of an error
+    }
+  }
+
+  Future<void> updateFavoritePlayground(String playgroundId, Favouritemodel playground) async {
+    // Implement the logic to update the existing favorite playground in Firebase
+    // You can update the record based on the playgroundId
   }
   Future<void> getfavdata() async {
     try {
@@ -125,7 +156,27 @@ List<Favouritemodel>favlist=[];
     }
   }
   double opacity = 1.0; // Initial opacity value
+  Future<void> deleteFavoriteData() async {
+    try {
+      // Query Firebase to find the document to delete based on certain conditions
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('Favourite')
+          .where('playground_id', isEqualTo: widget.id)
+          .where('user_phone', isEqualTo: user?.phoneNumber)
+          .get();
 
+      if (snapshot.docs.isNotEmpty) {
+        // Delete the document from Firebase if it exists
+        await FirebaseFirestore.instance.collection('Favourite').doc(snapshot.docs.first.id).delete();
+      } else {
+        // Handle the case where the document to delete is not found
+        print('Document not found to delete.');
+      }
+    } catch (e) {
+      // Handle any errors that occur during the deletion process
+      print('Error deleting document: $e');
+    }
+  }
   late List<AddPlayGroundModel> allplaygrounds = [];
   Future<void> getPlaygroundbyid() async {
     try {
@@ -311,13 +362,26 @@ List<Favouritemodel>favlist=[];
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
-    onTap: () async {
-    setState(() {
-    allplaygrounds[0].favourite = true;
-    });
-    print("hghhhhh${widget.id}");
-    await _sendData();
-    },
+                  onTap: () async {
+                    setState(() {
+                      allplaygrounds[0].favourite = !allplaygrounds[0].favourite!;
+                    });
+
+                    if (allplaygrounds[0].favourite == true) {
+                      // If favorite is true, add playground to Firebase
+                      await _sendData();
+                    } else {
+                      // If favorite is false, delete playground from Firebase
+                      await deleteFavoriteData();
+                    }
+                  },
+    // onTap: () async {
+    // setState(() {
+    // allplaygrounds[0].favourite = true;
+    // });
+    // print("hghhhhh${widget.id}");
+    // await _sendData();
+    // },
     child: Padding(
     padding: const EdgeInsets.only(left: 20.0),
     child: Icon(

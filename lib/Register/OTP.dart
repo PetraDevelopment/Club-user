@@ -46,7 +46,7 @@ Future<void> verifyOtp(String verificationId, String otp, BuildContext context) 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'تم تسجيل الدخول بنجاح',
+          'تم التسجيل بنجاح',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontFamily: 'Cairo',
@@ -473,7 +473,7 @@ String phonewithstars='';
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           SnackBar(
                                             content: Text(
-                                            "تم تسجيل الدخول بنجاح".tr,
+                                            "تم التسجيل بنجاح".tr,
                                               textAlign: TextAlign.center,
                                               style: TextStyle(
                                                 fontFamily: 'Cairo',

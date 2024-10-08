@@ -418,7 +418,7 @@ class my_reservationState extends State<my_reservation>
 
                                         style: TextStyle(
                                           fontFamily: 'Cairo',
-                                          fontSize: 14.0,
+                                          fontSize: 17.0,
                                           fontWeight: FontWeight.w800,
                                           color: Color(0xFF7D90AC),
                                         ),
@@ -451,7 +451,7 @@ SizedBox( width: MediaQuery.of(context).size.width/4.2,),
                         ),
 
                         Padding(
-                          padding: const EdgeInsets.only(right: 18.0, left: 12, top: 11),
+                          padding: const EdgeInsets.only(right: 20.0, left: 12, top: 11),
 
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
@@ -464,12 +464,12 @@ SizedBox( width: MediaQuery.of(context).size.width/4.2,),
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
-                                      fontSize: 12.0,
+                                      fontSize: 13.0,
                                       fontWeight: FontWeight.w400,
                                       color: Color(0xFF334154),
                                     ),
                                   ),
-                                  SizedBox(width: 15,),
+                                  SizedBox(width: 30,),
                                   Text(
                                     "13-08-2024".tr,
                                     style: TextStyle(
@@ -515,7 +515,7 @@ SizedBox( width: MediaQuery.of(context).size.width/4.2,),
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.all(12.0),
+                              padding: const EdgeInsets.only(top: 12.0,bottom: 12,left: 30),
                               child: Container(
                                 height: 29,
                                 width: 110,
@@ -542,7 +542,7 @@ SizedBox( width: MediaQuery.of(context).size.width/4.2,),
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.all(15.0),
+                              padding: const EdgeInsets.only(top: 12.0,bottom: 12,right: 30),
                               child: Container(
                                 height: 29,
                                 width: 114,
