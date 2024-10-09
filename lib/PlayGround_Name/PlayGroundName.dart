@@ -20,6 +20,7 @@ import '../Menu/menu.dart';
 import '../Register/SignInPage.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../Splach/LoadingScreen.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import '../booking_playground/try/book_playground_page.dart';
 import '../my_reservation/my_reservation.dart';
@@ -51,6 +52,8 @@ class PlaygroundNameState extends State<PlaygroundName>
 List<Favouritemodel>favlist=[];
   late List<User1> user1 = [];
   String idddddd='';
+  // bool fetchfav = false;
+  bool isFavorite = false;
   Future<void> _sendData() async {
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
@@ -74,20 +77,56 @@ List<Favouritemodel>favlist=[];
     // Assuming you have access to 'allplaygrounds', 'widget.id', 'user.phoneNumber', and 'context'
     if (allplaygrounds.isNotEmpty) {
       if (allplaygrounds[0].favourite == true) {
+
         // Check if the playground is already a favorite
-        bool isFavorite = await checkIfFavoriteExists(widget.id!, user!.phoneNumber!);
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String? phoneValue = prefs.getString('phonev');
+        print("newphoneValue${phoneValue.toString()}");
+
+        if (phoneValue != null && phoneValue.isNotEmpty) {
+          try {
+            isFavorite = await checkIfFavoriteExists(widget.id!, phoneValue);
+          } catch (e) {
+            print('Error checking if favorite exists: $e');
+            isFavorite = false;
+          }
+        } else if (user?.phoneNumber != null) {
+          try {
+            isFavorite = await checkIfFavoriteExists(widget.id!, user!.phoneNumber!);
+          } catch (e) {
+            print('Error checking if favorite exists: $e');
+            isFavorite = false;
+          }
+        }
 
         if (isFavorite) {
+          setState(() {
+            _isLoading = true; // set flag to false when data is loaded
+          });
           // If the playground is already a favorite, update the existing record
           await updateFavoritePlayground(widget.id!, favlist[0]);
         } else {
           // If the playground is not a favorite, add it to the favorites collection
-          await FirebaseFirestore.instance.collection('Favourite').add({
-            'playground_id': widget.id!,
-            'playground_name': allplaygrounds[0].playgroundName!,
-            'user_phone': user?.phoneNumber!,
-            'img': allplaygrounds[0].img!
-          });
+          if (phoneValue != null && phoneValue.isNotEmpty) {
+            await FirebaseFirestore.instance.collection('Favourite').add({
+              'playground_id': widget.id!,
+              'playground_name': allplaygrounds[0].playgroundName!,
+              'user_phone': phoneValue,
+              'img': allplaygrounds[0].img!,
+              'is_favourite': allplaygrounds[0].favourite!,
+            });
+            setState(() {
+              _isLoading = false; // set flag to false when data is loaded
+            });
+          } else if (user?.phoneNumber != null) {
+            await FirebaseFirestore.instance.collection('Favourite').add({
+              'playground_id': widget.id!,
+              'playground_name': allplaygrounds[0].playgroundName!,
+              'user_phone': user?.phoneNumber!,
+              'img': allplaygrounds[0].img!,
+              'is_favourite': allplaygrounds[0].favourite,
+            });
+          }
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -102,9 +141,9 @@ List<Favouritemodel>favlist=[];
       }
     }
   }
-
   Future<bool> checkIfFavoriteExists(String playgroundId, String userPhone) async {
     try {
+      print("kkkkk$userPhone");
       // Query Firebase to check if the playground is already marked as a favorite
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('Favourite')
@@ -125,7 +164,42 @@ List<Favouritemodel>favlist=[];
     // Implement the logic to update the existing favorite playground in Firebase
     // You can update the record based on the playgroundId
   }
-  Future<void> getfavdata() async {
+
+  // Future<void> getfavdata(String phoneNumber) async {
+  //   try {
+  //     CollectionReference fav =
+  //     FirebaseFirestore.instance.collection("Favourite");
+  //
+  //     QuerySnapshot querySnapshot = await fav.get();
+  //
+  //     if (querySnapshot.docs.isNotEmpty) {
+  //       for (QueryDocumentSnapshot document in querySnapshot.docs) {
+  //         Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
+  //         Favouritemodel favourite = Favouritemodel.fromMap(userData);
+  //
+  //         if (favourite.user_phone == phoneNumber) {
+  //           favlist.add(favourite);
+  //           print("Fav Id : ${document.id}"); // Print the latest playground
+  //
+  //           print("allplaygrounds[i] : ${favlist.last}"); // Print the latest playground
+  //           // Store the document ID in the AddPlayGroundModel object
+  //           favourite.id = document.id;
+  //           print("favourite${favourite.id}");
+  //           setState(() {
+  //             fetchfav = true; // Update the fetchfav variable
+  //           });
+  //         }
+  //       }
+  //     } else {
+  //       setState(() {
+  //         fetchfav = false; // Update the fetchfav variable
+  //       });
+  //     }
+  //   } catch (e) {
+  //     print("Error getting playground: $e");
+  //   }
+  // }
+  Future<void> getfavdata(String phoneNumber) async {
     try {
       CollectionReference fav =
       FirebaseFirestore.instance.collection("Favourite");
@@ -137,24 +211,106 @@ List<Favouritemodel>favlist=[];
           Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
           Favouritemodel favourite = Favouritemodel.fromMap(userData);
 
-          favlist.add(favourite);
-          print("Fav Id : ${document.id}"); // Print the latest playground
+          if (favourite.user_phone == phoneNumber && favourite.playground_id == widget.id) {
+            favlist.add(favourite);
+            print("Fav Id : ${document.id}"); // Print the latest playground
 
-          print("allplaygrounds[i] : ${favlist.last}"); // Print the latest playground
-// Store the document ID in the AddPlayGroundModel object
-          // user.id = document.id;
-          favourite.id = document.id;
-          print("favourite${favourite.id}");
-          // Store the document ID in the AddPlayGroundModel object
-          // idddddd1 = document.id;
-          // idddddd2=document.id;
-          // print("Docummmmmm$idddddd1    gggg$idddddd2");
+            print("allplaygrounds[i] : ${favlist.last}"); // Print the latest playground
+            // Store the document ID in the AddPlayGroundModel object
+            favourite.id = document.id;
+            print("favourite${favourite.id}");
+            print("shimaa${favourite.isfav}");
+
+            // Update allplaygrounds[0].favourite
+            if (allplaygrounds.isNotEmpty) {
+              setState(() {
+                allplaygrounds[0].favourite = favourite.isfav;
+                print("pppppppppppppppppp${allplaygrounds[0].favourite}");
+              });
+            }
+          }
         }
       }
     } catch (e) {
       print("Error getting playground: $e");
     }
   }
+  Future<void> _loadgetfavdataData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? phoneValue = prefs.getString('phonev');
+    print("newphoneValue${phoneValue.toString()}");
+
+    if (phoneValue != null && phoneValue.isNotEmpty) {
+      setState(() {
+        _isLoading = true; // set flag to false when data is loaded
+      });
+      await getfavdata(phoneValue); // simulate data loading
+      setState(() {
+        _isLoading = false; // set flag to false when data is loaded
+      });
+    } else if (user?.phoneNumber != null) {
+      setState(() {
+        _isLoading = true; // set flag to false when data is loaded
+      });
+      await getfavdata(user!.phoneNumber!.toString()); // simulate data loading
+      setState(() {
+        _isLoading = false; // set flag to false when data is loaded
+      });
+    }
+  }
+  // bool fetchfav=false;
+  // Future<void> getfavdata(String phoneNumber) async {
+  //   try {
+  //     CollectionReference fav =
+  //     FirebaseFirestore.instance.collection("Favourite");
+  //
+  //     QuerySnapshot querySnapshot = await fav.get();
+  //
+  //     if (querySnapshot.docs.isNotEmpty) {
+  //       for (QueryDocumentSnapshot document in querySnapshot.docs) {
+  //         Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
+  //         Favouritemodel favourite = Favouritemodel.fromMap(userData);
+  //
+  //         if (favourite.user_phone == phoneNumber) {
+  //           favlist.add(favourite);
+  //           print("Fav Id : ${document.id}"); // Print the latest playground
+  //
+  //           print("allplaygrounds[i] : ${favlist.last}"); // Print the latest playground
+  //           // Store the document ID in the AddPlayGroundModel object
+  //           favourite.id = document.id;
+  //           print("favourite${favourite.id}");
+  //         }
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("Error getting playground: $e");
+  //   }
+  // }
+  // Future<void> _loadgetfavdataData() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String? phoneValue = prefs.getString('phonev');
+  //   print("newphoneValue${phoneValue.toString()}");
+  //
+  //   if (phoneValue != null && phoneValue.isNotEmpty) {
+  //     setState(() {
+  //       _isLoading = true; // set flag to false when data is loaded
+  //     });
+  //     await getfavdata(phoneValue); // simulate data loading
+  //     setState(() {
+  //       _isLoading = false; // set flag to false when data is loaded
+  //     });
+  //   }else if (user?.phoneNumber != null) {
+  //     setState(() {
+  //       _isLoading = true; // set flag to false when data is loaded
+  //     });
+  //     await getfavdata(user!.phoneNumber!.toString()); // simulate data loading
+  //     setState(() {
+  //       _isLoading = false; // set flag to false when data is loaded
+  //     });
+  //   }
+  //
+  // }
+
   double opacity = 1.0; // Initial opacity value
   Future<void> deleteFavoriteData() async {
     try {
@@ -198,6 +354,10 @@ List<Favouritemodel>favlist=[];
 
             // Store the document ID in the AddPlayGroundModel object
             idddddd = document.id;
+            allplaygrounds.last.favourite=favlist[0].isfav;
+            print("init${favlist[0].isfav}");
+            // allplaygrounds[0].favourite=favlist[0].isfav;
+            // print("fav done ${ allplaygrounds[0].favourite}");
             print("Docummmmmm$idddddd");
           }
         }
@@ -206,6 +366,7 @@ List<Favouritemodel>favlist=[];
       print("Error getting playground: $e");
     }
   }
+
   Future<void> getUserByPhone(String phoneNumber) async {
     try {
       // Normalize the phone number by stripping the country code
@@ -259,11 +420,13 @@ List<Favouritemodel>favlist=[];
       await getUserByPhone(phoneValue);
       setState(() {});
       _loadData();
-    } else if (user?.phoneNumber != null) {
+    }
+    else if (user?.phoneNumber != null) {
       await getUserByPhone(user!.phoneNumber.toString());
       setState(() {});
       _loadData();
-    } else {
+    }
+    else {
       print("No phone number available.");
     }
   }
@@ -271,7 +434,7 @@ List<Favouritemodel>favlist=[];
   @override
   void initState() {
     super.initState();
-    getfavdata();
+    _loadgetfavdataData();
     getPlaygroundbyid();
     _loadUserData();
     print("Docummmmmmentis${widget.id}");
@@ -283,413 +446,381 @@ List<Favouritemodel>favlist=[];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Stack(
-              children: [
-                // Full-width image
-                ClipRRect(
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(20.0),
-                    bottomRight: Radius.circular(20.0),
-                  ),
-                  child: allplaygrounds.isNotEmpty? Image.network(
-                    allplaygrounds[0].img!,
-                    height: 250,
-                    width: double.infinity,
-                    fit: BoxFit.cover, // Ensure the image covers the container
-                  ):Image.asset(
-                    'assets/images/newwadi.png',
-                    height: 250,
-                    width: double.infinity,
-                    fit: BoxFit.fill, // Ensure image covers the container
-                  ),
-                ),
-                // Gradient overlay container to add shadow or overlay effect
-                Positioned(
-                  top: 5,
-                  // Match the top position of the text
-                  right: 0,
-                  left: 0,
-                  bottom: 0,
-                  child: IgnorePointer(
-                    // Prevents this container from capturing any gestures
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.transparent,
-                            // Start with transparent
-                            Color(0x1F8C4B).withOpacity(0.0),
-                            // Start with #1F8C4B at 0% opacity (fully transparent)
-                            Color(0x1F8C4B).withOpacity(1.0),
-                            // End with #1F8C4B at 100% opacity (fully opaque)
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(20.0),
-                          bottomRight: Radius.circular(20.0),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                // Top left icon with green shadow
-                Positioned(
-                  top: 40,
-                  left: 20,
-                  child: IconButton(
-                    icon: Icon(Icons.arrow_back_ios,
-                        color: Colors.white, size: 25),
-                    onPressed: () {
-                      print("Back button pressed"); // Debugging statement
-                      Get.back();// Navigate back to the previous page
-                    },
-                  ),
-                ),
-                // Top right icon with green shadow
-              ],
-            ),
-            SizedBox(
-              height: 22,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                GestureDetector(
-                  onTap: () async {
-                    setState(() {
-                      allplaygrounds[0].favourite = !allplaygrounds[0].favourite!;
-                    });
-
-                    if (allplaygrounds[0].favourite == true) {
-                      // If favorite is true, add playground to Firebase
-                      await _sendData();
-                    } else {
-                      // If favorite is false, delete playground from Firebase
-                      await deleteFavoriteData();
-                    }
-                  },
-    // onTap: () async {
-    // setState(() {
-    // allplaygrounds[0].favourite = true;
-    // });
-    // print("hghhhhh${widget.id}");
-    // await _sendData();
-    // },
-    child: Padding(
-    padding: const EdgeInsets.only(left: 20.0),
-    child: Icon(
-    allplaygrounds.isNotEmpty && allplaygrounds[0].favourite!
-    ? Icons.favorite
-        : Icons.favorite_outline,
-    color: const Color(0xFF4AD080),
-    size: 25,
-    ),
-    ),
-                ),
-
-                Padding(
-                  padding:
-                      const EdgeInsets.only(right: 20, left: 13, top: 8, bottom: 8),
-                  child:  allplaygrounds.isNotEmpty?Text(
-                    allplaygrounds[0].playgroundName!,
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF064821),
-                    ),
-                  ): Text(
-                    'ملعب وادى دجـــلة',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF064821),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 26.0, left: 26,bottom: 20),
-
-              child: Text(
-                "بيانات الملعب".tr,
-                style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF495A71)),
-              ),
-            ),
-            // Data in Column after the text 'ملعب وادى دجـــلة'
-            Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
-  width:   MediaQuery.of(context).size.width,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 30.0),
-
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Row(
-                          children: [
-                            allplaygrounds.isNotEmpty?Text(
-                              allplaygrounds[0].playType!,
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF106A35),
-                              ),
-                            ):   Text(
-                              'كرة الطائرة',
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF106A35),
-                              ),
-                            ),
-                            SizedBox(width: 8),
-                            Image.asset(
-                              "assets/images/volly.png",
-                              color: Color(0xFF106A35),
-                              height: 20,
-                              width: 22,
-                            )
-                          ],
-                        ),
-                        SizedBox(width: 100,),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                      allplaygrounds.isNotEmpty ? Text(
-                        allplaygrounds[0].width!.length<5 && allplaygrounds[0].length!.length<5?
-                        '   ${allplaygrounds[0].width!}x${allplaygrounds[0].length!} م ':
-
-                        '   ${allplaygrounds[0].width!.substring(0,4)}x${allplaygrounds[0].length!.substring(0,4)} م ',
-                        textDirection: TextDirection.rtl,
-                        // Ensures the text direction is RTL
-
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF106A35),
-                        ),
-                      ):
-                      Text(
-                      '   20x50 م ',
-                        textDirection: TextDirection.rtl,
-                        // Ensures the text direction is RTL
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF106A35),
-                        ),
-                      ),
-                            SizedBox(width: 8),
-                            Image.asset(
-                              "assets/images/size.png",
-                              color: Color(0xFF106A35),
-                              height: 13,
-                              width: 16,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 30.0),
-              child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child:allplaygrounds.isNotEmpty? Text(
-                    'السعر : ' + '${allplaygrounds[0].bookTypes?[0].costPerHour} / ساعة',
-                    textDirection: TextDirection.rtl,
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF106A35),
-                    ),
-                  ):Text(
-                    'السعر : ' + '300 / ساعة',
-                    textDirection: TextDirection.rtl,
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF106A35),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8),
-                Image.asset(
-                  "assets/images/hour.png",
-                  color: Color(0xFF106A35),
-                  height: 19,
-                  width: 23,
-                ),
-              ]),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.only(right: 30.0),
-
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        GestureDetector(
-                          onTap: () async {
-                            List<Location> locations = await locationFromAddress(allplaygrounds[0].location!);
-
-                            Location location = locations.first;
-                            double latitude = location.latitude;
-                            double longitude = location.longitude;
-
-                            String url = 'https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}';
-
-                            await Share.share(url);
-                          },
-                          child: Container(
-                            height: 30,
-                            width: 30,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(5.0),
-                              shape: BoxShape.rectangle,
-                              color: Color(0xFF106A35),
-                            ),
-                            child: Icon(Icons.share, color: Colors.white, size: 20),
-                          ),
-                        ),
-                        SizedBox(width: 40,),
-                        GestureDetector(
-                          onTap: (){
-                            print("locattttion${allplaygrounds[0].location!}");
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => Maps(location: allplaygrounds[0].location!)),
-                            );
-
-                          },
-                          child: Container(
-                              height: 30,
-                              width: 30,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(5.0),
-                                  shape: BoxShape.rectangle,
-                                  color: Color(0xFF106A35)),
-                              child: Icon(Icons.location_on_outlined,
-                                  color: Colors.white, size: 20)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 100,),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      allplaygrounds.isNotEmpty? Text(
-                       allplaygrounds[0].location!.length>12? allplaygrounds[0].location!.substring(0,10):allplaygrounds[0].location!,
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF106A35),
-                        ),
-                      ):  Text(
-                'أسيوط الجديدة',
-                style: TextStyle(
-                fontFamily: 'Cairo',
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF106A35),
-                ),
-                ),
-                      SizedBox(width: 8), // Space between icon and text
-                      Icon(Icons.location_on_outlined,
-                          color: Color(0xFF106A35), size: 20),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            // Pricing and location info
-
-            SizedBox(
-              height: 28,
-            ),
-            allplaygrounds.isNotEmpty &&allplaygrounds[0].notes!=null &&allplaygrounds[0].notes!.isNotEmpty ?
-          Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 26.0, left: 26),
-              child: Text(
-                textAlign: TextAlign.end,
-                "الملاحظات".tr,
-                style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF495A71)),
-              ),
-            ),
-            SizedBox(
-              height: 12,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 26.0, left: 26),
-              child: Text(
-               allplaygrounds[0] .notes!,
-                style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF495A71)),
-              ),
-            ),
-              SizedBox(height: 30),
-          ],):Container(),
-
-            allplaygrounds.isNotEmpty &&allplaygrounds[0].availableFacilities!=null &&allplaygrounds[0].availableFacilities!.isNotEmpty ?
-            Column(
-              mainAxisAlignment: MainAxisAlignment.end,
+      // backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
+                Stack(
+                  children: [
+                    // Full-width image
+                    ClipRRect(
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(20.0),
+                        bottomRight: Radius.circular(20.0),
+                      ),
+                      child: allplaygrounds.isNotEmpty? Image.network(
+                        allplaygrounds[0].img!,
+                        height: 250,
+                        width: double.infinity,
+                        fit: BoxFit.cover, // Ensure the image covers the container
+                      ):Image.asset(
+                        'assets/images/newwadi.png',
+                        height: 250,
+                        width: double.infinity,
+                        fit: BoxFit.fill, // Ensure image covers the container
+                      ),
+                    ),
+                    // Gradient overlay container to add shadow or overlay effect
+                    Positioned(
+                      top: 5,
+                      // Match the top position of the text
+                      right: 0,
+                      left: 0,
+                      bottom: 0,
+                      child: IgnorePointer(
+                        // Prevents this container from capturing any gestures
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.transparent,
+                                // Start with transparent
+                                Color(0x1F8C4B).withOpacity(0.0),
+                                // Start with #1F8C4B at 0% opacity (fully transparent)
+                                Color(0x1F8C4B).withOpacity(1.0),
+                                // End with #1F8C4B at 100% opacity (fully opaque)
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                            borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(20.0),
+                              bottomRight: Radius.circular(20.0),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Top left icon with green shadow
+                    Positioned(
+                      top: 40,
+                      left: 20,
+                      child: IconButton(
+                        icon: Icon(Icons.arrow_back_ios,
+                            color: Colors.white, size: 25),
+                        onPressed: () {
+                          print("Back button pressed"); // Debugging statement
+                          Get.back();// Navigate back to the previous page
+                        },
+                      ),
+                    ),
+                    // Top right icon with green shadow
+                  ],
+                ),
+                SizedBox(
+                  height: 22,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      onTap: () async {
+                        setState(() {
+                          allplaygrounds[0].favourite = !allplaygrounds[0].favourite!;
+
+                        });
+
+                        if (allplaygrounds[0].favourite == true) {
+                          // If favorite is true, add playground to Firebase
+                          await _sendData();
+
+                        } else {
+                          // If favorite is false, delete playground from Firebase
+                          await deleteFavoriteData();
+
+                        }
+                      },
+
+              child: Padding(
+              padding: const EdgeInsets.only(left: 20.0),
+              child: Icon(
+                allplaygrounds.isNotEmpty && allplaygrounds[0].favourite!
+              ? Icons.favorite
+            : Icons.favorite_outline,
+              color: const Color(0xFF4AD080),
+              size: 25,
+              ),
+              ),
+                    ),
+
+                    Padding(
+                      padding:
+                          const EdgeInsets.only(right: 20, left: 13, top: 8, bottom: 8),
+                      child:  allplaygrounds.isNotEmpty?Text(
+                        allplaygrounds[0].playgroundName!,
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF064821),
+                        ),
+                      ): Text(
+                        'ملعب وادى دجـــلة',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF064821),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 26.0, left: 26,bottom: 20),
+
+                  child: Text(
+                    "بيانات الملعب".tr,
+                    style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF495A71)),
+                  ),
+                ),
+                // Data in Column after the text 'ملعب وادى دجـــلة'
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Container(
+            width:   MediaQuery.of(context).size.width,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 30.0),
+
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Row(
+                              children: [
+                                allplaygrounds.isNotEmpty?Text(
+                                  allplaygrounds[0].playType!,
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF106A35),
+                                  ),
+                                ):   Text(
+                                  'كرة الطائرة',
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF106A35),
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Image.asset(
+                                  "assets/images/volly.png",
+                                  color: Color(0xFF106A35),
+                                  height: 20,
+                                  width: 22,
+                                )
+                              ],
+                            ),
+                            SizedBox(width: 100,),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                          allplaygrounds.isNotEmpty ? Text(
+                            allplaygrounds[0].width!.length<5 && allplaygrounds[0].length!.length<5?
+                            '   ${allplaygrounds[0].width!}x${allplaygrounds[0].length!} م ':
+
+                            '   ${allplaygrounds[0].width!.substring(0,4)}x${allplaygrounds[0].length!.substring(0,4)} م ',
+                            textDirection: TextDirection.rtl,
+                            // Ensures the text direction is RTL
+
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF106A35),
+                            ),
+                          ):
+                          Text(
+                          '   20x50 م ',
+                            textDirection: TextDirection.rtl,
+                            // Ensures the text direction is RTL
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF106A35),
+                            ),
+                          ),
+                                SizedBox(width: 8),
+                                Image.asset(
+                                  "assets/images/size.png",
+                                  color: Color(0xFF106A35),
+                                  height: 13,
+                                  width: 16,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 30.0),
+                  child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child:allplaygrounds.isNotEmpty&&allplaygrounds[0].bookTypes?[0].costPerHour!=null? Text(
+                        'السعر : ' + '${allplaygrounds[0].bookTypes?[0].costPerHour} / ساعة',
+                        textDirection: TextDirection.rtl,
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF106A35),
+                        ),
+                      ):Text(
+                        'السعر : ' + '300 / ساعة',
+                        textDirection: TextDirection.rtl,
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF106A35),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Image.asset(
+                      "assets/images/hour.png",
+                      color: Color(0xFF106A35),
+                      height: 19,
+                      width: 23,
+                    ),
+                  ]),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.only(right: 30.0),
+
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            GestureDetector(
+                              onTap: () async {
+                                List<Location> locations = await locationFromAddress(allplaygrounds[0].location!);
+
+                                Location location = locations.first;
+                                double latitude = location.latitude;
+                                double longitude = location.longitude;
+
+                                String url = 'https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}';
+
+                                await Share.share(url);
+                              },
+                              child: Container(
+                                height: 30,
+                                width: 30,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(5.0),
+                                  shape: BoxShape.rectangle,
+                                  color: Color(0xFF106A35),
+                                ),
+                                child: Icon(Icons.share, color: Colors.white, size: 20),
+                              ),
+                            ),
+                            SizedBox(width: 40,),
+                            GestureDetector(
+                              onTap: (){
+                                print("locattttion${allplaygrounds[0].location!}");
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => Maps(location: allplaygrounds[0].location!)),
+                                );
+
+                              },
+                              child: Container(
+                                  height: 30,
+                                  width: 30,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(5.0),
+                                      shape: BoxShape.rectangle,
+                                      color: Color(0xFF106A35)),
+                                  child: Icon(Icons.location_on_outlined,
+                                      color: Colors.white, size: 20)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        width: MediaQuery.of(context).size.width / 3.5,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          allplaygrounds.isNotEmpty? Text(
+                           allplaygrounds[0].location!.length>12? allplaygrounds[0].location!.substring(0,10):allplaygrounds[0].location!,
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF106A35),
+                            ),
+                          ):
+                          Text(
+                    'أسيوط الجديدة',
+                    style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF106A35),
+                    ),
+                    ),
+                          SizedBox(width: 8), // Space between icon and text
+                          Icon(Icons.location_on_outlined,
+                              color: Color(0xFF106A35), size: 20),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                // Pricing and location info
+
+                SizedBox(
+                  height: 28,
+                ),
+                allplaygrounds.isNotEmpty &&allplaygrounds[0].notes!=null &&allplaygrounds[0].notes!.isNotEmpty ?
+              Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
                 Padding(
                   padding: const EdgeInsets.only(right: 26.0, left: 26),
                   child: Text(
-                    "المرفقات".tr,
+                    textAlign: TextAlign.end,
+                    "الملاحظات".tr,
                     style: TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 14.0,
@@ -701,174 +832,213 @@ List<Favouritemodel>favlist=[];
                   height: 12,
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(right: 26),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                'كافتيريا',
-                                style: TextStyle(
-                                  fontFamily: 'Cairo',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF106A35),
-                                ),
-                              ),
-                              SizedBox(width: 8),
-                              Image.asset(
-                                "assets/images/ion_cafe.png",
-                                color: Color(0xFF106A35),
-                                height: 20,
-                                width: 22,
-                              )
-                            ],
-                          ),
-                          SizedBox(width: 110,),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(
-                                'حمامات',
-                                textDirection: TextDirection.rtl,
-                                // Ensures the text direction is RTL
-
-                                style: TextStyle(
-                                  fontFamily: 'Cairo',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF106A35),
-                                ),
-                              ),
-                              SizedBox(width: 8),
-                              Image.asset(
-                                "assets/images/bathroom.png",
-                                color: Color(0xFF106A35),
-                                height: 13,
-                                width: 16,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),// Adds space between the text and the image
-                SizedBox(
-                  height: 12,
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.only(right: 26),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(
-                                'موقف سيارات',
-                                textDirection: TextDirection.rtl,
-                                // Ensures the text direction is RTL
-
-                                style: TextStyle(
-                                  fontFamily: 'Cairo',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF106A35),
-                                ),
-                              ),
-                              SizedBox(width: 8),
-                              Image.asset(
-                                "assets/images/car-door.png",
-                                color: Color(0xFF106A35),
-                                height: 20,
-                                width: 25,
-                              ),
-                            ],
-                          ),
-                          SizedBox(width: 40,),
-                          Row(
-                            children: [
-                              Text(
-                                'غرف تغيير الملابس',
-                                style: TextStyle(
-                                  fontFamily: 'Cairo',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF106A35),
-                                ),
-                              ),
-                              SizedBox(width: 8),
-                              Image.asset(
-                                "assets/images/materialcloth.png",
-                                color: Color(0xFF106A35),
-                                height: 20,
-                                width: 22,
-                              )
-                            ],
-                          ),
-
-
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: 50,
-                ),
-              ],
-            ):Container(),
-
-            GestureDetector(
-              onTap: (){
-                print("ppppppppppppppppppppppppp${widget.id}");
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => book_playground_page(widget.id),
-                //   ),
-                // );
-              },
-              child: Center(
-                child: Container(
-                  height: 50,
-                  width: 320,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30.0),
-                    shape: BoxShape.rectangle,
-                    color: Color(0xFF064821), // Background color of the container
-                    // border: Border.all(
-                    //   width: 1.0, // Border width
-                    //   color: Colors.black
-                    // ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      "أحجـــــز الأن".tr,
-                      style: TextStyle(
+                  padding: const EdgeInsets.only(right: 26.0, left: 26),
+                  child: Text(
+                   allplaygrounds[0] .notes!,
+                    style: TextStyle(
                         fontFamily: 'Cairo',
-                        fontSize: 16.0,
+                        fontSize: 14.0,
                         fontWeight: FontWeight.w500,
-                        color: Colors.white, // Text color
+                        color: Color(0xFF495A71)),
+                  ),
+                ),
+                  SizedBox(height: 30),
+              ],):Container(),
+
+                allplaygrounds.isNotEmpty &&allplaygrounds[0].availableFacilities!=null &&allplaygrounds[0].availableFacilities!.isNotEmpty ?
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 26.0, left: 26),
+                      child: Text(
+                        "المرفقات".tr,
+                        style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF495A71)),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 12,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 26),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'كافتيريا',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF106A35),
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Image.asset(
+                                    "assets/images/ion_cafe.png",
+                                    color: Color(0xFF106A35),
+                                    height: 20,
+                                    width: 22,
+                                  )
+                                ],
+                              ),
+                              SizedBox(width: 110,),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    'حمامات',
+                                    textDirection: TextDirection.rtl,
+                                    // Ensures the text direction is RTL
+
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF106A35),
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Image.asset(
+                                    "assets/images/bathroom.png",
+                                    color: Color(0xFF106A35),
+                                    height: 13,
+                                    width: 16,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),// Adds space between the text and the image
+                    SizedBox(
+                      height: 12,
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.only(right: 26),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    'موقف سيارات',
+                                    textDirection: TextDirection.rtl,
+                                    // Ensures the text direction is RTL
+
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF106A35),
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Image.asset(
+                                    "assets/images/car-door.png",
+                                    color: Color(0xFF106A35),
+                                    height: 20,
+                                    width: 25,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(width: 40,),
+                              Row(
+                                children: [
+                                  Text(
+                                    'غرف تغيير الملابس',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF106A35),
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Image.asset(
+                                    "assets/images/materialcloth.png",
+                                    color: Color(0xFF106A35),
+                                    height: 20,
+                                    width: 22,
+                                  )
+                                ],
+                              ),
+
+
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 50,
+                    ),
+                  ],
+                ):Container(),
+
+                GestureDetector(
+                  onTap: (){
+                    print("ppppppppppppppppppppppppp${widget.id}");
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder: (context) => book_playground_page(widget.id),
+                    //   ),
+                    // );
+                  },
+                  child: Center(
+                    child: Container(
+                      height: 50,
+                      width: 320,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30.0),
+                        shape: BoxShape.rectangle,
+                        color: Color(0xFF064821), // Background color of the container
+                        // border: Border.all(
+                        //   width: 1.0, // Border width
+                        //   color: Colors.black
+                        // ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "أحجـــــز الأن".tr,
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white, // Text color
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
-            SizedBox(
-              height: 12,
+                SizedBox(
+                  height: 12,
+                ),
+
+              ],
             ),
 
-          ],
-        ),
+          ),
+          ( _isLoading == true)
+              ? const Positioned(top: 0, child: Loading())
+              : Container(),
+        ],
       ),
       bottomNavigationBar: CurvedNavigationBar(
         height: 60,

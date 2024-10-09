@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:club_user/Menu/menu.dart';
 import 'package:club_user/shimmer_effect/shimmer_lines.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -98,7 +99,8 @@ class ProfilepageState extends State<Profilepage>
   }
 
   Future<void> _storeImageUrls(
-      String name, String phone, String profileImageUrl) async {
+      String name, String phone, String profileImageUrl) async
+  {
     CollectionReference usersRef =
         FirebaseFirestore.instance.collection('Users');
 
@@ -265,8 +267,24 @@ class ProfilepageState extends State<Profilepage>
             // Center the title horizontally
             leading: IconButton(
               onPressed: () {
-                Get.back();
-                // Navigator.of(context).pop(true); // Navigate back to the previous page
+                Map<dynamic, dynamic>? arguments = ModalRoute.of(context)
+                    ?.settings
+                    .arguments as Map<dynamic, dynamic>?; // Explicit casting
+                if (arguments != null && arguments['from'] == 'menu_page') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => menupage(),
+                    ),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomePage(),
+                    ),
+                  );
+                }
               },
               icon: Icon(
                 Directionality.of(context) == TextDirection.rtl

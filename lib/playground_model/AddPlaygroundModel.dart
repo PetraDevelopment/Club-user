@@ -74,7 +74,7 @@ class AddPlayGroundModel {
 
   @override
   String toString() {
-    return 'AddPlayGroundModel(playgroundName: $playgroundName, playType: $playType, address: $address, location: $location, phoneCommunication: $phoneCommunication, length: $length, width: $width, img: $img, availableFacilities: $availableFacilities, notes: $notes, bookTypes: $bookTypes)';
+    return 'AddPlayGroundModel(playgroundName: $playgroundName, playType: $playType, address: $address, location: $location, phoneCommunication: $phoneCommunication, length: $length, width: $width, img: $img, availableFacilities: $availableFacilities, notes: $notes, bookTypes: $bookTypes is_favourite$favourite)';
   }
 }
 

@@ -78,9 +78,32 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
             MaterialPageRoute(builder: (context) => SignUpPage()),
                 (Route<dynamic> route) => false,
           );
-        } else {
+        }
+        else {
           print("No matching document found in Firestore.");
         }
+        // Delete favorite data of the user
+        if (phoneValue != null && phoneValue.isNotEmpty) {
+          CollectionReference fav = FirebaseFirestore.instance.collection("Favourite");
+          QuerySnapshot querySnapshotfav = await fav.where('user_phone', isEqualTo: phoneValue).get();
+          if (querySnapshotfav.docs.isNotEmpty) {
+            for (var doc in querySnapshotfav.docs) {
+              await doc.reference.delete();
+              print("Favorite data with phone number $normalizedPhoneNumber deleted successfully.");
+            }
+          }
+        }
+        else if (user != null && user.phoneNumber != null){
+          CollectionReference fav = FirebaseFirestore.instance.collection("Favourite");
+          QuerySnapshot querySnapshotfav = await fav.where('user_phone', isEqualTo: user.phoneNumber).get();
+          if (querySnapshotfav.docs.isNotEmpty) {
+            for (var doc in querySnapshotfav.docs) {
+              await doc.reference.delete();
+              print("Favorite data with phone number $normalizedPhoneNumber deleted successfully.");
+            }
+          }
+        }
+
       } else {
         print("No valid phone number available.");
       }
@@ -336,7 +359,9 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => Profilepage(),
+                        builder: (context) => Profilepage(),  settings: RouteSettings(arguments: {
+                        'from': 'menu_page'
+                      }),
                       ),
                     );
                   },

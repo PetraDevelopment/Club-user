@@ -1,3 +1,4 @@
+import 'package:club_user/profile/profile_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -270,17 +271,31 @@ class HomePageState extends State<HomePage> {
                           ),
                         ),
 
-                        user1.isNotEmpty && user1[0].img!=null&&user1[0].img!=""? Padding(
-                            padding: const EdgeInsets.only(right: 34.0),
-                            child:ClipOval(
-                              child: Image(image:  NetworkImage(
-                                user1[0].img!,
+                        user1.isNotEmpty && user1[0].img!=null&&user1[0].img!=""?
+                        GestureDetector(
+                          onTap: (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Profilepage(),
+                                settings: RouteSettings(arguments: {
+                                  'from': 'home'
+                                }),
+                              ),
+                            );
+                          },
+                          child: Padding(
+                              padding: const EdgeInsets.only(right: 34.0),
+                              child:ClipOval(
+                                child: Image(image:  NetworkImage(
+                                  user1[0].img!,
 
-                                // Adjust size as needed
-                              ),    width: 63,
-                                height: 63,
-                                fit: BoxFit.fitWidth,),
-                            )
+                                  // Adjust size as needed
+                                ),    width: 63,
+                                  height: 63,
+                                  fit: BoxFit.fitWidth,),
+                              )
+                          ),
                         ):
                         Padding(
                           padding: const EdgeInsets.only(right: 34.0),
