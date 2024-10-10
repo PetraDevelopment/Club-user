@@ -17,6 +17,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import '../my_reservation/my_reservation.dart';
 import '../playground_model/AddPlaygroundModel.dart';
+import '../search/search_page.dart';
 import 'Userclass.dart';
 import 'carousel_slider.dart';
 
@@ -330,46 +331,58 @@ class HomePageState extends State<HomePage> {
                     ),
                     alignment: Alignment.centerRight,
                     child:
-                        Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 10),
-                              child: Image.asset('assets/images/search.png',height: 20,width: 25,),
-                            ),
-
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 20,top: 7,bottom: 7),
-                                child: TextField(
-                                    controller: Searchcontrol,
-                                    cursorColor:Color(0xFF064821),
-                                    textInputAction: TextInputAction.done,
-                                    keyboardType: TextInputType.text,
-                                    textAlign: TextAlign.right, // Align text to the right
-                                    decoration: InputDecoration(
-                                      hintText: 'البحث'.tr,
-                                      hintStyle: TextStyle(
-                                        fontFamily: 'Cairo',
-                                        fontWeight: FontWeight.w400,
-                                        fontSize: 15,
-                                        color: Color(0xFFC1C1C1),
-                                      ),
-                                      border: InputBorder.none,
-                                    ),
-                                    // onChanged: (value) {
-                                    //
-                                    //   setState(() {
-                                    //
-                                    //   });
-                                    // },
-                                    // onSubmitted: (value) {
-                                    //   // Move focus to the next text field
-                                    //
-                                    // },
-                                  ),
+                        GestureDetector(
+                          onTap: (){
+                            print("kokokoko");
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Searchpage(),
+                                //   settings: RouteSettings(arguments: {
+                                //   'from': 'search_page'
+                                // }),
                               ),
-                            ),
-                          ],
+                            );
+                          },
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10),
+                                child: Image.asset('assets/images/search.png',height: 20,width: 25,),
+                              ),
+
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(right: 20,top: 7,bottom: 7),
+                                  child: TextField(
+                                      controller: Searchcontrol,
+                                     readOnly: true,
+                                      textAlign: TextAlign.right, // Align text to the right
+                                      decoration: InputDecoration(
+                                        hintText: 'البحث'.tr,
+                                        hintStyle: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: 15,
+                                          color: Color(0xFFC1C1C1),
+                                        ),
+                                        border: InputBorder.none,
+                                      ),
+                                      // onChanged: (value) {
+                                      //
+                                      //   setState(() {
+                                      //
+                                      //   });
+                                      // },
+                                      // onSubmitted: (value) {
+                                      //   // Move focus to the next text field
+                                      //
+                                      // },
+                                    ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
 
 

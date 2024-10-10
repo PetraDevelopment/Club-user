@@ -457,6 +457,7 @@ SizedBox( width: MediaQuery.of(context).size.width/4.2,),
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
 
                                   Text(
@@ -469,7 +470,8 @@ SizedBox( width: MediaQuery.of(context).size.width/4.2,),
                                       color: Color(0xFF334154),
                                     ),
                                   ),
-                                  SizedBox(width: 30,),
+
+                                  SizedBox(width: MediaQuery.of(context).size.width/19.5),
                                   Text(
                                     "13-08-2024".tr,
                                     style: TextStyle(

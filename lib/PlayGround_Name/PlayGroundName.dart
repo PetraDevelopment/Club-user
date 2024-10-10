@@ -23,6 +23,7 @@ import 'package:shimmer/shimmer.dart';
 import '../Splach/LoadingScreen.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import '../booking_playground/try/book_playground_page.dart';
+import '../model_rate/model_rate.dart';
 import '../my_reservation/my_reservation.dart';
 import '../playground_model/AddPlaygroundModel.dart';
 import '../shimmer_effect/shimmer_lines.dart';
@@ -41,6 +42,7 @@ class PlaygroundNameState extends State<PlaygroundName>
   final NavigationController navigationController =
       Get.put(NavigationController());
   User? user = FirebaseAuth.instance.currentUser;
+  bool star=false;
   bool _isLoading = true; // flag to control shimmer effect
   Future<void> _loadData() async {
     // load data here
@@ -366,7 +368,7 @@ List<Favouritemodel>favlist=[];
       print("Error getting playground: $e");
     }
   }
-
+  int _selectedStars = 0;
   Future<void> getUserByPhone(String phoneNumber) async {
     try {
       // Normalize the phone number by stripping the country code
@@ -430,19 +432,79 @@ List<Favouritemodel>favlist=[];
       print("No phone number available.");
     }
   }
-
+  List<Ratemodel>rat_list=[];
   @override
   void initState() {
     super.initState();
     _loadgetfavdataData();
     getPlaygroundbyid();
+    getRating();
     _loadUserData();
     print("Docummmmmmentis${widget.id}");
     // Now you can access the user1 list
     // print('User data44444: ${user1[0].name}');
     setState(() {}); // Call setState to rebuild the widget tree
   }
+  Future<void> sendRating(List<bool> rating) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? phoneValue = prefs.getString('phonev');
+      print("newphoneValue${phoneValue.toString()}");
 
+      if (phoneValue != null && phoneValue.isNotEmpty) {
+        DocumentReference docRef =  await FirebaseFirestore.instance.collection('Playground_Rate').add({
+          'rate': rating,
+          'phone':phoneValue,
+          'playground_idstars':widget.id,
+          'img':allplaygrounds[0].img!,
+          'name':allplaygrounds[0].playgroundName!
+        });
+      }
+      else if (user?.phoneNumber != null) {
+        await FirebaseFirestore.instance.collection('Playground_Rate').add({
+          'rate': rating,
+          'phone':user?.phoneNumber !,
+          'playground_idstars':widget.id,
+          'img':allplaygrounds[0].img!,
+          'name':allplaygrounds[0].playgroundName!
+        });
+      }
+      else {
+        print("No phone number available.");
+      }
+
+    } catch (e) {
+      print('Error updating rating: $e');
+    }
+  }
+  Future<void> getRating() async {
+    try {
+      CollectionReference playerchat =
+      FirebaseFirestore.instance.collection("Playground_Rate");
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? phoneValue = prefs.getString('phonev');
+      print("newphoneValue${phoneValue.toString()}");
+
+      QuerySnapshot querySnapshot = await playerchat.get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (QueryDocumentSnapshot document in querySnapshot.docs) {
+          Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
+          Ratemodel user2 = Ratemodel.fromMap(userData);
+          if (user2.playgroundIdstars == widget.id && (user2.phone == phoneValue || user2.phone == user?.phoneNumber)) {
+            print("Matching document found:");
+            print("ID: ${document.id}");
+            print("Name: ${user2.name}");
+            print("Phone: ${user2.phone}");
+            print("Rating: ${user2.rate}");
+            // Print any other relevant fields
+          }
+        }
+      }
+    } catch (e) {
+      print("Error getting playground: $e");
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -581,6 +643,33 @@ List<Favouritemodel>favlist=[];
                 ),
                 SizedBox(
                   height: 10,
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.only(right: 15.0, left: 26, bottom: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      for (int i = 0; i < 5; i++)
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              if (i < _selectedStars) {
+                                _selectedStars = i;
+                              } else {
+                                _selectedStars = i + 1;
+                              }
+                              List<bool> rating = List.generate(5, (index) => index < _selectedStars);
+                              sendRating(rating);
+                            });
+                          },
+                          child: Icon(
+                            i < _selectedStars ? Icons.star : Icons.star_border_outlined,
+                            color: Color(0xFFFFCC00),
+                          ),
+                        )
+                    ],
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(right: 26.0, left: 26,bottom: 20),
@@ -993,12 +1082,12 @@ List<Favouritemodel>favlist=[];
                 GestureDetector(
                   onTap: (){
                     print("ppppppppppppppppppppppppp${widget.id}");
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => book_playground_page(widget.id),
-                    //   ),
-                    // );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => book_playground_page(widget.id),
+                      ),
+                    );
                   },
                   child: Center(
                     child: Container(
