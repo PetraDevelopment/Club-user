@@ -748,12 +748,15 @@ class HomePageState extends State<HomePage> {
                                   ),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
-                                    child: Image.network(
-                                      allplaygrounds[i].img!,
+                                    child:Image.network(
+                                      // Check if img is a list and has at least one image, otherwise use it as a string
+                                      allplaygrounds[i].img!.isNotEmpty
+                                          ? allplaygrounds[i].img![0] // Use the first image in the list (or the only image if it's a single string turned into a list)
+                                          :  "assets/images/newground.png",// Fallback to an empty string if no image is available
                                       height: 163,
                                       width: 274,
-                                      fit: BoxFit.cover, // Ensure image covers the container
-                                    ),
+                                      fit: BoxFit.fill, // Ensure the image covers the container
+                                    )
                                   ),
                                 ),
                                 Positioned(
@@ -851,12 +854,15 @@ class HomePageState extends State<HomePage> {
                                   ),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
-                                    child: Image.network(
-                                      allplaygrounds[i].img!,
+                                    child:Image.network(
+                                      // Check if img is a list and has at least one image, otherwise use it as a string
+                                      allplaygrounds[i].img!.isNotEmpty
+                                          ? allplaygrounds[i].img![0] // Use the first image in the list (or the only image if it's a single string turned into a list)
+                                          :  "assets/images/newground.png",// Fallback to an empty string if no image is available
                                       height: 163,
                                       width: 274,
-                                      fit: BoxFit.cover, // Ensure image covers the container
-                                    ),
+                                      fit: BoxFit.fill, // Ensure the image covers the container
+                                    )
                                   ),
                                 ),
                                 Positioned(

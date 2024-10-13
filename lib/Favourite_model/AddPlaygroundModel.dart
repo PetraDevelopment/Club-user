@@ -2,7 +2,7 @@ class Favouritemodel {
   String? playground_id;
   String? id;
   bool isfav; // Update this field to be a boolean field
-  String? img;
+  List<String>? img = [];
   String? playground_name;
   String? user_phone;
 
@@ -18,7 +18,8 @@ class Favouritemodel {
   // Factory constructor to create the model from a Map
   factory Favouritemodel.fromMap(Map<String, dynamic> map) {
     return Favouritemodel(
-      img: map['img'],
+      img: (map['img'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+
       isfav: map['is_favourite'] ?? false, // Update this line to handle null values
       id: '',
       playground_id: map['playground_id'],
@@ -34,7 +35,7 @@ class Favouritemodel {
       'is_favourite': isfav,
       'user_phone': user_phone,
       'playground_id': playground_id,
-      'img': img,
+      'img': img?.isNotEmpty == true ? img : [],
     };
   }
 

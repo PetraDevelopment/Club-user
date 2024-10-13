@@ -396,7 +396,7 @@ class SearchpageState extends State<Searchpage> {
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
                                     child: Image.network(
-                                      searchPlaygrounds[i].img!,
+                                      searchPlaygrounds[i].img![0],
                                       height: 163,
                                       width: 274,
                                       fit: BoxFit.cover, // Ensure image covers the container

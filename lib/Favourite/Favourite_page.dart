@@ -237,7 +237,7 @@ class FavouritePageState extends State<FavouritePage> {
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
                                 child:Image.network(
-                                  favlist[i].img!,
+                                  favlist[i].img![0],
                                   height: 163,
                                   width: MediaQuery.of(context).size.width,
                                   fit: BoxFit.cover, // Ensure image covers the container

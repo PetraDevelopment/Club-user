@@ -524,7 +524,7 @@ List<Favouritemodel>favlist=[];
                         bottomRight: Radius.circular(20.0),
                       ),
                       child: allplaygrounds.isNotEmpty? Image.network(
-                        allplaygrounds[0].img!,
+                        allplaygrounds[0].img![0],
                         height: 250,
                         width: double.infinity,
                         fit: BoxFit.cover, // Ensure the image covers the container
