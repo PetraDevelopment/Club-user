@@ -15,11 +15,13 @@ import '../Register/SignInPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
+import '../model_rate/model_rate.dart';
 import '../my_reservation/my_reservation.dart';
 import '../playground_model/AddPlaygroundModel.dart';
 import '../search/search_page.dart';
 import 'Userclass.dart';
 import 'carousel_slider.dart';
+import 'model_ratefetched.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -34,6 +36,7 @@ class HomePageState extends State<HomePage> {
   bool _isLoading = true; // flag to control shimmer effect
 
   Future<void> _loadData() async {
+    fetchRatings();
     // load data here
     await Future.delayed(Duration(seconds: 2)); // simulate data loading
     setState(() {
@@ -44,6 +47,7 @@ class HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadData();
+    fetchRatings();
     getPlaygroundbyname();
     _loadUserData();
     print("njbjbhbbb");
@@ -110,8 +114,91 @@ class HomePageState extends State<HomePage> {
       print("Error getting user: $e");
     }
   }
+  List<Rate_fetched> rat_list = [];
 
- int selectedIndex=3;
+  Future<void> fetchRatings() async {
+    try {
+      // Fetch all ratings from the 'Playground_Rate' collection
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('Playground_Rate')
+          .get();
+
+      // Map the documents to a list of Rate_fetched
+      rat_list = querySnapshot.docs
+          .map((doc) => Rate_fetched.fromMap(doc.data() as Map<String, dynamic>))
+          .toList();
+
+      // Sort the ratings by the calculated totalRating in descending order
+      rat_list.sort((a, b) => b.totalRating.compareTo(a.totalRating));
+
+      // Create a Set to track unique playground IDs
+      Set<String> uniquePlaygroundIds = {};
+
+      // Filter the list to ensure only unique playground IDs are kept
+      rat_list = rat_list.where((rating) {
+        if (uniquePlaygroundIds.contains(rating.playgroundIdstars ?? '')) {
+          return false; // Skip if already seen
+        } else {
+          uniquePlaygroundIds.add(rating.playgroundIdstars ?? '');
+          return true; // Include if not seen before
+        }
+      }).toList();
+
+      // Take the top 5 highest-rated playgrounds
+      rat_list = rat_list.take(5).toList();
+
+      print("Filtered and sorted playgrounds: $rat_list");
+
+      // Refresh the UI with the updated list
+      setState(() {});
+    } catch (e) {
+      print('Error fetching ratings: $e');
+    }
+  }
+
+  // Future<void> fetchRatings() async {
+  //   try {
+  //     SharedPreferences prefs = await SharedPreferences.getInstance();
+  //     String? phoneValue = prefs.getString('phonev');
+  //
+  //     if (phoneValue != null && phoneValue.isNotEmpty) {
+  //       // Fetch ratings for the specific phone number and playground ID
+  //       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+  //           .collection('Playground_Rate')
+  //           .where('phone', isEqualTo: phoneValue)
+  //           .get();
+  //
+  //       rat_list = querySnapshot.docs
+  //           .map((doc) => Ratemodel.fromMap(doc.data() as Map<String, dynamic>))
+  //           .toList();
+  //
+  //       setState(() {});
+  //     } else if (user?.phoneNumber != null) {
+  //       // Fetch ratings for the user's phone number and playground ID
+  //       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+  //           .collection('Playground_Rate')
+  //           .where('phone', isEqualTo: user?.phoneNumber)
+  //           .get();
+  //
+  //       rat_list = querySnapshot.docs
+  //           .map((doc) => Ratemodel.fromMap(doc.data() as Map<String, dynamic>))
+  //           .toList();
+  //
+  //       print("rat_list${rat_list[0].playgroundIdstars}");
+  //       print("rat_list[0]${rat_list[0].rate}");
+  //
+  //       setState(() {});
+  //     } else {
+  //       print("No phone number available for fetching ratings.");
+  //     }
+  //   } catch (e) {
+  //     print('Error fetching ratings: $e');
+  //   }
+  // }
+
+
+
+  int selectedIndex=3;
   final Searchcontrol = TextEditingController();
   late List<AddPlayGroundModel> allplaygrounds = [];
   int _currentIndex = 3;
@@ -821,18 +908,18 @@ class HomePageState extends State<HomePage> {
                   scrollDirection: Axis.horizontal,
                   reverse: true, // Reverses the scroll direction
 
-                  child: Row(
+                  child:rat_list.isNotEmpty? Row(
                     children: [
-                      for (var i = 0; i < allplaygrounds.length; i++)
+                      for (var i = 0; i < rat_list.length; i++)
                         GestureDetector(
 
                           onTap: (){
-                            print("objectidddddd${allplaygrounds[i].id!}");
+                            print("objectidddddd${rat_list[i].playgroundIdstars!}");
 
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                   builder: (context) => PlaygroundName(allplaygrounds[i].id!),
+                   builder: (context) => PlaygroundName(rat_list[i].playgroundIdstars!),
 
           ),
                             );
@@ -856,8 +943,8 @@ class HomePageState extends State<HomePage> {
                                     borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
                                     child:Image.network(
                                       // Check if img is a list and has at least one image, otherwise use it as a string
-                                      allplaygrounds[i].img!.isNotEmpty
-                                          ? allplaygrounds[i].img![0] // Use the first image in the list (or the only image if it's a single string turned into a list)
+                                      rat_list[i].img!.isNotEmpty
+                                          ? rat_list[i].img![0] // Use the first image in the list (or the only image if it's a single string turned into a list)
                                           :  "assets/images/newground.png",// Fallback to an empty string if no image is available
                                       height: 163,
                                       width: 274,
@@ -893,7 +980,7 @@ class HomePageState extends State<HomePage> {
                                   right: 40,
                                   left: 55,
                                   child: Text(
-                                  allplaygrounds[i].playgroundName!,
+                                    rat_list[i].name!,
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
                                       fontSize: 16,
@@ -908,6 +995,72 @@ class HomePageState extends State<HomePage> {
                           ),
                         ),
                     ],
+                  ):Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                    elevation: 4, // Adjust elevation to control the shadow
+                    margin: EdgeInsets.all(8), // Adjust margin as needed
+                    child: Stack(
+                      children: [
+                        Container(
+                          height: 163,
+                          width: 274,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20.0),
+                            shape: BoxShape.rectangle,
+                          ),
+                          child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
+                              child:Image.network(
+                                // Check if img is a list and has at least one image, otherwise use it as a string
+                                 "assets/images/newground.png",// Fallback to an empty string if no image is available
+                                height: 163,
+                                width: 274,
+                                fit: BoxFit.fill, // Ensure the image covers the container
+                              )
+                          ),
+                        ),
+                        Positioned(
+                          top: 6, // Match the top position of the text
+                          right: 0,
+                          left: 0,
+                          bottom: 0,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.transparent, // Start with transparent
+                                  Color(0x1F8C4B).withOpacity(0.0), // Start with #1F8C4B at 0% opacity (fully transparent)
+                                  Color(0x1F8C4B).withOpacity(1.0), // End with #1F8C4B at 100% opacity (fully opaque)
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(20.0),
+                                bottomRight: Radius.circular(20.0),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 113, // Adjust the top position
+                          right: 40,
+                          left: 55,
+                          child: Text(
+                            "",
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center, // Center text alignment
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 SizedBox(height: 20,),

@@ -27,6 +27,7 @@ import '../model_rate/model_rate.dart';
 import '../my_reservation/my_reservation.dart';
 import '../playground_model/AddPlaygroundModel.dart';
 import '../shimmer_effect/shimmer_lines.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 class PlaygroundName extends StatefulWidget {
   String? id;
@@ -167,40 +168,7 @@ List<Favouritemodel>favlist=[];
     // You can update the record based on the playgroundId
   }
 
-  // Future<void> getfavdata(String phoneNumber) async {
-  //   try {
-  //     CollectionReference fav =
-  //     FirebaseFirestore.instance.collection("Favourite");
-  //
-  //     QuerySnapshot querySnapshot = await fav.get();
-  //
-  //     if (querySnapshot.docs.isNotEmpty) {
-  //       for (QueryDocumentSnapshot document in querySnapshot.docs) {
-  //         Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
-  //         Favouritemodel favourite = Favouritemodel.fromMap(userData);
-  //
-  //         if (favourite.user_phone == phoneNumber) {
-  //           favlist.add(favourite);
-  //           print("Fav Id : ${document.id}"); // Print the latest playground
-  //
-  //           print("allplaygrounds[i] : ${favlist.last}"); // Print the latest playground
-  //           // Store the document ID in the AddPlayGroundModel object
-  //           favourite.id = document.id;
-  //           print("favourite${favourite.id}");
-  //           setState(() {
-  //             fetchfav = true; // Update the fetchfav variable
-  //           });
-  //         }
-  //       }
-  //     } else {
-  //       setState(() {
-  //         fetchfav = false; // Update the fetchfav variable
-  //       });
-  //     }
-  //   } catch (e) {
-  //     print("Error getting playground: $e");
-  //   }
-  // }
+
   Future<void> getfavdata(String phoneNumber) async {
     try {
       CollectionReference fav =
@@ -260,58 +228,6 @@ List<Favouritemodel>favlist=[];
       });
     }
   }
-  // bool fetchfav=false;
-  // Future<void> getfavdata(String phoneNumber) async {
-  //   try {
-  //     CollectionReference fav =
-  //     FirebaseFirestore.instance.collection("Favourite");
-  //
-  //     QuerySnapshot querySnapshot = await fav.get();
-  //
-  //     if (querySnapshot.docs.isNotEmpty) {
-  //       for (QueryDocumentSnapshot document in querySnapshot.docs) {
-  //         Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
-  //         Favouritemodel favourite = Favouritemodel.fromMap(userData);
-  //
-  //         if (favourite.user_phone == phoneNumber) {
-  //           favlist.add(favourite);
-  //           print("Fav Id : ${document.id}"); // Print the latest playground
-  //
-  //           print("allplaygrounds[i] : ${favlist.last}"); // Print the latest playground
-  //           // Store the document ID in the AddPlayGroundModel object
-  //           favourite.id = document.id;
-  //           print("favourite${favourite.id}");
-  //         }
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print("Error getting playground: $e");
-  //   }
-  // }
-  // Future<void> _loadgetfavdataData() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   String? phoneValue = prefs.getString('phonev');
-  //   print("newphoneValue${phoneValue.toString()}");
-  //
-  //   if (phoneValue != null && phoneValue.isNotEmpty) {
-  //     setState(() {
-  //       _isLoading = true; // set flag to false when data is loaded
-  //     });
-  //     await getfavdata(phoneValue); // simulate data loading
-  //     setState(() {
-  //       _isLoading = false; // set flag to false when data is loaded
-  //     });
-  //   }else if (user?.phoneNumber != null) {
-  //     setState(() {
-  //       _isLoading = true; // set flag to false when data is loaded
-  //     });
-  //     await getfavdata(user!.phoneNumber!.toString()); // simulate data loading
-  //     setState(() {
-  //       _isLoading = false; // set flag to false when data is loaded
-  //     });
-  //   }
-  //
-  // }
 
   double opacity = 1.0; // Initial opacity value
   Future<void> deleteFavoriteData() async {
@@ -437,8 +353,10 @@ List<Favouritemodel>favlist=[];
   void initState() {
     super.initState();
     _loadgetfavdataData();
+    fetchRatings();
     getPlaygroundbyid();
-    getRating();
+    print("objectiddddddddd${widget.id}");
+
     _loadUserData();
     print("Docummmmmmentis${widget.id}");
     // Now you can access the user1 list
@@ -452,24 +370,52 @@ List<Favouritemodel>favlist=[];
       print("newphoneValue${phoneValue.toString()}");
 
       if (phoneValue != null && phoneValue.isNotEmpty) {
-        DocumentReference docRef =  await FirebaseFirestore.instance.collection('Playground_Rate').add({
-          'rate': rating,
-          'phone':phoneValue,
-          'playground_idstars':widget.id,
-          'img':allplaygrounds[0].img!,
-          'name':allplaygrounds[0].playgroundName!
-        });
-      }
-      else if (user?.phoneNumber != null) {
-        await FirebaseFirestore.instance.collection('Playground_Rate').add({
-          'rate': rating,
-          'phone':user?.phoneNumber !,
-          'playground_idstars':widget.id,
-          'img':allplaygrounds[0].img!,
-          'name':allplaygrounds[0].playgroundName!
-        });
-      }
-      else {
+        // Check if a document exists for the user and playground combination
+        CollectionReference playerchat = FirebaseFirestore.instance.collection("Playground_Rate");
+        QuerySnapshot querySnapshot = await playerchat.where('phone', isEqualTo: phoneValue).where('playground_idstars', isEqualTo: widget.id).get();
+        if (querySnapshot.docs.isNotEmpty) {
+          // Document exists, update the rating
+          DocumentReference docRef = querySnapshot.docs.first.reference;
+          await docRef.update({
+            'rate': rating,
+          });
+
+        }
+        else {
+          // Document doesn't exist, create a new one
+          DocumentReference docRef = await playerchat.add({
+            'rate': rating,
+            'phone': phoneValue,
+            'playground_idstars': widget.id,
+            'img': allplaygrounds[0].img!,
+            'name': allplaygrounds[0].playgroundName!
+          });
+
+        }
+      } else if (user?.phoneNumber != null) {
+        // Check if a document exists for the user and playground combination
+        CollectionReference playerchat = FirebaseFirestore.instance.collection("Playground_Rate");
+        QuerySnapshot querySnapshot = await playerchat.where('phone', isEqualTo: user?.phoneNumber).where('playground_idstars', isEqualTo: widget.id).get();
+
+        if (querySnapshot.docs.isNotEmpty) {
+          // Document exists, update the rating
+          DocumentReference docRef = querySnapshot.docs.first.reference;
+          await docRef.update({
+            'rate': rating,
+          });
+
+        } else {
+          // Document doesn't exist, create a new one
+          DocumentReference docRef = await playerchat.add({
+            'rate': rating,
+            'phone': user?.phoneNumber,
+            'playground_idstars': widget.id,
+            'img': allplaygrounds[0].img!,
+            'name': allplaygrounds[0].playgroundName!
+          });
+
+        }
+      } else {
         print("No phone number available.");
       }
 
@@ -477,34 +423,49 @@ List<Favouritemodel>favlist=[];
       print('Error updating rating: $e');
     }
   }
-  Future<void> getRating() async {
+
+  Future<void> fetchRatings() async {
     try {
-      CollectionReference playerchat =
-      FirebaseFirestore.instance.collection("Playground_Rate");
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? phoneValue = prefs.getString('phonev');
-      print("newphoneValue${phoneValue.toString()}");
 
-      QuerySnapshot querySnapshot = await playerchat.get();
+      if (phoneValue != null && phoneValue.isNotEmpty) {
+        // Fetch ratings for the specific phone number and playground ID
+        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+            .collection('Playground_Rate')
+            .where('phone', isEqualTo: phoneValue)
+            .where('playground_idstars', isEqualTo: widget.id)
+            .get();
 
-      if (querySnapshot.docs.isNotEmpty) {
-        for (QueryDocumentSnapshot document in querySnapshot.docs) {
-          Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
-          Ratemodel user2 = Ratemodel.fromMap(userData);
-          if (user2.playgroundIdstars == widget.id && (user2.phone == phoneValue || user2.phone == user?.phoneNumber)) {
-            print("Matching document found:");
-            print("ID: ${document.id}");
-            print("Name: ${user2.name}");
-            print("Phone: ${user2.phone}");
-            print("Rating: ${user2.rate}");
-            // Print any other relevant fields
-          }
-        }
+        rat_list = querySnapshot.docs
+            .map((doc) => Ratemodel.fromMap(doc.data() as Map<String, dynamic>))
+            .toList();
+
+        setState(() {});
+      } else if (user?.phoneNumber != null) {
+        // Fetch ratings for the user's phone number and playground ID
+        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+            .collection('Playground_Rate')
+            .where('phone', isEqualTo: user?.phoneNumber)
+            .where('playground_idstars', isEqualTo: widget.id)
+            .get();
+
+        rat_list = querySnapshot.docs
+            .map((doc) => Ratemodel.fromMap(doc.data() as Map<String, dynamic>))
+            .toList();
+
+        print("rat_list${rat_list[0].playgroundIdstars}");
+        print("rat_list[0]${rat_list[0].rate}");
+
+        setState(() {});
+      } else {
+        print("No phone number available for fetching ratings.");
       }
     } catch (e) {
-      print("Error getting playground: $e");
+      print('Error fetching ratings: $e');
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -517,24 +478,86 @@ List<Favouritemodel>favlist=[];
               children: [
                 Stack(
                   children: [
+
+      ClipRRect(
+      borderRadius: BorderRadius.only(
+      bottomLeft: Radius.circular(20.0),
+      bottomRight: Radius.circular(20.0),
+    ),
+    child: allplaygrounds.isNotEmpty
+    ? CarouselSlider.builder(
+    itemCount: allplaygrounds[0].img?.length ?? 0,
+    itemBuilder: (context, index, realIndex) {
+    return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 8.0), // Add some space between images
+    child: Image.network(
+    allplaygrounds[0].img![index],
+    height: 250,
+    width: MediaQuery.of(context).size.width,
+    fit: BoxFit.cover, // Ensure the image covers the container
+    ),
+    );
+    },
+    options: CarouselOptions(
+    height: 250,
+    viewportFraction: 0.9, // Adjust this value to change the width of each image
+    enableInfiniteScroll: true,
+    enlargeCenterPage: true, // Makes the current image larger in the center
+    autoPlay: true, // Enables automatic sliding
+    ),
+    )
+        : Image.asset(
+    'assets/images/newwadi.png',
+    height: 250,
+    width: double.infinity,
+    fit: BoxFit.fill, // Ensure the placeholder image covers the container
+    ),
+    ),
+
                     // Full-width image
-                    ClipRRect(
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(20.0),
-                        bottomRight: Radius.circular(20.0),
-                      ),
-                      child: allplaygrounds.isNotEmpty? Image.network(
-                        allplaygrounds[0].img![0],
-                        height: 250,
-                        width: double.infinity,
-                        fit: BoxFit.cover, // Ensure the image covers the container
-                      ):Image.asset(
-                        'assets/images/newwadi.png',
-                        height: 250,
-                        width: double.infinity,
-                        fit: BoxFit.fill, // Ensure image covers the container
-                      ),
-                    ),
+                    // ClipRRect(
+                    //   borderRadius: BorderRadius.only(
+                    //     bottomLeft: Radius.circular(20.0),
+                    //     bottomRight: Radius.circular(20.0),
+                    //   ),
+                    //   child: allplaygrounds.isNotEmpty
+                    //       ? SizedBox(
+                    //     height: 250, // Set the height of the image container
+                    //     child: ListView.builder(
+                    //       scrollDirection: Axis.horizontal, // Enable horizontal scrolling
+                    //       itemCount: allplaygrounds[0].img?.length ?? 0, // The number of images
+                    //       itemBuilder: (context, index) {
+                    //         return Padding(
+                    //           padding: const EdgeInsets.symmetric(horizontal: 8.0), // Add some space between images
+                    //           child: Image.network(
+                    //             allplaygrounds[0].img![index], // Get each image URL by index
+                    //             height: 250,
+                    //             width: MediaQuery.of(context).size.width, // Set a width or use MediaQuery for full screen width
+                    //             fit: BoxFit.cover, // Ensure the image covers the container
+                    //           ),
+                    //         );
+                    //       },
+                    //     ),
+                    //   )
+                    //       : Image.asset(
+                    //     'assets/images/newwadi.png',
+                    //     height: 250,
+                    //     width: double.infinity,
+                    //     fit: BoxFit.fill, // Ensure the placeholder image covers the container
+                    //   ),
+                    //
+                    //   // allplaygrounds.isNotEmpty? Image.network(
+                    //   //   allplaygrounds[0].img![0],
+                    //   //   height: 250,
+                    //   //   width: double.infinity,
+                    //   //   fit: BoxFit.cover, // Ensure the image covers the container
+                    //   // ):Image.asset(
+                    //   //   'assets/images/newwadi.png',
+                    //   //   height: 250,
+                    //   //   width: double.infinity,
+                    //   //   fit: BoxFit.fill, // Ensure image covers the container
+                    //   // ),
+                    // ),
                     // Gradient overlay container to add shadow or overlay effect
                     Positioned(
                       top: 5,
@@ -661,16 +684,29 @@ List<Favouritemodel>favlist=[];
                               }
                               List<bool> rating = List.generate(5, (index) => index < _selectedStars);
                               sendRating(rating);
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => PlaygroundName(widget.id)),
+                              );
                             });
                           },
-                          child: Icon(
-                            i < _selectedStars ? Icons.star : Icons.star_border_outlined,
+                          child: rat_list.isNotEmpty && rat_list[0].rate != null
+                              ? Icon(
+                            // Check if the star at index `i` should be filled
+                            i < rat_list[0].rate!.where((rate) => rate).length
+                                ? Icons.star
+                                : Icons.star_border_outlined,
+                            color: Color(0xFFFFCC00),
+                          )
+                              : Icon(
+                            Icons.star_border_outlined,
                             color: Color(0xFFFFCC00),
                           ),
                         )
                     ],
                   ),
                 ),
+
                 Padding(
                   padding: const EdgeInsets.only(right: 26.0, left: 26,bottom: 20),
 
@@ -1186,4 +1222,5 @@ List<Favouritemodel>favlist=[];
       ),
     );
   }
+
 }
