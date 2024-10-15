@@ -71,7 +71,8 @@ class HomePageState extends State<HomePage> {
 
     if (phoneValue != null && phoneValue.isNotEmpty) {
       await getUserByPhone(phoneValue);
-    } else if (user?.phoneNumber != null) {
+    }
+    else if (user?.phoneNumber != null) {
       await getUserByPhone(user!.phoneNumber.toString());
     } else {
       print("No phone number available.");
@@ -345,7 +346,7 @@ class HomePageState extends State<HomePage> {
                               ),
                               user1.isNotEmpty && user1[0].name!.isNotEmpty
                                   ? Text(
-                                user1[0].name!,
+                                user1[0].name!.length<20? user1[0].name!:user1[0].name!.substring(0,20),
                                 style: TextStyle(
                                   fontFamily: 'Cairo',
                                   fontSize: 16.0,
@@ -402,80 +403,66 @@ class HomePageState extends State<HomePage> {
                   height: 20,
                 ),
 
-                Padding(
-                  padding: const EdgeInsets.only(left: 33,right: 33),
-                  child: Container(
-                    height: 40,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10.0),
-                      shape: BoxShape.rectangle,
-                      color: Color(0xFFF1F1F1), // Border color
+                GestureDetector(
+                  onTap: () {
+setState(() {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => Searchpage(),
+    ),
+  );
+});
 
-                      border: Border.all(
-                        color: Color(0xFFB8B8B8), // Border color
-                        width: 1.0, // Border width
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 33, right: 33),
+                    child: Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10.0),
+                        color: Color(0xFFF1F1F1),
+                        border: Border.all(
+                          color: Color(0xFFB8B8B8),
+                          width: 1.0,
+                        ),
                       ),
-                    ),
-                    alignment: Alignment.centerRight,
-                    child:
-                        GestureDetector(
-                          onTap: (){
-                            print("kokokoko");
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Searchpage(),
-                                //   settings: RouteSettings(arguments: {
-                                //   'from': 'search_page'
-                                // }),
-                              ),
-                            );
-                          },
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(left: 10),
-                                child: Image.asset('assets/images/search.png',height: 20,width: 25,),
-                              ),
-
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(right: 20,top: 7,bottom: 7),
-                                  child: TextField(
-                                      controller: Searchcontrol,
-                                     readOnly: true,
-                                      textAlign: TextAlign.right, // Align text to the right
-                                      decoration: InputDecoration(
-                                        hintText: 'البحث'.tr,
-                                        hintStyle: TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 15,
-                                          color: Color(0xFFC1C1C1),
-                                        ),
-                                        border: InputBorder.none,
-                                      ),
-                                      // onChanged: (value) {
-                                      //
-                                      //   setState(() {
-                                      //
-                                      //   });
-                                      // },
-                                      // onSubmitted: (value) {
-                                      //   // Move focus to the next text field
-                                      //
-                                      // },
-                                    ),
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: Image.asset(
+                              'assets/images/search.png',
+                              height: 20,
+                              width: 25,
+                            ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 20, top: 7, bottom: 7),
+                              child: TextField(
+                                controller: Searchcontrol,
+                                readOnly: true,
+                                textAlign: TextAlign.right,
+                                decoration: InputDecoration(
+                                  hintText: 'البحث'.tr,
+                                  hintStyle: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 15,
+                                    color: Color(0xFFC1C1C1),
+                                  ),
+                                  border: InputBorder.none,
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-
-
-
+                        ],
+                      ),
+                    ),
                   ),
                 ),
+
                 SizedBox(height: 10,),
 
                 Stack(

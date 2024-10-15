@@ -228,7 +228,7 @@ List<Favouritemodel>favlist=[];
       });
     }
   }
-
+  List<User1>userdata=[];
   double opacity = 1.0; // Initial opacity value
   Future<void> deleteFavoriteData() async {
     try {
@@ -309,8 +309,9 @@ List<Favouritemodel>favlist=[];
         User1 user = User1.fromMap(userData);
 
         // Add the User object to the list
-        user1.add(user);
-
+          user1.add(user);
+        userdata=user1;
+        print("userdata User: ${userdata[0].name}");
         print("Loaded User: ${user1[0].name}");
 
         // Print the user data
@@ -1121,7 +1122,7 @@ List<Favouritemodel>favlist=[];
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => book_playground_page(widget.id),
+                        builder: (context) => book_playground_page(widget.id!),
                       ),
                     );
                   },

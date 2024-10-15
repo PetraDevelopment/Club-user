@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'Controller/NavigationController.dart';
 import 'package:get/get.dart';
 import 'Splach/PlayGroundSplach.dart';
+import 'package:intl/date_symbol_data_local.dart';
 Future<void> main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,7 +20,7 @@ Future<void> main() async {
     ),
   );
   Get.put(NavigationController());
-
+  await initializeDateFormatting('ar', null); // Initialize the locale for Arabic
 
   runApp(
     GetMaterialApp(

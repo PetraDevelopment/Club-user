@@ -3,9 +3,12 @@ import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:share/share.dart';
+
 import 'package:get/get.dart';
 import '../Controller/NavigationController.dart';
-import '../Favourite/Favourite_page.dart';
+
+import 'package:geocoding/geocoding.dart';
 import '../Home/HomePage.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,6 +20,8 @@ import '../Register/SignInPage.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
+import '../booking_playground/AddbookingModel/AddbookingModel.dart';
+import '../location/map_page.dart';
 import '../playground_model/AddPlaygroundModel.dart';
 import '../shimmer_effect/shimmer_lines.dart';
 
@@ -117,10 +122,148 @@ class my_reservationState extends State<my_reservation>
   void initState() {
     super.initState();
     _loadUserData();
+    fetchBookingData();
     // print("groundId${widget.groundId}");
     setState(() {});
   }
+  late List<AddbookingModel> playgroundbook = [];
 
+  Future<void> fetchBookingData() async {
+    try {
+      CollectionReference bookingCollection = FirebaseFirestore.instance.collection("booking");
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? phoneValue = prefs.getString('phonev');
+      print("newphoneValue${phoneValue.toString()}");
+
+      if (phoneValue != null && phoneValue.isNotEmpty) {
+        String normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
+        QuerySnapshot querySnapshot = await bookingCollection.where('phoneCommunication', isEqualTo: normalizedPhoneNumber).get();
+
+        if (querySnapshot.docs.isNotEmpty) {
+          List<AddbookingModel> bookings = querySnapshot.docs.map((doc) {
+            Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // Explicit casting
+            return AddbookingModel.fromMap(data);
+          }).toList();
+          // Update the playgroundbook list with fetched bookings
+          playgroundbook = bookings;
+          // Print and access specific fields for each booking
+          playgroundbook.forEach((booking) {
+            print('AdminId: ${booking.AdminId}');
+            print('Day_of_booking: ${booking.Day_of_booking}');
+            print('Name: ${booking.Name}');
+            print('Rent_the_ball: ${booking.rentTheBall}');
+            print('phoneshoka: ${booking.phoneCommunication}');
+
+            // Access other fields as needed
+          });
+
+        }
+        else {
+          print('No documents found in the "booking" collection.');
+        }
+      }
+      else if (user?.phoneNumber != null) {
+        String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
+        QuerySnapshot querySnapshot = await bookingCollection.where('phoneCommunication', isEqualTo: normalizedPhoneNumber).get();
+
+        if (querySnapshot.docs.isNotEmpty) {
+          List<AddbookingModel> bookings = querySnapshot.docs.map((doc) {
+            Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // Explicit casting
+            return AddbookingModel.fromMap(data);
+          }).toList();
+          // Update the playgroundbook list with fetched bookings
+          playgroundbook = bookings;
+          // Print and access specific fields for each booking
+          playgroundbook.forEach((booking) {
+            print('AdminId: ${booking.AdminId}');
+            print('Day_of_booking: ${booking.Day_of_booking}');
+            print('Name: ${booking.Name}');
+            print('Rent_the_ball: ${booking.rentTheBall}');
+            print('phoneshoka: ${booking.phoneCommunication}');
+            getPlaygroundbyname(booking.groundID!);
+            // Access other fields as needed
+          });
+
+        }
+        else {
+          print('No documents found in the "booking" collection.');
+        }
+      }
+    } catch (e) {
+      print('Error fetching booking data: $e');
+    }
+  }
+  late List<AddPlayGroundModel> playgroundAllData = [];
+  Future<void> getPlaygroundbyname(String iiid) async {
+    try {
+      CollectionReference playerchat =
+      FirebaseFirestore.instance.collection("AddPlayground");
+
+      QuerySnapshot querySnapshot = await playerchat.get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (QueryDocumentSnapshot document in querySnapshot.docs) {
+          Map<String, dynamic> userData =
+          document.data() as Map<String, dynamic>;
+          AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
+          if (document.id == iiid) {
+            playgroundAllData.add(user);
+
+            String?  bookType = playgroundAllData[0].bookTypes![0].time;
+            // Assuming 'time' is the field you want to split into start and end time
+            String timeofAddedPlayground = bookType ?? '';
+            print("timeofAddedPlayground: $timeofAddedPlayground");
+
+            // Splitting time into startTime and endTime based on '-'
+            List<String> times = timeofAddedPlayground.split(' - ');
+            if (times.length == 2) {
+              String startTime = times[0];
+              String endTime = times[1];
+              for(int i=0;i<playgroundAllData.length;i++){
+                print("locattttion${playgroundAllData[i].location}");
+
+              }
+              print("Start Time: $startTime");
+              print("End Time: $endTime");
+              String adminId = userData['AdminId'] ?? ''; // Fetch AdminId directly from userData
+              user.adminId = adminId; // Assuming your model has a property for AdminId
+              print("Admin ID: $adminId");
+              // USerID=adminId;
+              // // You can use these times to update the UI or for other logic
+              // timeSlots.add(startTime); // Add start time to the list
+              // timeSlots.add(endTime);   // Add end time to the list
+
+              // You could directly update your UI here or save this data for later
+              // For example, show the start and end time in the UI
+              setState(() {
+                // Update any UI components with the start and end times
+                // startTimeStr = startTime; // Assuming you have a state variable to store this
+                // endTimeStr = endTime;     // Assuming you have a state variable to store this
+              });
+
+              // print("Time slots: ${timeSlots}");
+            } else {
+              print("Invalid time format: $timeofAddedPlayground");
+            }
+            // }
+// الوقت  هو سبب المشكله
+            print(
+                "PlayGroungboook Iiid : ${document.id}"); // Print the latest playground
+            // groundIiid = document.id;
+            // print("Docummmmmmbook$groundIiid");
+            // Normalize playType before comparing
+            String playType = user.playType!.trim();
+          }
+
+          // Store the document ID in the AddPlayGroundModel object
+          user.id = document.id;
+        }
+      }
+    } catch (e) {
+      print("Error getting playground: $e");
+    }
+  }
   late List<AddPlayGroundModel> allplaygroundsData = [];
 
 
@@ -318,8 +461,17 @@ class my_reservationState extends State<my_reservation>
                         ),
                         child: Column(
                           children: [
-                            Text(
-                              "0",
+                            playgroundbook.isNotEmpty?   Text(
+                              "${ playgroundbook.length}",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                fontSize: 30.0,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF334154),
+                              ),
+                            ):Text(
+                              "${ playgroundbook.length}",
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontFamily: 'Cairo',
@@ -368,7 +520,7 @@ class my_reservationState extends State<my_reservation>
             SizedBox(
               height: 12,
             ),
-            for (var i = 0; i < 5; i++) // Repeat the container 5 times
+            for (var i = 0; i < playgroundAllData.length; i++) // Repeat the container 5 times
               Padding(
                 padding: const EdgeInsets.only(right: 12.0,bottom: 12,top: 10,left: 12),
                 child: Center(
@@ -388,7 +540,7 @@ class my_reservationState extends State<my_reservation>
                         ),
                       ],
                     ),
-                    child: Column(
+                    child:playgroundAllData.isNotEmpty? Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Padding(
@@ -397,11 +549,11 @@ class my_reservationState extends State<my_reservation>
                             mainAxisAlignment: MainAxisAlignment.end, // Aligns the content to the right
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Column(
+                                Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Text(
-                                    "ملعب وادى دجلــــة",
+                                   Text(
+                                    "${playgroundAllData[i].playgroundName!}",
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
                                       fontSize: 16.0,
@@ -413,7 +565,7 @@ class my_reservationState extends State<my_reservation>
                                     children: [
 
                                       Text(
-                                        "   620 ج.م".tr,
+                                        "${playgroundAllData[i].bookTypes![0].cost!}",
                                         textDirection: TextDirection.rtl,  // Ensures the text direction is RTL
 
                                         style: TextStyle(
@@ -425,7 +577,7 @@ class my_reservationState extends State<my_reservation>
                                       ),
 SizedBox( width: MediaQuery.of(context).size.width/4.2,),
                                       Text(
-                                        "01025610549".tr,
+                                        "${playgroundbook[i].phoneCommunication!}",
                                         textDirection: TextDirection.rtl,  // Ensures the text direction is RTL
 
                                         style: TextStyle(
@@ -471,9 +623,9 @@ SizedBox( width: MediaQuery.of(context).size.width/4.2,),
                                     ),
                                   ),
 
-                                  SizedBox(width: MediaQuery.of(context).size.width/19.5),
+                                  SizedBox(width: MediaQuery.of(context).size.width/23),
                                   Text(
-                                    "13-08-2024".tr,
+                                    "${playgroundbook[i].dateofBooking!}",
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
                                       fontSize: 12.0,
@@ -493,14 +645,12 @@ SizedBox( width: MediaQuery.of(context).size.width/4.2,),
                                       ),
                                       children: [
                                         TextSpan(
-                                          text: '4:00 م', // Right-aligned part
+                                          text: "${playgroundbook[i].selectedTimes?[0]!}", // Right-aligned part
                                         ),
                                         TextSpan(
                                           text: '  إلى  ', // Center part (extra spaces for spacing)
                                         ),
-                                        TextSpan(
-                                          text: '6:00 م', // Left-aligned part
-                                        ),
+
                                       ],
                                     ),
                                   ),
@@ -545,26 +695,36 @@ SizedBox( width: MediaQuery.of(context).size.width/4.2,),
                             ),
                             Padding(
                               padding: const EdgeInsets.only(top: 12.0,bottom: 12,right: 30),
-                              child: Container(
-                                height: 29,
-                                width: 114,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                  shape: BoxShape.rectangle,
-                                  color: Color(0xFF064821), // Background color of the container
-                                  // border: Border.all(
-                                  //   width: 1.0, // Border width
-                                  //   color: Colors.black
-                                  // ),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    "الموقع".tr,
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white, // Text color
+                              child: GestureDetector(
+                                onTap: () async {
+                                  print("locattttion${playgroundAllData[i].location!}");
+
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => Maps(location: playgroundAllData[i].location!)),
+                                  );
+                                },
+                                child: Container(
+                                  height: 29,
+                                  width: 114,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(30.0),
+                                    shape: BoxShape.rectangle,
+                                    color: Color(0xFF064821), // Background color of the container
+                                    // border: Border.all(
+                                    //   width: 1.0, // Border width
+                                    //   color: Colors.black
+                                    // ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      "الموقع".tr,
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white, // Text color
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -576,7 +736,7 @@ SizedBox( width: MediaQuery.of(context).size.width/4.2,),
                         SizedBox(height: 5),
 
                       ],
-                    ),
+                    ):Container(),
                   ),
                 ),
               ),

@@ -95,6 +95,7 @@ class ProfilepageState extends State<Profilepage>
     await storageRef.putFile(image);
     String downloadUrl = await storageRef.getDownloadURL();
     img_profile = downloadUrl;
+
     return downloadUrl;
   }
 
@@ -117,6 +118,15 @@ class ProfilepageState extends State<Profilepage>
           'phone': phone,
           'profile_image': profileImageUrl,
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'تم حفظ التعديل بنجاح',
+              textAlign: TextAlign.center,
+            ),
+            backgroundColor: Color(0xFF1F8C4B),
+          ),
+        );
         print('User  data updated successfully.');
       } else {
         // If the user's document is not found, create a new document
@@ -155,6 +165,15 @@ class ProfilepageState extends State<Profilepage>
             'phone': _phoneNumberController.text,
             'profile_image': img_profile,
           });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'تم حفظ التعديل بنجاح',
+                textAlign: TextAlign.center,
+              ),
+              backgroundColor: Color(0xFF1F8C4B),
+            ),
+          );
           print('User  data updated successfully.');
           setState(() {
             _isLoading = false;

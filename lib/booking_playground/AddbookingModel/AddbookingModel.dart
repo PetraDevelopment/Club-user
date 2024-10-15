@@ -1,4 +1,5 @@
 class AddbookingModel {
+  String? iid;
   String? Name;
   String? phoneCommunication;
   String? dateofBooking ;
@@ -8,7 +9,9 @@ class AddbookingModel {
   List<String>? availableTime = [];
   List<String>? availableDate = [];
   List<String>? selectedTimes = []; // Add this field to track selected times
-  List<String>? notavailable; // Ensure this matches your expected field name
+  // List<String>? notavailable; // Ensure this matches your expected field name
+  String? AdminId;
+  String? groundID;
   AddbookingModel({
     this.Name,
     this.phoneCommunication,
@@ -16,15 +19,21 @@ class AddbookingModel {
     this.timeofBooking,
     this.rentTheBall,
     this.availableTime,
-    this.notavailable,
-this.Day_of_booking,
+    // this.notavailable,
+    this.Day_of_booking,
     this.availableDate,
     this.selectedTimes,
+    this.iid,
+    this.AdminId,
+    this.groundID,
   });
 
   // Factory constructor to create an instance from a map
   factory AddbookingModel.fromMap(Map<String, dynamic> map) {
     return AddbookingModel(
+      iid: '',
+      AdminId: map['AdminId'] ?? '',  // Get AdminId directly from the map
+      groundID:map['groundID'],
       Name: map['Name'],
       phoneCommunication: map['phoneCommunication'],
       dateofBooking: map['dateofBooking'],
@@ -41,9 +50,9 @@ this.Day_of_booking,
       selectedTimes: (map['selectedTimes'] as List<dynamic>?)
           ?.map((e) => e.toString())
           .toList() ?? [],
-      notavailable: (map['not_available'] as List<dynamic>?)
-          ?.map((e) => e.toString())
-          .toList() ?? [],
+      // notavailable: (map['not_available'] as List<dynamic>?)
+      //     ?.map((e) => e.toString())
+      //     .toList() ?? [],
       Day_of_booking: map['Day_of_booking'],
 
     );
@@ -52,6 +61,8 @@ this.Day_of_booking,
   // Method to convert the instance to a map
   Map<String, dynamic> toMap() {
     return {
+      'AdminId': AdminId,  // Add AdminId to the map
+      'groundID':groundID,
       'Name': Name,
       'Day_of_booking':Day_of_booking,
       'phoneCommunication': phoneCommunication,
@@ -59,8 +70,7 @@ this.Day_of_booking,
       'timeofBooking': timeofBooking?.isNotEmpty == true ? timeofBooking : [],
       'Rent_the_ball': rentTheBall,
       'availableTime': availableTime?.isNotEmpty == true ? availableTime : [],
-      'not_available': notavailable?.isNotEmpty == true ? notavailable : [],
-
+      // 'not_available': notavailable?.isNotEmpty == true ? notavailable : [],
       'availableDate': availableDate?.isNotEmpty == true ? availableDate : [],
       'selectedTimes': selectedTimes?.isNotEmpty == true ? selectedTimes : [], // Include this
       'notavailable': availableDate?.isNotEmpty == true ? availableDate : [],
@@ -70,6 +80,6 @@ this.Day_of_booking,
 
   @override
   String toString() {
-    return 'AddbookingModel(name: $Name, phoneCommunication: $phoneCommunication, dateofBooking: $dateofBooking, timeofBooking: $timeofBooking, rentTheBall: $rentTheBall, availableTime: $availableTime, availableDate: $availableDate,selectedTimes: $selectedTimes,notavailable:$notavailable)';
+    return 'AddbookingModel(name: $Name, phoneCommunication: $phoneCommunication, dateofBooking: $dateofBooking, timeofBooking: $timeofBooking, rentTheBall: $rentTheBall, availableTime: $availableTime, availableDate: $availableDate,selectedTimes: $selectedTimes,adminId: $AdminId,groundID:$groundID)';
   }
 }
