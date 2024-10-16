@@ -380,7 +380,10 @@ List<Favouritemodel>favlist=[];
           await docRef.update({
             'rate': rating,
           });
-
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => PlaygroundName(widget.id)),
+          );
         }
         else {
           // Document doesn't exist, create a new one
@@ -391,7 +394,10 @@ List<Favouritemodel>favlist=[];
             'img': allplaygrounds[0].img!,
             'name': allplaygrounds[0].playgroundName!
           });
-
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => PlaygroundName(widget.id)),
+          );
         }
       } else if (user?.phoneNumber != null) {
         // Check if a document exists for the user and playground combination
@@ -404,7 +410,10 @@ List<Favouritemodel>favlist=[];
           await docRef.update({
             'rate': rating,
           });
-
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => PlaygroundName(widget.id)),
+          );
         } else {
           // Document doesn't exist, create a new one
           DocumentReference docRef = await playerchat.add({
@@ -414,7 +423,10 @@ List<Favouritemodel>favlist=[];
             'img': allplaygrounds[0].img!,
             'name': allplaygrounds[0].playgroundName!
           });
-
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => PlaygroundName(widget.id)),
+          );
         }
       } else {
         print("No phone number available.");
@@ -685,10 +697,7 @@ List<Favouritemodel>favlist=[];
                               }
                               List<bool> rating = List.generate(5, (index) => index < _selectedStars);
                               sendRating(rating);
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(builder: (context) => PlaygroundName(widget.id)),
-                              );
+
                             });
                           },
                           child: rat_list.isNotEmpty && rat_list[0].rate != null

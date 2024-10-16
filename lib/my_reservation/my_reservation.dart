@@ -117,16 +117,64 @@ class my_reservationState extends State<my_reservation>
       print("No phone number available.");
     }
   }
+  void _load_cancel_book()async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? phoneValue = prefs.getString('phonev');
+    print("newphoneValue${phoneValue.toString()}");
 
+    if (phoneValue != null && phoneValue.isNotEmpty){
+      String? normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
+
+      getcancel_bookDataByPhone(normalizedPhoneNumber);
+    }
+    else if (user?.phoneNumber != null){
+      String? normalizedPhoneNumber = user?.phoneNumber !.replaceFirst('+20', '0');
+
+      getcancel_bookDataByPhone(normalizedPhoneNumber!);
+
+    }
+  }
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _load_cancel_book();
     fetchBookingData();
     // print("groundId${widget.groundId}");
     setState(() {});
   }
   late List<AddbookingModel> playgroundbook = [];
+  int numbercanceled=0;
+  Future<void> getcancel_bookDataByPhone(String userPhone) async {
+    final firestore = FirebaseFirestore.instance;
+
+    try {
+      // Query the collection where user_phone matches the provided phone number
+      final querySnapshot = await firestore
+          .collection('cancel_book')
+          .where('user_phone', isEqualTo: userPhone)
+          .get();
+
+      // Check if any documents are returned
+      if (querySnapshot.docs.isNotEmpty) {
+        // Iterate over each document returned by the query
+        querySnapshot.docs.forEach((doc) {
+          // Get the document data
+          Map<String, dynamic> data = doc.data();
+          int numberOfCancel = data['numberofcancel'] ?? 0;
+
+          // Do something with the retrieved data
+          print('User Phone: ${data['user_phone']}');
+          print('Number of Cancels: $numberOfCancel');
+          numbercanceled=numberOfCancel;
+        });
+      } else {
+        print('No data found for this phone number.');
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
+  }
 
   Future<void> fetchBookingData() async {
     try {
@@ -195,6 +243,57 @@ class my_reservationState extends State<my_reservation>
     }
   }
   late List<AddPlayGroundModel> playgroundAllData = [];
+  Future<void> deleteCancelByPhoneAndPlaygroundId(String phone, String playgroundId,String selectedTime) async {
+    final firestore = FirebaseFirestore.instance;
+    print("phoneggggg${phone}");
+    try {
+      // Query to find the document where 'user_phone' matches the provided phone number
+      // and 'playgroundId' matches the provided playgroundId
+      final querySnapshot = await firestore
+          .collection('booking')
+          .where('phoneCommunication', isEqualTo: phone)
+          .where('groundID', isEqualTo: playgroundId)
+          .where('selectedTimes', arrayContains: selectedTime)
+          .get();
+
+      // Check if any documents were found
+      if (querySnapshot.docs.isNotEmpty) {
+        // Loop through the documents and delete them
+        for (var doc in querySnapshot.docs) {
+          await firestore.collection('booking').doc(doc.id).delete();
+          print('Document with phone $phone, playgroundId $playgroundId, and selectedTime $selectedTime deleted successfully.');
+        }
+      } else {
+        print('No document found for phone number: $phone and playgroundId: $playgroundId');
+      }
+    } catch (e) {
+      print('Error deleting document: $e');
+    }
+  }
+  Future<void> updateCancelCount(String userPhone) async {
+    final firestore = FirebaseFirestore.instance;
+    final query = await firestore
+        .collection('cancel_book')
+        .where('user_phone', isEqualTo: userPhone)
+        .get();
+
+    if (query.docs.isNotEmpty) {
+      // Document exists, increment the numberofcancel field
+      final doc = query.docs.first;
+      final currentCount = doc['numberofcancel'] ?? 0;
+
+      await firestore
+          .collection('cancel_book')
+          .doc(doc.id)
+          .update({'numberofcancel': currentCount + 1});
+    } else {
+      // Document does not exist, create a new one with numberofcancel set to 1
+      await firestore.collection('cancel_book').add({
+        'user_phone': userPhone,
+        'numberofcancel': 1,
+      });
+    }
+  }
   Future<void> getPlaygroundbyname(String iiid) async {
     try {
       CollectionReference playerchat =
@@ -405,8 +504,7 @@ class my_reservationState extends State<my_reservation>
                         ),
                         child: Column(
                           children: [
-                            Text(
-                              "0",
+                            Text("$numbercanceled",
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontFamily: 'Cairo',
@@ -549,10 +647,10 @@ class my_reservationState extends State<my_reservation>
                             mainAxisAlignment: MainAxisAlignment.end, // Aligns the content to the right
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                                Column(
+                              Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                   Text(
+                                  Text(
                                     "${playgroundAllData[i].playgroundName!}",
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
@@ -575,7 +673,7 @@ class my_reservationState extends State<my_reservation>
                                           color: Color(0xFF7D90AC),
                                         ),
                                       ),
-SizedBox( width: MediaQuery.of(context).size.width/4.2,),
+                                      SizedBox( width: MediaQuery.of(context).size.width/4.2,),
                                       Text(
                                         "${playgroundbook[i].phoneCommunication!}",
                                         textDirection: TextDirection.rtl,  // Ensures the text direction is RTL
@@ -668,26 +766,34 @@ SizedBox( width: MediaQuery.of(context).size.width/4.2,),
                           children: [
                             Padding(
                               padding: const EdgeInsets.only(top: 12.0,bottom: 12,left: 30),
-                              child: Container(
-                                height: 29,
-                                width: 110,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                  shape: BoxShape.rectangle,
-                                  color: Color(0xFFB3261E), // Background color of the container
-                                  // border: Border.all(
-                                  //   width: 1.0, // Border width
-                                  //   color: Colors.black
-                                  // ),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    "إلغاء الحجز".tr,
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white, // Text color
+                              child: GestureDetector(
+                                onTap: (){
+                                  print("phooonefff${playgroundbook[i].phoneCommunication!}");
+                                  updateCancelCount(playgroundbook[i].phoneCommunication!);
+                                  deleteCancelByPhoneAndPlaygroundId(playgroundbook[i].phoneCommunication!,playgroundbook[i].groundID!,playgroundbook[i].selectedTimes!.first);
+
+                                },
+                                child: Container(
+                                  height: 29,
+                                  width: 110,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(30.0),
+                                    shape: BoxShape.rectangle,
+                                    color: Color(0xFFB3261E), // Background color of the container
+                                    // border: Border.all(
+                                    //   width: 1.0, // Border width
+                                    //   color: Colors.black
+                                    // ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      "إلغاء الحجز".tr,
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white, // Text color
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -776,11 +882,11 @@ SizedBox( width: MediaQuery.of(context).size.width/4.2,),
               break;
 
             case 1:
-              // Get.to(() => FavouritePage())?.then((_) {
-              //   navigationController
-              //       .updateIndex(1); // Update index when navigating back
-              // });
-              // break;
+            // Get.to(() => FavouritePage())?.then((_) {
+            //   navigationController
+            //       .updateIndex(1); // Update index when navigating back
+            // });
+            // break;
             case 2:
               Get.to(() => AppBarandNavigationBTN())?.then((_) {
                 navigationController.updateIndex(2);
@@ -788,9 +894,9 @@ SizedBox( width: MediaQuery.of(context).size.width/4.2,),
               break;
 
             case 3:
-            Get.to(() => HomePage())?.then((_) {
-              navigationController.updateIndex(3);
-            });
+              Get.to(() => HomePage())?.then((_) {
+                navigationController.updateIndex(3);
+              });
               break;
           }
         },

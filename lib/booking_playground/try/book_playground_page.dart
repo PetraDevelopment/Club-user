@@ -206,10 +206,8 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
 
               print("Start Time: $startTime");
               print("End Time: $endTime");
-              String adminId = userData['AdminId'] ?? ''; // Fetch AdminId directly from userData
-              user.adminId = adminId; // Assuming your model has a property for AdminId
-              print("Admin ID: $adminId");
-              USerID=adminId;
+              String adminId =playgroundAllData[0].adminId! ; // Fetch AdminId directly from userData
+
               // You can use these times to update the UI or for other logic
               timeSlots.add(startTime); // Add start time to the list
               timeSlots.add(endTime);   // Add end time to the list
@@ -320,23 +318,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
         );
         return; // Exit function to prevent duplicate booking
       }
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String phoooone = prefs.getString('phone') ?? '';
 
-      // Fetch the document ID of the player using the Phoone number
-      CollectionReference playerchat = FirebaseFirestore.instance.collection('Users');
-      QuerySnapshot playerQuerySnapshot = await playerchat.where('phone', isEqualTo:phoooone).get();
-
-      String docId = '';
-      if (playerQuerySnapshot.docs.isNotEmpty) {
-        var playerDoc = playerQuerySnapshot.docs.first;
-        docId = playerDoc.id; // Get the docId of the matching Phoone number
-        print("Document ID for the Phoone number: $docId");
-      } else {
-        print("No matching document found for the Phoone number.");
-        // You can show a message or handle the case where the Phoone number doesn't exist
-        return;
-      }
 
       // Create a booking model and add it to Firestore if no duplicates found
       final bookingModel = AddbookingModel(
@@ -346,7 +328,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
           selectedTimes: selectedTimes.toList(),
           dateofBooking: storeDate,
           Day_of_booking: selectedDayName,
-          AdminId: docId,
+          AdminId: playgroundAllData[0].adminId!,
           groundID: widget.IdData
       );
 
@@ -381,6 +363,8 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
       );
     }
   }
+  bool isAlreadySelected = false;
+
 
   late List<User1> user1 = [];
   User? user = FirebaseAuth.instance.currentUser;
@@ -765,10 +749,24 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                       ),
                     ),
                   ),
-                  playgroundAllData.isNotEmpty  && playgroundAllData.any((data) => data.bookTypes!.any((bt) => bt.day == selectedDayName))
-                      ? Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: _generateRows(selectedTimes, selectedDayName),
+                  playgroundAllData.isNotEmpty && playgroundAllData.any((data) => data.bookTypes!.any((bt) => bt.day == selectedDayName))
+                      ? FutureBuilder<List<Widget>>(
+                    future: _generateRows(selectedTimes, selectedDayName),
+                    builder: (context, snapshot) {
+                      if ( snapshot.connectionState == true) {
+                        return Center(child: Container(child: CircularProgressIndicator(color: Colors.green.shade700,),)); // Show a loading indicator while waiting
+                      }
+                      if (snapshot.hasError) {
+                        return Center(child: Text("Error: ${snapshot.error}")); // Handle errors
+                      }
+                      if (snapshot.hasData) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: snapshot.data!, // Use the data
+                        );
+                      }
+                      return Center(child: Container(child: CircularProgressIndicator(color: Colors.green.shade700,),)); // Show a loading indicator while waiting
+                    },
                   )
                       : Container(
                     height: 99,
@@ -1281,17 +1279,11 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
       ),
     );
   }
-  List<Widget> _generateRows(Set<String> selectedTimes, String selectedDay) {
+  Future<List<Widget>> _generateRows(Set<String> selectedTimes,
+      String selectedDay)
+  async {
     List<Widget> rows = [];
     int index = 0;
-    print("All Time Slots: $timeSlots");
-    // Get hours between start and end times
-    String slot = timeSlots[index];
-    bool isSelected = selectedTimes.contains(slot);
-
-
-    bool isAlreadySelected =
-        alreadySelectedTimesPerDay[selectedDay]?.contains(slot) ?? false;
 
     // Filter the time slots for the selected day
     List<String> dayTimeSlots = _getTimeSlotsForSelectedDay(selectedDay);
@@ -1308,54 +1300,68 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
         String endTime = dayTimeSlots[index + 1];
         List<String> hoursBetween = _getHoursBetween('$startTime - $endTime');
 
-
         for (String slot in hoursBetween) {
+          // Check if the slot is selected
           bool isSelected = selectedTimes.contains(slot);
 
+          // Check if a document with the same Day_of_booking and selectedTimes already exists
+          final existingBookingQuery = FirebaseFirestore.instance
+              .collection('booking')
+              .where('Day_of_booking', isEqualTo: selectedDayName)
+              .where('dateofBooking', isEqualTo: storeDate)
+              .where('groundID', isEqualTo: widget.IdData)
+              .where('selectedTimes', arrayContainsAny: [slot]);
+
+          final existingBookings = await existingBookingQuery.get();
+          bool isTimeSlotBooked = existingBookings.docs
+              .isNotEmpty; // Check if time slot is already booked
+
+          // GestureDetector for each time slot
           currentRowChildren.add(
             GestureDetector(
-                onTap: () {
-                  if (isAlreadySelected ) {
-                    print("isAlreadySelected$isAlreadySelected");
-                    showPopover(
-                      context: context,
-                      bodyBuilder: (context) =>  ListItems(),
-                      onPop: () => print('Popover was popped!'),
-                      direction: PopoverDirection.top,
-                      width: MediaQuery.of(context).size.width / 1.3,
+              onTap: () {
+                if (isTimeSlotBooked) {
+                  print("isTimeSlotBooked$isTimeSlotBooked");
+                  // Show the popover if the time slot is already booked
+                  print("isAlreadySelected$isAlreadySelected");
+                  // showPopover(
+                  //   context: context,
+                  //   bodyBuilder: (context) => ListItems(),
+                  //   onPop: () => print('Popover was popped!'),
+                  //   direction: PopoverDirection.top,
+                  //   width: MediaQuery.of(context).size.width / 1.3,
+                  //   height: 322,
+                  //   arrowHeight: 15,
+                  //   arrowWidth: 30,
+                  //   radius: 18,
+                  // );
 
-                      height: 322,
-                      arrowHeight: 15,
-                      arrowWidth: 30,
-                      radius: 18,
-                    );
-                    // cancellationofreservation();
+                }
+                else {
+                  // Otherwise, allow selection or deselection of the slot
+                  setState(() {
+                    if (isSelected) {
+                      reservation(); // Call reservation logic
+                      selectedTimes.remove(slot); // Deselect time slot
+                    } else {
+                      reservation(); // Call reservation logic
+                      selectedTimes.add(slot); // Select time slot
+                    }
+                  });
+                }
+              },
+              child: FutureBuilder<Widget>(
+                future: _generateTimeSlotWidget(
+                    slot, isSelected, isTimeSlotBooked),
+                // Pass isTimeSlotBooked as well
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return snapshot.data!;
                   } else {
-                    setState(() {
-                      if (isSelected) {
-                        reservation();
-                        // cancellationofreservation();
-                        selectedTimes.remove(slot);
-                      } else {
-                        reservation();
-                        selectedTimes.add(slot);
-                      }
-                    });
+                    return Container(); // or some other loading indicator
                   }
                 },
-                child: FutureBuilder<Widget>(
-                  future: _generateTimeSlotWidget(slot, isSelected, isAlreadySelected), // Pass isAlreadySelected as bool
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      // cancellationofreservation();
-                      // print("cancellationofreservatiiion$cancellationofreservation");
-
-                      return snapshot.data!;
-                    } else {
-                      return Container(); // or some other loading indicator
-                    }
-                  },
-                )
+              ),
             ),
           );
 
@@ -1374,12 +1380,11 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
             currentRowChildren = []; // Reset for the next row
           }
         }
-      }
-      else {
-        // Handle last time slot if there is no pair
+      } else {
+        // Handle the last time slot if there is no pair
         currentRowChildren.add(
           FutureBuilder<Widget>(
-            future:  _generateTimeSlotWidget(slot, isSelected, isAlreadySelected),
+            future: _generateTimeSlotWidget(startTime, true, true),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Container(); // Loading indicator
@@ -1407,7 +1412,6 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
 
     return rows;
   }
-
 // Function to filter time slots based on the selected day
   List<String> _getTimeSlotsForSelectedDay(String selectedDay) {
     List<String> filteredTimeSlots = [];

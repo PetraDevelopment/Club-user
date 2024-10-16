@@ -15,6 +15,8 @@ import '../Register/SignInPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
+import '../booking_playground/AddbookingModel/AddbookingModel.dart';
+import '../location/map_page.dart';
 import '../model_rate/model_rate.dart';
 import '../my_reservation/my_reservation.dart';
 import '../playground_model/AddPlaygroundModel.dart';
@@ -34,7 +36,8 @@ class HomePageState extends State<HomePage> {
   late List<User1> user1 = [];
   User? user = FirebaseAuth.instance.currentUser;
   bool _isLoading = true; // flag to control shimmer effect
-
+  String start="";
+  String end ="";
   Future<void> _loadData() async {
     fetchRatings();
     // load data here
@@ -47,6 +50,8 @@ class HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadData();
+    fetchBookingData();
+
     fetchRatings();
     getPlaygroundbyname();
     _loadUserData();
@@ -78,12 +83,152 @@ class HomePageState extends State<HomePage> {
       print("No phone number available.");
     }
   }
+  late List<AddbookingModel> playgroundbook = [];
 
+  Future<void> fetchBookingData() async {
+    try {
+      CollectionReference bookingCollection = FirebaseFirestore.instance.collection("booking");
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? phoneValue = prefs.getString('phonev');
+      print("newphoneValue${phoneValue.toString()}");
+
+      if (phoneValue != null && phoneValue.isNotEmpty) {
+        String normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
+        QuerySnapshot querySnapshot = await bookingCollection.where('phoneCommunication', isEqualTo: normalizedPhoneNumber).get();
+
+        if (querySnapshot.docs.isNotEmpty) {
+          List<AddbookingModel> bookings = querySnapshot.docs.map((doc) {
+            Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // Explicit casting
+            return AddbookingModel.fromMap(data);
+          }).toList();
+          // Update the playgroundbook list with fetched bookings
+          playgroundbook = bookings;
+          // Print and access specific fields for each booking
+          playgroundbook.forEach((booking) {
+            print('AdminId: ${booking.AdminId}');
+            print('Day_of_booking: ${booking.Day_of_booking}');
+            print('Name: ${booking.Name}');
+            print('Rent_the_ball: ${booking.rentTheBall}');
+            print('phoneshoka: ${booking.phoneCommunication}');
+
+            // Access other fields as needed
+          });
+
+        }
+        else {
+          print('No documents found in the "booking" collection.');
+        }
+      }
+      else if (user?.phoneNumber != null) {
+        String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
+        QuerySnapshot querySnapshot = await bookingCollection.where('phoneCommunication', isEqualTo: normalizedPhoneNumber).get();
+
+        if (querySnapshot.docs.isNotEmpty) {
+          List<AddbookingModel> bookings = querySnapshot.docs.map((doc) {
+            Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // Explicit casting
+            return AddbookingModel.fromMap(data);
+          }).toList();
+          // Update the playgroundbook list with fetched bookings
+          playgroundbook = bookings;
+          // Print and access specific fields for each booking
+          playgroundbook.forEach((booking) {
+            print('AdminId: ${booking.AdminId}');
+            print('Day_of_booking: ${booking.Day_of_booking}');
+            print('Name: ${booking.Name}');
+            print('Rent_the_ball: ${booking.rentTheBall}');
+            print('phoneshoka: ${booking.phoneCommunication}');
+            getPlaygroundbynameE(booking.groundID!);
+            // Access other fields as needed
+          });
+
+        }
+        else {
+          print('No documents found in the "booking" collection.');
+        }
+      }
+    } catch (e) {
+      print('Error fetching booking data: $e');
+    }
+  }
+  late List<AddPlayGroundModel> playgroundAllData = [];
+  Future<void> getPlaygroundbynameE(String iiid) async {
+    try {
+      CollectionReference playerchat =
+      FirebaseFirestore.instance.collection("AddPlayground");
+
+      QuerySnapshot querySnapshot = await playerchat.get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (QueryDocumentSnapshot document in querySnapshot.docs) {
+          Map<String, dynamic> userData =
+          document.data() as Map<String, dynamic>;
+          AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
+          if (document.id == iiid) {
+            playgroundAllData.add(user);
+
+            String?  bookType = playgroundAllData[0].bookTypes![0].time;
+            // Assuming 'time' is the field you want to split into start and end time
+            String timeofAddedPlayground = bookType ?? '';
+            print("timeofAddedPlayground: $timeofAddedPlayground");
+
+            // Splitting time into startTime and endTime based on '-'
+            List<String> times = timeofAddedPlayground.split(' - ');
+            if (times.length == 2) {
+              String startTime = times[0];
+              String endTime = times[1];
+              for(int i=0;i<playgroundAllData.length;i++){
+                print("locattttion${playgroundAllData[i].location}");
+
+              }
+              start=startTime;
+              print("Start Time: $startTime");
+              end=endTime;
+              print("End Time: $endTime");
+              String adminId = userData['AdminId'] ?? ''; // Fetch AdminId directly from userData
+              user.adminId = adminId; // Assuming your model has a property for AdminId
+              print("Admin ID: $adminId");
+              // USerID=adminId;
+              // // You can use these times to update the UI or for other logic
+              // timeSlots.add(startTime); // Add start time to the list
+              // timeSlots.add(endTime);   // Add end time to the list
+
+              // You could directly update your UI here or save this data for later
+              // For example, show the start and end time in the UI
+              setState(() {
+                // Update any UI components with the start and end times
+                // startTimeStr = startTime; // Assuming you have a state variable to store this
+                // endTimeStr = endTime;     // Assuming you have a state variable to store this
+              });
+
+              // print("Time slots: ${timeSlots}");
+            } else {
+              print("Invalid time format: $timeofAddedPlayground");
+            }
+            // }
+// الوقت  هو سبب المشكله
+            print(
+                "PlayGroungboook Iiid : ${document.id}"); // Print the latest playground
+            // groundIiid = document.id;
+            // print("Docummmmmmbook$groundIiid");
+            // Normalize playType before comparing
+            String playType = user.playType!.trim();
+          }
+
+          // Store the document ID in the AddPlayGroundModel object
+          user.id = document.id;
+        }
+      }
+    } catch (e) {
+      print("Error getting playground: $e");
+    }
+  }
+  int reversed=0;
   Future<void> getUserByPhone(String phoneNumber) async {
     try {
       String normalizedPhoneNumber = phoneNumber.replaceFirst('+20', '0');
       CollectionReference playerchat =
-          FirebaseFirestore.instance.collection('Users');
+      FirebaseFirestore.instance.collection('Users');
 
       QuerySnapshot querySnapshot = await playerchat
           .where('phone', isEqualTo: normalizedPhoneNumber)
@@ -91,7 +236,7 @@ class HomePageState extends State<HomePage> {
 
       if (querySnapshot.docs.isNotEmpty) {
         Map<String, dynamic> userData =
-            querySnapshot.docs.first.data() as Map<String, dynamic>;
+        querySnapshot.docs.first.data() as Map<String, dynamic>;
         User1 user = User1.fromMap(userData);
 
         // Update the list and UI inside setState
@@ -108,7 +253,7 @@ class HomePageState extends State<HomePage> {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => SigninPage()),
-          (Route<dynamic> route) => false,
+              (Route<dynamic> route) => false,
         );
       }
     } catch (e) {
@@ -116,6 +261,39 @@ class HomePageState extends State<HomePage> {
     }
   }
   List<Rate_fetched> rat_list = [];
+// Function to delete a document from the 'cancel_book' collection based on the phone number
+  // Function to delete a specific booking document based on phone number and playgroundId
+  Future<void> deleteCancelByPhoneAndPlaygroundId(String phone, String playgroundId,String selectedTime) async {
+    final firestore = FirebaseFirestore.instance;
+    print("phoneggggg${phone}");
+    try {
+      // Query to find the document where 'user_phone' matches the provided phone number
+      // and 'playgroundId' matches the provided playgroundId
+      final querySnapshot = await firestore
+          .collection('booking')
+          .where('phoneCommunication', isEqualTo: phone)
+          .where('groundID', isEqualTo: playgroundId)
+          .where('selectedTimes', arrayContains: selectedTime)
+          .get();
+
+      // Check if any documents were found
+      if (querySnapshot.docs.isNotEmpty) {
+        // Loop through the documents and delete them
+        for (var doc in querySnapshot.docs) {
+          await firestore.collection('booking').doc(doc.id).delete();
+          print('Document with phone $phone, playgroundId $playgroundId, and selectedTime $selectedTime deleted successfully.');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomePage()),
+          );
+        }
+      } else {
+        print('No document found for phone number: $phone and playgroundId: $playgroundId');
+      }
+    } catch (e) {
+      print('Error deleting document: $e');
+    }
+  }
 
   Future<void> fetchRatings() async {
     try {
@@ -131,7 +309,7 @@ class HomePageState extends State<HomePage> {
 
       // Sort the ratings by the calculated totalRating in descending order
       rat_list.sort((a, b) => b.totalRating.compareTo(a.totalRating));
-
+print("order${rat_list}");
       // Create a Set to track unique playground IDs
       Set<String> uniquePlaygroundIds = {};
 
@@ -145,7 +323,7 @@ class HomePageState extends State<HomePage> {
         }
       }).toList();
 
-      // Take the top 5 highest-rated playgrounds
+      // top 5 highest-rated
       rat_list = rat_list.take(5).toList();
 
       print("Filtered and sorted playgrounds: $rat_list");
@@ -238,6 +416,32 @@ class HomePageState extends State<HomePage> {
   }
   final NavigationController navigationController = Get.put(NavigationController());
   double opacity = 1.0;
+// Function to update the cancel count
+  Future<void> updateCancelCount(String userPhone) async {
+    final firestore = FirebaseFirestore.instance;
+    final query = await firestore
+        .collection('cancel_book')
+        .where('user_phone', isEqualTo: userPhone)
+        .get();
+
+    if (query.docs.isNotEmpty) {
+      // Document exists, increment the numberofcancel field
+      final doc = query.docs.first;
+      final currentCount = doc['numberofcancel'] ?? 0;
+
+      await firestore
+          .collection('cancel_book')
+          .doc(doc.id)
+          .update({'numberofcancel': currentCount + 1});
+    } else {
+      // Document does not exist, create a new one with numberofcancel set to 1
+      await firestore.collection('cancel_book').add({
+        'user_phone': userPhone,
+        'numberofcancel': 1,
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -267,14 +471,14 @@ class HomePageState extends State<HomePage> {
                       ),
                     ),
                     _isLoading?   Shimmer.fromColors(
-            baseColor: Colors.grey[300]!, // base color
-            highlightColor: Colors.grey[300]!,
+                      baseColor: Colors.grey[300]!, // base color
+                      highlightColor: Colors.grey[300]!,
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Padding(
                             padding:
-                                const EdgeInsets.only(bottom: 14.0, right: 12),
+                            const EdgeInsets.only(bottom: 14.0, right: 12),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
@@ -289,30 +493,30 @@ class HomePageState extends State<HomePage> {
                                 ),
                                 user1.isNotEmpty && user1[0].name!.isNotEmpty
                                     ? Text(
-                                        user1[0].name!,
-                                        style: TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontSize: 16.0,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF334154),
-                                        ),
-                                      )
+                                  user1[0].name!,
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF334154),
+                                  ),
+                                )
                                     : Container()
                                 // You can show a placeholder or nothing if the list is empty.
                               ],
                             ),
                           ),
                           user1.isNotEmpty && user1[0].img!=null&&user1[0].img!=""? Padding(
-                            padding: const EdgeInsets.only(right: 34.0),
-                            child:ClipOval(
-                              child: Image(image:  NetworkImage(
-                                user1[0].img!,
-                              
-                                // Adjust size as needed
-                              ),     width: 63,
-                                height: 63,
-                                fit: BoxFit.fitWidth,),
-                            )
+                              padding: const EdgeInsets.only(right: 34.0),
+                              child:ClipOval(
+                                child: Image(image:  NetworkImage(
+                                  user1[0].img!,
+
+                                  // Adjust size as needed
+                                ),     width: 63,
+                                  height: 63,
+                                  fit: BoxFit.fitWidth,),
+                              )
                           ):
                           Padding(
                             padding: const EdgeInsets.only(right: 34.0),
@@ -405,14 +609,14 @@ class HomePageState extends State<HomePage> {
 
                 GestureDetector(
                   onTap: () {
-setState(() {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => Searchpage(),
-    ),
-  );
-});
+                    setState(() {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Searchpage(),
+                        ),
+                      );
+                    });
 
                   },
                   child: Padding(
@@ -573,7 +777,7 @@ setState(() {
                     ),
                   ),
                 ),
-                Padding(
+                playgroundAllData.isNotEmpty?   Padding(
                   padding: const EdgeInsets.only(right: 12.0,bottom: 12,top: 12),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -581,7 +785,7 @@ setState(() {
 
                     child:Row(
                       children: [
-                        for (var i = 0; i < 5; i++) // Repeat the container 5 times
+                        for (var i = 0; i < playgroundAllData.length; i++) // Repeat the container 5 times
                           Padding(
                             padding: const EdgeInsets.only(right: 8.0,left: 12,bottom: 3), // Adds spacing between containers
                             child: Container(
@@ -612,7 +816,227 @@ setState(() {
                                         Column(
                                           crossAxisAlignment: CrossAxisAlignment.end,
                                           children: [
-                                             Text(
+                                            Text(
+                                              "${ playgroundAllData[i].playgroundName!}",
+                                              style: TextStyle(
+                                                fontFamily: 'Cairo',
+                                                fontSize: 16.0,
+                                                fontWeight: FontWeight.w700,
+                                                color: Color(0xFF334154),
+                                              ),
+                                            )
+
+                                          ],
+                                        ),
+                                        SizedBox(width: 10), // Adds space between the text and the image
+                                        Image.asset(
+                                          "assets/images/Wadi_Logo.png",
+                                          height: 30,
+                                          width: 30,
+                                          // Adjust size as needed
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            "${playgroundbook[i].dateofBooking!}",
+                                            style: TextStyle(
+                                              fontFamily: 'Cairo',
+                                              fontSize: 14.0,
+                                              fontWeight: FontWeight.w500,
+                                              color: Color(0xFF7D90AC),
+                                            ),
+                                          ),
+                                          SizedBox(width: 19,),
+                                          RichText(
+                                            textDirection: TextDirection.rtl, // Set the overall text direction to RTL
+                                            text: TextSpan(
+                                              style: TextStyle(
+                                                fontFamily: 'Cairo',
+                                                fontSize: 14.0,
+                                                fontWeight: FontWeight.w500,
+                                                color: Color(0xFF7D90AC),
+                                              ),
+                                              children: [
+                                                TextSpan(
+                                                  text: '${start.substring(0,4)}', // Right-aligned part
+                                                ),
+                                                TextSpan(
+                                                  text: '  إلى  ', // Center part (extra spaces for spacing)
+                                                ),
+                                                TextSpan(
+                                                  text: '${end.substring(0,4)}', // Left-aligned part
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                    ],
+                                  ),
+                                  SizedBox(height: 5),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        "${playgroundAllData[i].bookTypes![0].cost!}",
+
+                                        textDirection: TextDirection.rtl,  // Ensures the text direction is RTL
+
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 14.0,
+                                          fontWeight: FontWeight.w800,
+                                          color: Color(0xFF7D90AC),
+                                        ),
+                                      ),
+                                      Text(
+                                        " " +":"+ "  التكلفة الأجمالية   ".tr,
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 12.0,
+                                          fontWeight: FontWeight.w400,
+                                          color: Color(0xFF334154),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 5),
+
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: (){
+                                          print("phooonefff${playgroundbook[i].phoneCommunication!}");
+                                          updateCancelCount(playgroundbook[i].phoneCommunication!);
+                                          deleteCancelByPhoneAndPlaygroundId(playgroundbook[i].phoneCommunication!,playgroundbook[i].groundID!,playgroundbook[i].selectedTimes!.first);
+
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(12.0),
+                                          child: Container(
+                                            height: 29,
+                                            width: 92,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(30.0),
+                                              shape: BoxShape.rectangle,
+                                              color: Color(0xFFB3261E), // Background color of the container
+                                              // border: Border.all(
+                                              //   width: 1.0, // Border width
+                                              //   color: Colors.black
+                                              // ),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                "إلغاء الحجز".tr,
+                                                style: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  fontSize: 16.0,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.white, // Text color
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () async {
+                                          print("locattttion${playgroundAllData[i].location!}");
+
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(builder: (context) => Maps(location: playgroundAllData[i].location!)),
+                                          );
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(15.0),
+                                          child: Container(
+                                            height: 29,
+                                            width: 75,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(30.0),
+                                              shape: BoxShape.rectangle,
+                                              color: Color(0xFF064821), // Background color of the container
+                                              // border: Border.all(
+                                              //   width: 1.0, // Border width
+                                              //   color: Colors.black
+                                              // ),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                "الموقع".tr,
+                                                style: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  fontSize: 16.0,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.white, // Text color
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                    ],
+                                  ),
+                                  SizedBox(height: 5),
+
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+
+                  ),
+                ):Padding(
+                  padding: const EdgeInsets.only(right: 12.0,bottom: 12,top: 12),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    reverse: true, // Reverses the scroll direction
+
+                    child:Row(
+                      children: [
+                        for (var i = 0; i < 1; i++) // Repeat the container 5 times
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0,left: 12,bottom: 3), // Adds spacing between containers
+                            child: Container(
+
+                              width: 252,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20.0),
+                                shape: BoxShape.rectangle,
+                                color: Color(0xFFF0F6FF),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.7), // Increase opacity for a darker shadow
+                                    spreadRadius: 0, // Increase spread to make the shadow larger
+                                    blurRadius: 2, // Increase blur radius for a more diffused shadow
+                                    offset: Offset(0, 0), // Increase offset for a more pronounced shadow effect
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 12.0, left: 12, top: 11),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end, // Aligns the content to the right
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
                                               "ملعب وادى دجلــــة",
                                               style: TextStyle(
                                                 fontFamily: 'Cairo',
@@ -821,16 +1245,22 @@ setState(() {
                                     shape: BoxShape.rectangle,
                                   ),
                                   child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
-                                    child:Image.network(
-                                      // Check if img is a list and has at least one image, otherwise use it as a string
-                                      allplaygrounds[i].img!.isNotEmpty
-                                          ? allplaygrounds[i].img![0] // Use the first image in the list (or the only image if it's a single string turned into a list)
-                                          :  "assets/images/newground.png",// Fallback to an empty string if no image is available
-                                      height: 163,
-                                      width: 274,
-                                      fit: BoxFit.fill, // Ensure the image covers the container
-                                    )
+                                      borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
+                                      child: allplaygrounds[i].img!.isNotEmpty?Image.network(
+                                        // Check if img is a list and has at least one image, otherwise use it as a string
+
+                                             allplaygrounds[i].img![0], // Use the first image in the list (or the only image if it's a single string turned into a list)
+                                          // Fallback to an empty string if no image is available
+                                        height: 163,
+                                        width: 274,
+                                        fit: BoxFit.fill, // Ensure the image covers the container
+                                      ):Image(
+                                        image: AssetImage("assets/images/newground.png"),
+                                        color: Colors.white,
+                                        height: 163,
+                                        width: 274,
+                                        fit: BoxFit.fill,
+                                      ),
                                   ),
                                 ),
                                 Positioned(
@@ -878,7 +1308,7 @@ setState(() {
                     ],
                   ):Container(),
                 ),
-      SizedBox(height: 20,),
+                SizedBox(height: 20,),
                 Padding(
                   padding: const EdgeInsets.only(right: 25,left: 26,top: 10,bottom: 10,),
                   child: Text(
@@ -897,7 +1327,8 @@ setState(() {
 
                   child:rat_list.isNotEmpty? Row(
                     children: [
-                      for (var i = 0; i < rat_list.length; i++)
+
+                      for (var i =  rat_list.length-1; i >-1 ; i--)
                         GestureDetector(
 
                           onTap: (){
@@ -906,9 +1337,9 @@ setState(() {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                   builder: (context) => PlaygroundName(rat_list[i].playgroundIdstars!),
+                                builder: (context) => PlaygroundName(rat_list[i].playgroundIdstars!),
 
-          ),
+                              ),
                             );
                           },
                           child: Card(
@@ -927,16 +1358,21 @@ setState(() {
                                     shape: BoxShape.rectangle,
                                   ),
                                   child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
-                                    child:Image.network(
-                                      // Check if img is a list and has at least one image, otherwise use it as a string
-                                      rat_list[i].img!.isNotEmpty
-                                          ? rat_list[i].img![0] // Use the first image in the list (or the only image if it's a single string turned into a list)
-                                          :  "assets/images/newground.png",// Fallback to an empty string if no image is available
-                                      height: 163,
-                                      width: 274,
-                                      fit: BoxFit.fill, // Ensure the image covers the container
-                                    )
+                                      borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
+                                      child: rat_list[i].img!.isNotEmpty?Image.network(
+                                        // Check if img is a list and has at least one image, otherwise use it as a string
+
+                                             rat_list[i].img![0], // Use the first image in the list (or the only image if it's a single string turned into a list)
+                                             height: 163,
+                                        width: 274,
+                                        fit: BoxFit.fill, // Ensure the image covers the container
+                                      ):Image(
+                                      image: AssetImage("assets/images/newground.png"),
+                              color: Colors.white,
+                              height: 163,
+                              width: 274,
+                              fit: BoxFit.fill,
+                            ),
                                   ),
                                 ),
                                 Positioned(
@@ -999,12 +1435,12 @@ setState(() {
                           ),
                           child: ClipRRect(
                               borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
-                              child:Image.network(
-                                // Check if img is a list and has at least one image, otherwise use it as a string
-                                 "assets/images/newground.png",// Fallback to an empty string if no image is available
+                              child:Image(
+                                image: AssetImage("assets/images/newground.png"),
+                                color: Colors.white,
                                 height: 163,
                                 width: 274,
-                                fit: BoxFit.fill, // Ensure the image covers the container
+                                fit: BoxFit.fill,
                               )
                           ),
                         ),
@@ -1113,9 +1549,9 @@ setState(() {
                 break;
 
               case 3:
-                // Get.to(() => HomePage())?.then((_) {
-                //   navigationController.updateIndex(3);
-                // });
+              // Get.to(() => HomePage())?.then((_) {
+              //   navigationController.updateIndex(3);
+              // });
                 break;
             }
           },

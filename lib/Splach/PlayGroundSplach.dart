@@ -51,7 +51,7 @@ class PlayGroundSplashState extends State<PlayGroundSplach>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'تم تسجيل الدخول بنجاج', // "Successfully registered"
+            'تم تسجيل الدخول بنجاح', // "Successfully registered"
             textAlign: TextAlign.center,
           ),
           backgroundColor: Color(0xFF1F8C4B),
