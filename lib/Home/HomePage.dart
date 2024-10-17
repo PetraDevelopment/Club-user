@@ -281,7 +281,7 @@ class HomePageState extends State<HomePage> {
         // Loop through the documents and delete them
         for (var doc in querySnapshot.docs) {
           await firestore.collection('booking').doc(doc.id).delete();
-          print('Document with phone $phone, playgroundId $playgroundId, and selectedTime $selectedTime deleted successfully.');
+          print('Document X phone $phone, playgroundId $playgroundId, and selectedTime $selectedTime deleted successfully.');
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => HomePage()),

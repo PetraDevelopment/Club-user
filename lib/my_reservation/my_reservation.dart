@@ -262,6 +262,10 @@ class my_reservationState extends State<my_reservation>
         for (var doc in querySnapshot.docs) {
           await firestore.collection('booking').doc(doc.id).delete();
           print('Document with phone $phone, playgroundId $playgroundId, and selectedTime $selectedTime deleted successfully.');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => my_reservation()),
+          );
         }
       } else {
         print('No document found for phone number: $phone and playgroundId: $playgroundId');

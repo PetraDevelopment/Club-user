@@ -45,6 +45,10 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
   int _currentIndex = 0; // Add this state variable to track the current page
 
   late List<AddbookingModel> playgroundbook = [];
+  late List<AddbookingModel> userplaygroundbook = [];
+  List<AddbookingModel> matchedPlaygrounds = [];
+  late List<AddPlayGroundModel> matchedplaygroundAllData = [];
+
   // String cost = "";
   late DateTime Day1;
   late DateTime Day2;
@@ -156,10 +160,32 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
 
         // Print playground data
         playgroundbook.forEach((playground) {
+
           print("Playground Name: ${playground.Name}");
         });
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String? phoneValue = prefs.getString('phonev');
+        print("newphoneValue: ${phoneValue.toString()}");
 
-        // Ensure timeSlots is not empty before using it
+
+        print("phoneValue$phoneValue");
+        print("phoneuser${user?.phoneNumber !}");
+        String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
+
+
+        for (int i = 0; i < playgroundbook.length; i++) {
+          if (playgroundbook[i].phoneCommunication == normalizedPhoneNumber) {
+            setState(() {
+              matchedPlaygrounds.add(playgroundbook[i]);
+              getmaatchedPlaygroundbyname(playgroundbook[i].groundID!);
+              print("shimaaaa${matchedPlaygrounds.length}");
+              print("shimaaaa dataaaaaa${playgroundbook[i]}");
+
+            });
+
+          }
+        }
+
         if (timeSlots.isNotEmpty) {
           startendtime(timeSlots.first, timeSlots.last);
           print("time for start: ${timeSlots.first} + ${timeSlots.last}");
@@ -179,6 +205,8 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
 
 
   String groundIiid = '';
+  String groundIiid2 = '';
+
   Future<void> getPlaygroundbyname(String iiid) async {
     try {
       CollectionReference playerchat =
@@ -230,6 +258,69 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                 "PlayGroungboook Iiid : ${document.id}"); // Print the latest playground
             groundIiid = document.id;
             print("Docummmmmmbook$groundIiid");
+            // Normalize playType before comparing
+            String playType = user.playType!.trim();
+          }
+
+          // Store the document ID in the AddPlayGroundModel object
+          user.id = document.id;
+        }
+      }
+    } catch (e) {
+      print("Error getting playground: $e");
+    }
+  }
+  Future<void> getmaatchedPlaygroundbyname(String iiid) async {
+    try {
+      CollectionReference playerchat =
+      FirebaseFirestore.instance.collection("AddPlayground");
+
+      QuerySnapshot querySnapshot = await playerchat.get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (QueryDocumentSnapshot document in querySnapshot.docs) {
+          Map<String, dynamic> userData =
+          document.data() as Map<String, dynamic>;
+          AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
+          if (document.id == widget.IdData) {
+            matchedplaygroundAllData.add(user);
+            String?  bookType = matchedplaygroundAllData[0].bookTypes![0].time;
+            // Assuming 'time' is the field you want to split into start and end time
+            String timeofAddedPlayground = bookType ?? '';
+            print("timeofAddedPlayground: $timeofAddedPlayground");
+
+            // Splitting time into startTime and endTime based on '-'
+            List<String> times = timeofAddedPlayground.split(' - ');
+            if (times.length == 2) {
+              String startTime = times[0];
+              String endTime = times[1];
+
+              print("Start Time: $startTime");
+              print("End Time: $endTime");
+              String adminId =matchedplaygroundAllData[0].adminId! ; // Fetch AdminId directly from userData
+
+              // You can use these times to update the UI or for other logic
+              timeSlots.add(startTime); // Add start time to the list
+              timeSlots.add(endTime);   // Add end time to the list
+
+              // You could directly update your UI here or save this data for later
+              // For example, show the start and end time in the UI
+              setState(() {
+                // Update any UI components with the start and end times
+                startTimeStr = startTime; // Assuming you have a state variable to store this
+                endTimeStr = endTime;     // Assuming you have a state variable to store this
+              });
+
+              print("Time slots: ${timeSlots}");
+            } else {
+              print("Invalid time format: $timeofAddedPlayground");
+            }
+            // }
+// الوقت  هو سبب المشكله
+            print(
+                "PlayGroungboook Iiid : ${document.id}"); // Print the latest playground
+            groundIiid2 = document.id;
+            print("Docummmmmmbook$groundIiid2");
             // Normalize playType before comparing
             String playType = user.playType!.trim();
           }
@@ -473,6 +564,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
     _loadUserData();
     //   // _fetchBookingData();
     getAllPlaygrounds();
+    getPlaygroundbyname(widget.IdData);
     getPlaygroundbyname(widget.IdData);
     getAllBookingDocuments();
     //   // initializeDateFormatting('ar', null).then((_) {
@@ -894,12 +986,12 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                   ),
 
                   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@222
-                  playgroundAllData.isNotEmpty
+                  matchedPlaygrounds.isNotEmpty && matchedplaygroundAllData.isNotEmpty
                       ? IntrinsicHeight(
                     child: Container(
                       child: Wrap(
-                        children: List.generate(playgroundbook.length, (index) {
-                          final user = playgroundbook[index];
+                        children: List.generate(matchedPlaygrounds.length, (index) {
+                          final user = matchedPlaygrounds[index];
                           return Dismissible(
                             key: Key('${user.phoneCommunication}_${index}'), // Ensure the key is unique
                             direction: DismissDirection.horizontal,
@@ -1004,7 +1096,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                                                   ),
                                                 ),
                                                 Text(
-                                                  '${playgroundAllData[0].bookTypes![0].cost}',
+                                                  '${matchedplaygroundAllData[0].bookTypes![0].cost}',
                                                   textAlign: TextAlign.center,
                                                   style: TextStyle(
                                                     color: Color(0xFF7C90AB),
@@ -1021,7 +1113,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                                                     mainAxisAlignment: MainAxisAlignment.start,
                                                     children: [
                                                       Text(
-                                                        playgroundbook[index].dateofBooking ?? " ",
+                                                        matchedPlaygrounds[index].dateofBooking ?? " ",
                                                         textAlign: TextAlign.center,
                                                         style: TextStyle(
                                                           color: Color(0xFF324054),
@@ -1034,7 +1126,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                                                       ),
                                                       SizedBox(width: 5),
                                                       Text(
-                                                        playgroundbook[index].Day_of_booking ?? " ",
+                                                        matchedPlaygrounds[index].Day_of_booking ?? " ",
                                                         textAlign: TextAlign.center,
                                                         style: TextStyle(
                                                           color: Color(0xFF324054),
@@ -1081,9 +1173,9 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                                                         letterSpacing: 0.36,
                                                       ),
                                                       children: [
-                                                        for (var i = 0; i < playgroundbook[index].selectedTimes!.length; i++)
+                                                        for (var i = 0; i < matchedPlaygrounds[index].selectedTimes!.length; i++)
                                                           TextSpan(
-                                                            text: getTimeRange(playgroundbook[index].selectedTimes![i]) + '\n', // Add formatted time range
+                                                            text: getTimeRange(matchedPlaygrounds[index].selectedTimes![i]) + '\n', // Add formatted time range
                                                           ),
                                                       ],
                                                     ),
