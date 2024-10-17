@@ -2,6 +2,9 @@ import 'package:club_user/profile/profile_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:get/get.dart';
+
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -38,6 +41,21 @@ class HomePageState extends State<HomePage> {
   bool _isLoading = true; // flag to control shimmer effect
   String start="";
   String end ="";
+  String getTimeRange(String startTime) {
+    DateTime start = DateFormat.jm().parse(startTime); // Parse the start time
+    DateTime end = start.add(Duration(hours: 1)); // Add 1 hour for the end time
+
+    // Format the time in Arabic but numbers in English
+    String formattedStartTime = DateFormat('h:mm a', 'ar').format(start).replaceAllMapped(RegExp(r'\d+'), (match) {
+      return NumberFormat('en').format(int.parse(match.group(0)!));  // Ensure numbers are in English
+    });
+
+    String formattedEndTime = DateFormat('h:mm a', 'ar').format(end).replaceAllMapped(RegExp(r'\d+'), (match) {
+      return NumberFormat('en').format(int.parse(match.group(0)!));
+    });
+
+    return '$formattedStartTime     الي     $formattedEndTime';
+  }
   Future<void> _loadData() async {
     fetchRatings();
     // load data here
@@ -854,7 +872,7 @@ print("order${rat_list}");
                                           ),
                                           SizedBox(width: 19,),
                                           RichText(
-                                            textDirection: TextDirection.rtl, // Set the overall text direction to RTL
+                                           // Set the overall text direction to RTL
                                             text: TextSpan(
                                               style: TextStyle(
                                                 fontFamily: 'Cairo',
@@ -863,14 +881,17 @@ print("order${rat_list}");
                                                 color: Color(0xFF7D90AC),
                                               ),
                                               children: [
+                                                //this print only first time
+                                                // for (var i = 0; i < playgroundbook[i].selectedTimes!.length; i++)
+                                                //   TextSpan(
+                                                //     text: getTimeRange(playgroundbook[i].selectedTimes![i]) ,) //
+
                                                 TextSpan(
-                                                  text: '${start.substring(0,4)}', // Right-aligned part
+                                                  text: '${start.substring(0,7) } ${ " "}', // Right-aligned part
                                                 ),
+
                                                 TextSpan(
-                                                  text: '  إلى  ', // Center part (extra spaces for spacing)
-                                                ),
-                                                TextSpan(
-                                                  text: '${end.substring(0,4)}', // Left-aligned part
+                                                  text: '${end.substring(0,7) }', // Left-aligned part
                                                 ),
                                               ],
                                             ),
@@ -887,7 +908,6 @@ print("order${rat_list}");
                                       Text(
                                         "${playgroundAllData[i].bookTypes![0].cost!}",
 
-                                        textDirection: TextDirection.rtl,  // Ensures the text direction is RTL
 
                                         style: TextStyle(
                                           fontFamily: 'Cairo',
@@ -1074,7 +1094,6 @@ print("order${rat_list}");
                                           ),
                                           SizedBox(width: 19,),
                                           RichText(
-                                            textDirection: TextDirection.rtl, // Set the overall text direction to RTL
                                             text: TextSpan(
                                               style: TextStyle(
                                                 fontFamily: 'Cairo',
@@ -1106,7 +1125,6 @@ print("order${rat_list}");
                                     children: [
                                       Text(
                                         "   620 ج.م".tr,
-                                        textDirection: TextDirection.rtl,  // Ensures the text direction is RTL
 
                                         style: TextStyle(
                                           fontFamily: 'Cairo',
