@@ -4,7 +4,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
-
+import 'package:geocoding/geocoding.dart';
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -64,15 +71,76 @@ class HomePageState extends State<HomePage> {
       _isLoading = false; // set flag to false when data is loaded
     });
   }
+  bool _isPermissionGranted = false;
+  LatLng _initialPosition = LatLng(0.0, 0.0);
+  void _getCurrentLocation() async {
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    setState(() {
+      _initialPosition = LatLng(position.latitude, position.longitude);
+      _getPlaceName(_initialPosition);
+      print("object_initialPosition$_initialPosition");
+    });
+
+
+  }
+// Reverse geocode to get the place name from LatLng
+  Future<String> _getPlaceName(LatLng position) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+      Placemark place = placemarks[0];
+      // print("locality${place.subAdministrativeArea.toString()}");
+      print("locality${place.country.toString()}");
+
+      String locality=place.administrativeArea.toString();
+      print("localitystring$locality");
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('locationValue','$locality');
+   String? loctionval=   prefs.getString('locationValue',);
+      getNearbystadiums(loctionval!);
+   print("loctionval$loctionval");
+print("country${place.country.toString()}");
+      return "${place.street},${place.locality},${place.country}";
+    } catch (e) {
+      return "Unknown Location";
+    }
+  }
+  void requestLocationPermission() async {
+    var status = await Permission.location.status;
+    if (status.isGranted) {
+      setState(() {
+        _isPermissionGranted = true;
+      });
+      _getCurrentLocation();
+    } else {
+      var result = await Permission.location.request();
+      if (result.isGranted) {
+        setState(() {
+          _isPermissionGranted = true;
+        });
+        _getCurrentLocation();
+      } else if (result.isPermanentlyDenied) {
+        openAppSettings();
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    requestLocationPermission();
+    getfourplaygroundsbytype();
     _loadData();
     fetchBookingData();
 
     fetchRatings();
     getPlaygroundbyname();
     _loadUserData();
+
     print("njbjbhbbb");
     setState(() {});
     _pageController.addListener(() {
@@ -170,6 +238,15 @@ class HomePageState extends State<HomePage> {
     }
   }
   late List<AddPlayGroundModel> playgroundAllData = [];
+  late List<AddPlayGroundModel> basket = [];
+  late List<AddPlayGroundModel> footbal = [];
+  late List<AddPlayGroundModel> teniss = [];
+
+  late List<AddPlayGroundModel> volly = [];
+  late List<AddPlayGroundModel> fourtypes = [];
+
+  late List<AddPlayGroundModel> Nearbystadiums = [];
+
   Future<void> getPlaygroundbynameE(String iiid) async {
     try {
       CollectionReference playerchat =
@@ -241,6 +318,88 @@ class HomePageState extends State<HomePage> {
       print("Error getting playground: $e");
     }
   }
+  Future<void> getNearbystadiums(String city) async {
+    try {
+      print("cittttty${city}");
+      CollectionReference playerchat =
+      FirebaseFirestore.instance.collection("AddPlayground");
+
+      QuerySnapshot querySnapshot = await playerchat.get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (QueryDocumentSnapshot document in querySnapshot.docs) {
+          Map<String, dynamic> userData =
+          document.data() as Map<String, dynamic>;
+          AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
+if(user.location!.isNotEmpty&&user.location!.contains(city.substring(0,6))){
+  print("yes, there are some of playgrounds in this city");
+  Nearbystadiums.add(user);
+  for(int i=0;i<Nearbystadiums.length;i++){
+    print("neeeeeeeear${Nearbystadiums[i].location}");
+  }
+  String?  bookType = Nearbystadiums[0].bookTypes![0].time;
+  // Assuming 'time' is the field you want to split into start and end time
+  String timeofAddedPlayground = bookType ?? '';
+  print("timeofAddedPlayground: $timeofAddedPlayground");
+
+  // Splitting time into startTime and endTime based on '-'
+  List<String> times = timeofAddedPlayground.split(' - ');
+  if (times.length == 2) {
+    String startTime = times[0];
+    String endTime = times[1];
+    for(int i=0;i<Nearbystadiums.length;i++){
+      print("locattttion${Nearbystadiums[i].location}");
+
+    }
+    start=startTime;
+    print("Start Time: $startTime");
+    end=endTime;
+    print("End Time: $endTime");
+    String adminId = userData['AdminId'] ?? ''; // Fetch AdminId directly from userData
+    user.adminId = adminId; // Assuming your model has a property for AdminId
+    print("Admin ID: $adminId");
+    // USerID=adminId;
+    // // You can use these times to update the UI or for other logic
+    // timeSlots.add(startTime); // Add start time to the list
+    // timeSlots.add(endTime);   // Add end time to the list
+
+    // You could directly update your UI here or save this data for later
+    // For example, show the start and end time in the UI
+    setState(() {
+      // Update any UI components with the start and end times
+      // startTimeStr = startTime; // Assuming you have a state variable to store this
+      // endTimeStr = endTime;     // Assuming you have a state variable to store this
+    });
+
+    // print("Time slots: ${timeSlots}");
+  } else {
+    print("Invalid time format: $timeofAddedPlayground");
+  }
+  // }
+// الوقت  هو سبب المشكله
+  print(
+      "PlayGroungboook Iiid : ${document.id}"); // Print the latest playground
+  // groundIiid = document.id;
+  // print("Docummmmmmbook$groundIiid");
+  // Normalize playType before comparing
+  String playType = user.playType!.trim();
+
+
+  // Store the document ID in the AddPlayGroundModel object
+  user.id = document.id;
+}else{
+
+}
+
+
+
+        }
+      }
+    } catch (e) {
+      print("Error getting playground: $e");
+    }
+  }
+
   int reversed=0;
   Future<void> getUserByPhone(String phoneNumber) async {
     try {
@@ -401,7 +560,94 @@ print("order${rat_list}");
   int _currentIndex = 3;
   int _currentIndexcarousel_slider = 0;
   final PageController _pageController = PageController();
+  Future<void>getfourplaygroundsbytype() async {
+    try {
 
+      CollectionReference playerchat =
+      FirebaseFirestore.instance.collection("AddPlayground");
+
+      QuerySnapshot querySnapshot = await playerchat.get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (QueryDocumentSnapshot document in querySnapshot.docs) {
+          Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
+          AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
+
+          allplaygrounds.add(user);
+
+            if (user.playType == "كرة تنس"&&teniss.isEmpty) {
+              teniss.add(user);
+              print("tenisssssss$teniss");
+            }
+            else{
+              print("teniss.length${teniss.length}");
+            }
+            if (user.playType == "كرة سلة"&&basket.isEmpty) {
+              basket.add(user);
+
+
+
+              print("basket$basket");
+
+            }
+            else{
+              print("basket.length${basket.length}");
+            }
+            if (user.playType == "كرة قدم"&&footbal.isEmpty) {
+              footbal.add(user);
+              print("footbal$footbal");
+
+
+            }
+            else{
+              print("footbal.length${footbal.length}");
+
+            }
+            if (user.playType == "كرة طايره"&&volly.isEmpty) {
+              volly.add(user);
+              print("volly$volly");
+
+
+            }else{
+              print("volly.length${volly.length}");
+
+            }
+            if(footbal.isNotEmpty&&footbal.length==1)
+              {
+
+                print("objectfootbal.first${footbal.first}");
+              }
+
+
+
+          print("PlayGroung Id : ${document.id}"); // Print the latest playground
+
+          print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
+// Store the document ID in the AddPlayGroundModel object
+          // user.id = document.id;
+          user.id = document.id;
+          print("Docummmmmm${user.id}");
+          // Store the document ID in the AddPlayGroundModel object
+          // idddddd1 = document.id;
+          // idddddd2=document.id;
+          // print("Docummmmmm$idddddd1    gggg$idddddd2");
+        }
+
+        loadfourtype();
+      }
+    } catch (e) {
+      print("Error getting playground: $e");
+    }
+  }
+  void loadfourtype(){
+
+      fourtypes.add(teniss[0]);
+      fourtypes.add(basket[0]);
+      fourtypes.add(volly[0]);
+      fourtypes.add(footbal[0]);
+
+    print("shokaaaaaaa${fourtypes.length}");
+  }
   Future<void> getPlaygroundbyname() async {
     try {
       CollectionReference playerchat =
@@ -687,7 +933,7 @@ print("order${rat_list}");
 
                 SizedBox(height: 10,),
 
-                allplaygrounds.isNotEmpty?   Stack(
+                fourtypes.isNotEmpty?   Stack(
                   children: [
                     Padding(
 
@@ -708,78 +954,89 @@ print("order${rat_list}");
 
                         ),
                         items: [
-                          for (int i = 0; i < allplaygrounds.length; i++)
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 5.0,vertical: 5), // Add space between items
-                              child: Stack(
-                                children: [
-                                  Material(
-                                    elevation: 4, // Elevation of 4
-                                    borderRadius: BorderRadius.circular(20.0),
-                                    child: Container(
-                                      height: 163,
-                                      width: 274,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(20.0),
-                                        shape: BoxShape.rectangle,
+                          for (int i = 0; i < 4; i++)
+                            GestureDetector(
+                              onTap: (){
+                                print("111114${fourtypes[i].id!}");
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PlaygroundName(fourtypes[i].id!),
+                                  ),
+                                );
+                              },
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 5.0,vertical: 5), // Add space between items
+                                child: Stack(
+                                  children: [
+                                    Material(
+                                      elevation: 4, // Elevation of 4
+                                      borderRadius: BorderRadius.circular(20.0),
+                                      child: Container(
+                                        height: 163,
+                                        width: 274,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(20.0),
+                                          shape: BoxShape.rectangle,
 
-                                      ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(20.0),
-                                        child: allplaygrounds[i].img!.isNotEmpty?  Image.network(
-                                          allplaygrounds[i].img![0],
-                                          height: 163,
-                                          width: 274,
-                                          fit: BoxFit.cover,)
-                                       : Image.asset(
-                                          'assets/images/newwadi.png',
-                                          height: 163,
-                                          width: 274,
-                                          fit: BoxFit.cover,
-                                        )
-                                          ,
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 6,
-                                    right: 0,
-                                    left: 0,
-                                    bottom: 0,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Colors.transparent,
-                                            Color(0x1F8C4B).withOpacity(0.0),
-                                            Color(0x1F8C4B).withOpacity(1.0),
-                                          ],
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
                                         ),
-                                        borderRadius: BorderRadius.only(
-                                          bottomLeft: Radius.circular(20.0),
-                                          bottomRight: Radius.circular(20.0),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(20.0),
+                                          child: fourtypes[i].img!.isNotEmpty?  Image.network(
+                                            fourtypes[i].img![0],
+                                            height: 163,
+                                            width: 274,
+                                            fit: BoxFit.cover,)
+                                         : Image.asset(
+                                            'assets/images/newwadi.png',
+                                            height: 163,
+                                            width: 274,
+                                            fit: BoxFit.cover,
+                                          )
+                                            ,
                                         ),
                                       ),
                                     ),
-                                  ),
-                                  Positioned(
-                                    top: 113,
-                                    right: 40,
-                                    left: 55,
-                                    child: Text(
-                                      allplaygrounds[i].playgroundName!, // Updated English text
-                                      style: TextStyle(
-                                        fontFamily: 'Cairo',
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
+                                    Positioned(
+                                      top: 6,
+                                      right: 0,
+                                      left: 0,
+                                      bottom: 0,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Colors.transparent,
+                                              Color(0x1F8C4B).withOpacity(0.0),
+                                              Color(0x1F8C4B).withOpacity(1.0),
+                                            ],
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                          ),
+                                          borderRadius: BorderRadius.only(
+                                            bottomLeft: Radius.circular(20.0),
+                                            bottomRight: Radius.circular(20.0),
+                                          ),
+                                        ),
                                       ),
-                                      textAlign: TextAlign.center,
                                     ),
-                                  ),
-                                ],
+                                    Positioned(
+                                      top: 113,
+                                      right: 40,
+                                      left: 55,
+                                      child: Text(
+                                        fourtypes[i].playgroundName!, // Updated English text
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                         ],
@@ -983,16 +1240,16 @@ print("order${rat_list}");
                                               children: [
                                                 //this print only first time
                                                 // for (var i = 0; i < playgroundbook[i].selectedTimes!.length; i++)
-                                                //   TextSpan(
-                                                //     text: getTimeRange(playgroundbook[i].selectedTimes![i]) ,) //
+                                                  TextSpan(
+                                                    text: playgroundbook[i].selectedTimes![i]), //
 
-                                                TextSpan(
-                                                  text: '${start.substring(0,7) } ${ " "}', // Right-aligned part
-                                                ),
+                                                // TextSpan(
+                                                //   text: '${start.substring(0,7) } ${ " "}', // Right-aligned part
+                                                // ),
 
-                                                TextSpan(
-                                                  text: '${end.substring(0,7) }', // Left-aligned part
-                                                ),
+                                                // TextSpan(
+                                                //   text: '${end.substring(0,7) }', // Left-aligned part
+                                                // ),
                                               ],
                                             ),
                                           ),
@@ -1333,17 +1590,18 @@ print("order${rat_list}");
                   scrollDirection: Axis.horizontal,
                   reverse: true, // Reverses the scroll direction
 
-                  child:allplaygrounds.isNotEmpty? Row(
+                  child:Nearbystadiums.isNotEmpty?
+                  Row(
 
                     children: [
-                      for (var i = 0; i < allplaygrounds.length; i++)
+                      for (var i = 0; i < Nearbystadiums.length; i++)
                         GestureDetector(
                           onTap: (){
-                            print("111114${allplaygrounds[i].id!}");
+                            print("111114${Nearbystadiums[i].id!}");
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => PlaygroundName(allplaygrounds[i].id!),
+                                builder: (context) => PlaygroundName(Nearbystadiums[i].id!),
                               ),
                             );
                           },
@@ -1364,10 +1622,10 @@ print("order${rat_list}");
                                   ),
                                   child: ClipRRect(
                                       borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
-                                      child: allplaygrounds[i].img!.isNotEmpty?Image.network(
+                                      child: Nearbystadiums[i].img!.isNotEmpty?Image.network(
                                         // Check if img is a list and has at least one image, otherwise use it as a string
 
-                                             allplaygrounds[i].img![0], // Use the first image in the list (or the only image if it's a single string turned into a list)
+                                        Nearbystadiums[i].img![0], // Use the first image in the list (or the only image if it's a single string turned into a list)
                                           // Fallback to an empty string if no image is available
                                         height: 163,
                                         width: 274,
@@ -1409,7 +1667,7 @@ print("order${rat_list}");
                                   right: 40,
                                   left: 55,
                                   child: Text(
-                                    allplaygrounds[i].playgroundName!,
+                                    Nearbystadiums[i].playgroundName!,
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
                                       fontSize: 16,
@@ -1424,7 +1682,167 @@ print("order${rat_list}");
                           ),
                         ),
                     ],
-                  ):Container(),
+                  )
+                      :Nearbystadiums.isEmpty&&playgroundAllData.isNotEmpty&&playgroundAllData.length>3?
+                  Row(
+
+                    children: [
+                      for (var i = 0; i < 3; i++)
+                        GestureDetector(
+                          onTap: (){
+                            print("111114${playgroundAllData[i].id!}");
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PlaygroundName(playgroundAllData[i].id!),
+                              ),
+                            );
+                          },
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                            ),
+                            elevation: 4, // Adjust elevation to control the shadow
+                            margin: EdgeInsets.all(8), // Adjust margin as needed
+                            child: Stack(
+                              children: [
+                                Container(
+                                  height: 163,
+                                  width: 274,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20.0),
+                                    shape: BoxShape.rectangle,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
+                                    child: playgroundAllData[i].img!.isNotEmpty?Image.network(
+                                      // Check if img is a list and has at least one image, otherwise use it as a string
+
+                                      playgroundAllData[i].img![0], // Use the first image in the list (or the only image if it's a single string turned into a list)
+                                      // Fallback to an empty string if no image is available
+                                      height: 163,
+                                      width: 274,
+                                      fit: BoxFit.fill, // Ensure the image covers the container
+                                    ):Image(
+                                      image: AssetImage("assets/images/newground.png"),
+                                      color: Colors.white,
+                                      height: 163,
+                                      width: 274,
+                                      fit: BoxFit.fill,
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 6, // Match the top position of the text
+                                  right: 0,
+                                  left: 0,
+                                  bottom: 0,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.transparent, // Start with transparent
+                                          Color(0x1F8C4B).withOpacity(0.0), // Start with #1F8C4B at 0% opacity (fully transparent)
+                                          Color(0x1F8C4B).withOpacity(1.0), // End with #1F8C4B at 100% opacity (fully opaque)
+                                        ],
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                      ),
+                                      borderRadius: BorderRadius.only(
+                                        bottomLeft: Radius.circular(20.0),
+                                        bottomRight: Radius.circular(20.0),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 113, // Adjust the top position
+                                  right: 40,
+                                  left: 55,
+                                  child: Text(
+                                    playgroundAllData[i].playgroundName!,
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.center, // Center text alignment
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ):
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                    elevation: 4, // Adjust elevation to control the shadow
+                    margin: EdgeInsets.all(8), // Adjust margin as needed
+                    child: Stack(
+                      children: [
+                        Container(
+                          height: 163,
+                          width: 274,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20.0),
+                            shape: BoxShape.rectangle,
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
+                            child: Image(
+                              image: AssetImage("assets/images/newground.png"),
+                              color: Colors.white,
+                              height: 163,
+                              width: 274,
+                              fit: BoxFit.fill,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 6, // Match the top position of the text
+                          right: 0,
+                          left: 0,
+                          bottom: 0,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.transparent, // Start with transparent
+                                  Color(0x1F8C4B).withOpacity(0.0), // Start with #1F8C4B at 0% opacity (fully transparent)
+                                  Color(0x1F8C4B).withOpacity(1.0), // End with #1F8C4B at 100% opacity (fully opaque)
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(20.0),
+                                bottomRight: Radius.circular(20.0),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 113, // Adjust the top position
+                          right: 40,
+                          left: 55,
+                          child: Text(
+                            "",
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center, // Center text alignment
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 SizedBox(height: 20,),
                 Padding(
@@ -1536,7 +1954,8 @@ print("order${rat_list}");
                           ),
                         ),
                     ],
-                  ):Card(
+                  ):
+                  Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20.0),
                     ),

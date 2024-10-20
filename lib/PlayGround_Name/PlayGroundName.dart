@@ -822,8 +822,10 @@ List<Favouritemodel>favlist=[];
                   child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                     Padding(
                       padding: const EdgeInsets.only(left: 8.0),
-                      child:allplaygrounds.isNotEmpty&&allplaygrounds[0].bookTypes?[0].costPerHour!=null? Text(
-                        'السعر : ' + '${allplaygrounds[0].bookTypes?[0].costPerHour} / ساعة',
+                      child:allplaygrounds.isNotEmpty ?
+                      Text(
+                        allplaygrounds[0].bookTypes!.isNotEmpty&& allplaygrounds[0].bookTypes?[0].costPerHour!=null?
+                        'السعر : ' + '${allplaygrounds[0].bookTypes?[0].costPerHour} / ساعة': 'السعر : ' +"0 / ساعة",
                         textDirection: TextDirection.rtl,
                         style: TextStyle(
                           fontFamily: 'Cairo',
@@ -831,7 +833,9 @@ List<Favouritemodel>favlist=[];
                           fontWeight: FontWeight.w500,
                           color: Color(0xFF106A35),
                         ),
-                      ):Text(
+                      )
+                          :
+                      Text(
                         'السعر : ' + '300 / ساعة',
                         textDirection: TextDirection.rtl,
                         style: TextStyle(
