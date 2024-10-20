@@ -687,7 +687,107 @@ print("order${rat_list}");
 
                 SizedBox(height: 10,),
 
-                Stack(
+                allplaygrounds.isNotEmpty?   Stack(
+                  children: [
+                    Padding(
+
+                      padding: const EdgeInsets.only(right: 5,left: 5,bottom: 10),
+
+                      child: CarouselSlider(
+                        options: CarouselOptions(
+                          height: 165.0,
+                          aspectRatio: 16 / 9,
+                          viewportFraction: 0.7,
+                          initialPage: 1,
+                          enableInfiniteScroll: false,
+                          autoPlay: false,
+                          enlargeCenterPage: true,
+                          onPageChanged: (index, reason) {},
+                          scrollDirection: Axis.horizontal,
+                          reverse: true, // Reverses the scroll direction
+
+                        ),
+                        items: [
+                          for (int i = 0; i < allplaygrounds.length; i++)
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 5.0,vertical: 5), // Add space between items
+                              child: Stack(
+                                children: [
+                                  Material(
+                                    elevation: 4, // Elevation of 4
+                                    borderRadius: BorderRadius.circular(20.0),
+                                    child: Container(
+                                      height: 163,
+                                      width: 274,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20.0),
+                                        shape: BoxShape.rectangle,
+
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(20.0),
+                                        child: allplaygrounds[i].img!.isNotEmpty?  Image.network(
+                                          allplaygrounds[i].img![0],
+                                          height: 163,
+                                          width: 274,
+                                          fit: BoxFit.cover,)
+                                       : Image.asset(
+                                          'assets/images/newwadi.png',
+                                          height: 163,
+                                          width: 274,
+                                          fit: BoxFit.cover,
+                                        )
+                                          ,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 6,
+                                    right: 0,
+                                    left: 0,
+                                    bottom: 0,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Colors.transparent,
+                                            Color(0x1F8C4B).withOpacity(0.0),
+                                            Color(0x1F8C4B).withOpacity(1.0),
+                                          ],
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                        ),
+                                        borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(20.0),
+                                          bottomRight: Radius.circular(20.0),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 113,
+                                    right: 40,
+                                    left: 55,
+                                    child: Text(
+                                      allplaygrounds[i].playgroundName!, // Updated English text
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+
+                  ],
+                ): Stack(
                   children: [
                     Padding(
 
