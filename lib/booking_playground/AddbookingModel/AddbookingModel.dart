@@ -1,6 +1,7 @@
 class AddbookingModel {
   String? iid;
   String? Name;
+  bool?acceptorcancle;
   String? phoneCommunication;
   String? dateofBooking ;
   String?Day_of_booking;
@@ -18,6 +19,7 @@ class AddbookingModel {
     this.dateofBooking,
     this.timeofBooking,
     this.rentTheBall,
+    this.acceptorcancle,
     this.availableTime,
     // this.notavailable,
     this.Day_of_booking,
@@ -32,6 +34,7 @@ class AddbookingModel {
   factory AddbookingModel.fromMap(Map<String, dynamic> map) {
     return AddbookingModel(
       iid: '',
+      acceptorcancle:map['acceptorcancle']??false,
       AdminId: map['AdminId'] ?? '',  // Get AdminId directly from the map
       groundID:map['groundID'],
       Name: map['Name'],
@@ -64,6 +67,7 @@ class AddbookingModel {
       'AdminId': AdminId,  // Add AdminId to the map
       'groundID':groundID,
       'Name': Name,
+      'acceptorcancle':false,
       'Day_of_booking':Day_of_booking,
       'phoneCommunication': phoneCommunication,
       'dateofBooking': dateofBooking,
@@ -80,6 +84,6 @@ class AddbookingModel {
 
   @override
   String toString() {
-    return 'AddbookingModel(name: $Name, phoneCommunication: $phoneCommunication, dateofBooking: $dateofBooking, timeofBooking: $timeofBooking, rentTheBall: $rentTheBall, availableTime: $availableTime, availableDate: $availableDate,selectedTimes: $selectedTimes,adminId: $AdminId,groundID:$groundID)';
+    return 'AddbookingModel(name: $Name, phoneCommunication: $phoneCommunication, dateofBooking: $dateofBooking, timeofBooking: $timeofBooking, rentTheBall: $rentTheBall, availableTime: $availableTime, availableDate: $availableDate,selectedTimes: $selectedTimes,adminId: $AdminId,groundID:$groundID,acceptorcancle:$acceptorcancle)';
   }
 }

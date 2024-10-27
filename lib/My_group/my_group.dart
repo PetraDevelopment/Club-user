@@ -18,6 +18,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import '../my_reservation/my_reservation.dart';
 import '../playground_model/AddPlaygroundModel.dart';
+import 'group2.dart';
+import 'modelofgroup.dart';
 
 class My_group extends StatefulWidget {
   @override
@@ -28,85 +30,142 @@ class My_group extends StatefulWidget {
 
 class My_groupState extends State<My_group> {
   late List<User1> user1 = [];
+  List<GroupModel2> stordataofgroup = [];
   User? user = FirebaseAuth.instance.currentUser;
-  bool _isLoading = true; // flag to control shimmer effect
 
-  Future<void> _loadData() async {
-    // load data here
-    await Future.delayed(Duration(seconds: 2)); // simulate data loading
-    setState(() {
-      _isLoading = false; // set flag to false when data is loaded
-    });
+  bool isLoading = true;
+
+  Future<void> getUserGroup(String phoneNumber) async {
+    try {
+      String normalizedPhoneNumber = phoneNumber.replaceFirst('+20', '0');
+      CollectionReference playerchat = FirebaseFirestore.instance.collection('teamData');
+
+      QuerySnapshot querySnapshot = await playerchat.where('phone', isEqualTo: normalizedPhoneNumber).get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        List<GroupModel> groupdata = querySnapshot.docs.map((doc) {
+          Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
+          return GroupModel.fromMap(userData);
+        }).toList();
+
+        print("GroupModel : $groupdata");
+        await getGroupdata(groupdata[0].teamId!);
+      }
+    } catch (e) {
+      print("Error getting user: $e");
+    } finally {
+      isLoading = false;
+      setState(() {});
+    }
   }
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-    getPlaygroundbyname();
-    _loadUserData();
-    print("njbjbhbbb");
-    setState(() {});
-    _pageController.addListener(() {
-      setState(() {
-        _currentIndex = _pageController.page!.round();
-      });
-    });
-    // Call setState to rebuild the widget tree
+  Future<void> getGroupdata(String id) async {
+    try {
+      CollectionReference playerchat = FirebaseFirestore.instance.collection('MyTeam');
+      print("idddddddddddddddddddddddddddd $id");
+
+      DocumentSnapshot documentSnapshot = await playerchat.doc(id).get();
+      print("ffffffffffffffffffff${documentSnapshot.exists}");
+
+      if (documentSnapshot.exists) {
+        Map<String, dynamic>? data = documentSnapshot.data() as Map<String, dynamic>?;
+
+        if (data != null) {
+          GroupModel2 group = GroupModel2.fromMap(data);
+          stordataofgroup.add(group);
+
+          print("documentSnapshot : ${documentSnapshot.data().toString()}");
+          print("shoka dataaaaaaaa ${stordataofgroup[0]}");
+        }
+      }
+    } catch (e) {
+      print("Error getting user: $e");
+    }
   }
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
+
+  // void _loadUserData() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String? phoneValue = prefs.getString('phonev');
+  //   print("newphoneValue${phoneValue.toString()}");
+  //
+  //   if (phoneValue != null && phoneValue.isNotEmpty) {
+  //     await getUserGroup(phoneValue);
+  //   } else if (user?.phoneNumber != null) {
+  //     await getUserGroup(user!.phoneNumber.toString());
+  //   } else {
+  //     print("No phone number available.");
+  //   }
+  // }
+  // List<GroupModel2>stordataofgroup=[];
+  // Future<void> getUserGroup(String phoneNumber) async {
+  //   try {
+  //     String normalizedPhoneNumber = phoneNumber.replaceFirst('+20', '0');
+  //     CollectionReference playerchat = FirebaseFirestore.instance.collection('teamData');
+  //
+  //     QuerySnapshot querySnapshot = await playerchat.where('phone', isEqualTo: normalizedPhoneNumber).get();
+  //
+  //     if (querySnapshot.docs.isNotEmpty) {
+  //       List<GroupModel> groupdata = querySnapshot.docs.map((doc) {
+  //         Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
+  //         return GroupModel.fromMap(userData);
+  //       }).toList();
+  //  print("GroupModel : $groupdata");
+  //       getGroupdata(groupdata[0].teamId!);
+  //
+  //     }
+  //   } catch (e) {
+  //     print("Error getting user: $e");
+  //   }
+  // }
+  //
+  // Future<void> getGroupdata(String id) async {
+  //   try {
+  //
+  //     CollectionReference playerchat = FirebaseFirestore.instance.collection('MyTeam');
+  //     print("idddddddddddddddddddddddddddd $id");
+  //
+  //     DocumentSnapshot documentSnapshot = await playerchat.doc(id).get();
+  //     print("ffffffffffffffffffff${documentSnapshot.exists}");
+  //     if (documentSnapshot.exists) {
+  //       Map<String, dynamic>? data = documentSnapshot.data() as Map<String, dynamic>?;
+  //
+  //       if (data != null) {
+  //         GroupModel2 group = GroupModel2.fromMap(data);
+  //         stordataofgroup.add(group);
+  //
+  //         print("documentSnapshot : ${documentSnapshot.data().toString()}");
+  //         print("shoka dataaaaaaaa ${stordataofgroup[0]}");
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("Error getting user: $e");
+  //   }
+  // }
   void _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? phoneValue = prefs.getString('phonev');
     print("newphoneValue${phoneValue.toString()}");
 
     if (phoneValue != null && phoneValue.isNotEmpty) {
-      await getUserByPhone(phoneValue);
+      await getUserGroup(phoneValue);
     } else if (user?.phoneNumber != null) {
-      await getUserByPhone(user!.phoneNumber.toString());
+      await getUserGroup(user!.phoneNumber.toString());
     } else {
       print("No phone number available.");
     }
   }
 
-  Future<void> getUserByPhone(String phoneNumber) async {
-    try {
-      String normalizedPhoneNumber = phoneNumber.replaceFirst('+20', '0');
-      CollectionReference playerchat =
-      FirebaseFirestore.instance.collection('Users');
-
-      QuerySnapshot querySnapshot = await playerchat
-          .where('phone', isEqualTo: normalizedPhoneNumber)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        Map<String, dynamic> userData =
-        querySnapshot.docs.first.data() as Map<String, dynamic>;
-        User1 user = User1.fromMap(userData);
-
-        // Update the list and UI inside setState
-        setState(() {
-          user1.add(user);
-        });
-
-        print("object${user1[0].name}");
-        print("User data: $userData");
-      } else {
-        print("User not found with phone number $phoneNumber");
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.clear();
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => SigninPage()),
-              (Route<dynamic> route) => false,
-        );
-      }
-    } catch (e) {
-      print("Error getting user: $e");
-    }
+  @override
+  void  initState()  {
+    super.initState();
+    _loadUserData();
+    // Now you can access the user1 list
+    // print('User data44444: ${user1[0].name}');
+    setState(() {}); // Call setState to rebuild the widget tree
+  }
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
 
@@ -116,36 +175,7 @@ class My_groupState extends State<My_group> {
   int _currentIndexcarousel_slider = 0;
   final PageController _pageController = PageController();
 
-  Future<void> getPlaygroundbyname() async {
-    try {
-      CollectionReference playerchat =
-      FirebaseFirestore.instance.collection("AddPlayground");
 
-      QuerySnapshot querySnapshot = await playerchat.get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        for (QueryDocumentSnapshot document in querySnapshot.docs) {
-          Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
-          AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
-
-          allplaygrounds.add(user);
-          print("PlayGroung Id : ${document.id}"); // Print the latest playground
-
-          print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
-// Store the document ID in the AddPlayGroundModel object
-          // user.id = document.id;
-          user.id = document.id;
-          print("Docummmmmm${user.id}");
-          // Store the document ID in the AddPlayGroundModel object
-          // idddddd1 = document.id;
-          // idddddd2=document.id;
-          // print("Docummmmmm$idddddd1    gggg$idddddd2");
-        }
-      }
-    } catch (e) {
-      print("Error getting playground: $e");
-    }
-  }
   final NavigationController navigationController = Get.put(NavigationController());
 
   @override
@@ -195,7 +225,9 @@ class My_groupState extends State<My_group> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            for(int i=0;i<5;i++)
+            isLoading
+                ? Center(child: CircularProgressIndicator(color: Colors.green,)):
+            stordataofgroup.isNotEmpty?
             Padding(
               padding: const EdgeInsets.only(top: 10.0,bottom: 10,right: 20,left: 20),
               child: Container(
@@ -236,7 +268,7 @@ class My_groupState extends State<My_group> {
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8.0),
                                   child: Text(
-                                  "ملعب وادى دجلــــة",
+                                  "${stordataofgroup[0].name!}",
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
                                       fontSize: 16.0,
@@ -245,9 +277,9 @@ class My_groupState extends State<My_group> {
                                     ),
                                   ),
                                 ),
-                                user1.isNotEmpty && user1[0].phoneNumber!.isNotEmpty
-                                    ? Text(
-                                  user1[0].phoneNumber!,
+
+                                     Text(
+                                       stordataofgroup[0].phone!,
                                   style: TextStyle(
                                     fontFamily: 'Cairo',
                                     fontSize: 15.0,
@@ -255,15 +287,15 @@ class My_groupState extends State<My_group> {
                                     color: Color(0xFF7D90AC),
                                   ),
                                 )
-                                    : Container()
+
                                 // You can show a placeholder or nothing if the list is empty.
                               ],
                             ),
                           ),
                           Padding(
                             padding: const EdgeInsets.only(right: 30.0),
-                            child: Image.asset(
-                              "assets/images/Wadi_Logo.png",
+                            child: Image.network(
+                              stordataofgroup[0].profileImage!,
                                width: 32,
                               height: 60,
                               // Adjust size as needed
@@ -275,9 +307,7 @@ class My_groupState extends State<My_group> {
                   ],
                 ),
               ),
-            ),
-
-
+            ):Container(),
 
 
           ],

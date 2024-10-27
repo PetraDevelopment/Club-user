@@ -48,6 +48,29 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
   late List<AddbookingModel> userplaygroundbook = [];
   List<AddbookingModel> matchedPlaygrounds = [];
   late List<AddPlayGroundModel> matchedplaygroundAllData = [];
+  Future<String> convertmonthtonumber(String date) async{
+    List<String>months=[ 'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',];
+    for(int k=0;k<months.length;k++){
+      if(date.contains(months[k])){
+        date=  date.replaceAll(months[k] ,'-${k+1}-');
+
+        print("updated done with ${date}");
+      }
+    }
+    return date;
+
+  }
 
   // String cost = "";
   late DateTime Day1;
@@ -407,41 +430,57 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
             backgroundColor: Colors.red.shade800,
           ),
         );
+        selectedTimes.clear();
+        _isCheckedList[0] = false;
+        String r=widget.IdData;
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => book_playground_page(r)),
+        // );
         return; // Exit function to prevent duplicate booking
       }
+  else if(existingBooking.docs.isEmpty){
+        convertmonthtonumber(selectedDates.toString());
+        print("shimaa shoooka$selectedDates");
 
+        // Create a booking model and add it to Firestore if no duplicates found
+        final bookingModel = AddbookingModel(
+            Name: name,
+            phoneCommunication: phooneNumber,
+            rentTheBall: _isCheckedList[0],
+            selectedTimes: selectedTimes.toList(),
+            dateofBooking: storeDate,
+            Day_of_booking: selectedDayName,
+            AdminId: playgroundAllData[0].adminId!,
+            groundID: widget.IdData
+        );
 
-      // Create a booking model and add it to Firestore if no duplicates found
-      final bookingModel = AddbookingModel(
-          Name: name,
-          phoneCommunication: phooneNumber,
-          rentTheBall: _isCheckedList[0],
-          selectedTimes: selectedTimes.toList(),
-          dateofBooking: storeDate,
-          Day_of_booking: selectedDayName,
-          AdminId: playgroundAllData[0].adminId!,
-          groundID: widget.IdData
-      );
+        // Add booking to Firestore
+        await FirebaseFirestore.instance.collection('booking').add(bookingModel.toMap());
 
-      // Add booking to Firestore
-      await FirebaseFirestore.instance.collection('booking').add(bookingModel.toMap());
-
-      // Fetch updated data and clear inputs after successful booking
-      await _fetchData();
-      selectedTimes.clear();
-      _isCheckedList[0] = false;
-
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'تم تسجيل البيانات بنجاح', // "Data registered successfully"
-            textAlign: TextAlign.center,
+        // Fetch updated data and clear inputs after successful booking
+        await _fetchData();
+        selectedTimes.clear();
+        _isCheckedList[0] = false;
+        String rx=widget.IdData;
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => book_playground_page(rx)),
+        // );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'تم تسجيل البيانات بنجاح', // "Data registered successfully"
+              textAlign: TextAlign.center,
+            ),
+            backgroundColor: Color(0xFF1F8C4B),
           ),
-          backgroundColor: Color(0xFF1F8C4B),
-        ),
-      );
-    } else {
+        );
+      }
+      // Show success message
+
+    }
+    else {
       // Show message if required fields are empty
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -924,11 +963,9 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                     onTap: () async {
                       // Check if any of the required fields are empty
 
-                      setState(() {
-                        isLoading = true;
-                      });
 
-                      try {
+
+
                         // Send the data to Firestore
                         await _sendData(context);
 
@@ -938,25 +975,8 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                         print("Data sent successfully");
 
 
-                      } catch (e) {
-                        print("errrrrrrrrrorsenddata$e");
-                        // Show an error SnackBar if data sending fails
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'حدث خطأ أثناء إرسال البيانات. حاول مرة أخرى.', // "An error occurred while sending data. Please try again."
-                              textAlign: TextAlign.center,
-                            ),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                        print('Error sending data: $e');
-                      } finally {
                         // Hide the loading indicator
-                        setState(() {
-                          isLoading = false;
-                        });
-                      }
+
                     },
                     child: Padding(
                       padding: const EdgeInsets.only(
@@ -998,7 +1018,13 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                             direction: DismissDirection.horizontal,
                             onDismissed: (direction) async {
                               // Perform the deletion only if confirmed
-                              deleteItemAndRelatedDocs(context, index); // Call the updated delete function
+                              deleteItemAndRelatedDocs(context, index);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => HomePage()),
+                              );
+                              // Call the updated delete function
                             },
                             confirmDismiss: (direction) async {
                               // Show a confirmation dialog before dismissing
@@ -1615,26 +1641,26 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
           SnackBar(
             content: Text("Doc deleted successfully",textAlign: TextAlign.center,),
             backgroundColor: Colors.green.shade700,
-            action: SnackBarAction(
-              label: 'Undo',
-              onPressed: () {
-                // Re-add the deleted item back to the list
-                setState(() {
-                  playgroundbook.insert(index, deletedItem); // Re-add the deleted item
-                });
-
-                // Restore deleted documents in Firestore
-                for (var docData in deletedDocumentsData) {
-                  restoreDocument(docData); // Restore data
-                }
-
-                // Show Snackbar for undo success
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Data Restored ",textAlign: TextAlign.center,),backgroundColor: Colors.green.shade700,),
-                );
-                Navigator.of(context).pop(false);
-              },
-            ),
+            // action: SnackBarAction(
+            //   label: 'Undo',
+            //   onPressed: () {
+            //     // Re-add the deleted item back to the list
+            //     setState(() {
+            //       playgroundbook.insert(index, deletedItem); // Re-add the deleted item
+            //     });
+            //
+            //     // Restore deleted documents in Firestore
+            //     for (var docData in deletedDocumentsData) {
+            //       restoreDocument(docData); // Restore data
+            //     }
+            //
+            //     // Show Snackbar for undo success
+            //     ScaffoldMessenger.of(context).showSnackBar(
+            //       SnackBar(content: Text("Data Restored ",textAlign: TextAlign.center,),backgroundColor: Colors.green.shade700,),
+            //     );
+            //     Navigator.of(context).pop(false);
+            //   },
+            // ),
           ),
         );
       }

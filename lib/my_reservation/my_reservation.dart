@@ -56,6 +56,7 @@ class my_reservationState extends State<my_reservation>
 
   late List<User1> user1 = [];
 
+
   Future<void> getUserByPhone(String phoneNumber) async {
     try {
       // Normalize the phone number by stripping the country code
@@ -134,17 +135,23 @@ class my_reservationState extends State<my_reservation>
 
     }
   }
+  int wait=0;
   @override
   void initState() {
     super.initState();
     _loadUserData();
     _load_cancel_book();
+    _load_Accepted_book();
+
     fetchBookingData();
+
     // print("groundId${widget.groundId}");
     setState(() {});
   }
   late List<AddbookingModel> playgroundbook = [];
   int numbercanceled=0;
+  int numberaccepted=0;
+
   Future<void> getcancel_bookDataByPhone(String userPhone) async {
     final firestore = FirebaseFirestore.instance;
 
@@ -175,7 +182,54 @@ class my_reservationState extends State<my_reservation>
       print('Error fetching data: $e');
     }
   }
+  Future<void> getAccepted_bookDataByPhone(String userPhone) async {
+    final firestore = FirebaseFirestore.instance;
 
+    try {
+      print("uuuuusershimaaa: ${userPhone}");
+      // Query the collection where user_phone matches the provided phone number
+      final querySnapshot = await firestore
+          .collection('accepted')
+      .where('phone_number', isEqualTo: userPhone)
+          .get();
+
+      // Check if any documents are returned
+      if (querySnapshot.docs.isNotEmpty) {
+        // Iterate over each document returned by the query
+        querySnapshot.docs.forEach((doc) {
+          // Get the document data
+          Map<String, dynamic> data = doc.data();
+          int numberOfaccepted = data['accepted_number'] ?? 0;
+
+          // Do something with the retrieved data
+          print('User Phone: ${data['phone_number']}');
+          print('Number of accepted: $numberOfaccepted');
+          numberaccepted=numberOfaccepted;
+        });
+      } else {
+        print('No data found for this phone number.');
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
+  }
+  void _load_Accepted_book()async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? phoneValue = prefs.getString('phonev');
+    print("newphoneValue${phoneValue.toString()}");
+
+    if (phoneValue != null && phoneValue.isNotEmpty){
+      String? normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
+
+      getAccepted_bookDataByPhone(normalizedPhoneNumber);
+    }
+    else if (user?.phoneNumber != null){
+      String? normalizedPhoneNumber = user?.phoneNumber !.replaceFirst('+20', '0');
+
+      getAccepted_bookDataByPhone(normalizedPhoneNumber!);
+
+    }
+  }
   Future<void> fetchBookingData() async {
     try {
       CollectionReference bookingCollection = FirebaseFirestore.instance.collection("booking");
@@ -224,6 +278,9 @@ class my_reservationState extends State<my_reservation>
           playgroundbook = bookings;
           // Print and access specific fields for each booking
           playgroundbook.forEach((booking) {
+            print("convertmonthtonumber${booking.dateofBooking!}");
+
+
             print('AdminId: ${booking.AdminId}');
             print('Day_of_booking: ${booking.Day_of_booking}');
             print('Name: ${booking.Name}');
@@ -362,6 +419,8 @@ class my_reservationState extends State<my_reservation>
           // Store the document ID in the AddPlayGroundModel object
           user.id = document.id;
         }
+        wait=playgroundAllData.length - numberaccepted ;
+        print("wait${wait}");
       }
     } catch (e) {
       print("Error getting playground: $e");
@@ -453,7 +512,7 @@ class my_reservationState extends State<my_reservation>
                         child: Column(
                           children: [
                             Text(
-                              "0",
+                              "${wait}",
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontFamily: 'Cairo',
@@ -563,17 +622,8 @@ class my_reservationState extends State<my_reservation>
                         ),
                         child: Column(
                           children: [
-                            playgroundbook.isNotEmpty?   Text(
-                              "${ playgroundbook.length}",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 30.0,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF334154),
-                              ),
-                            ):Text(
-                              "${ playgroundbook.length}",
+                            Text(
+                              "${ numberaccepted}",
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontFamily: 'Cairo',
@@ -628,7 +678,7 @@ class my_reservationState extends State<my_reservation>
                 child: Center(
                   child: Container(
 
-                    width: MediaQuery.of(context).size.width/1.2,
+                    width: MediaQuery.of(context).size.width/1.1,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20.0),
                       shape: BoxShape.rectangle,
@@ -746,12 +796,11 @@ class my_reservationState extends State<my_reservation>
                                         color: Color(0xFF7D90AC),
                                       ),
                                       children: [
+                                        for(int j=0;j<playgroundbook[i].selectedTimes!.length;j++)
                                         TextSpan(
-                                          text: "${playgroundbook[i].selectedTimes?[0]!}", // Right-aligned part
+                                          text: "${playgroundbook[i].selectedTimes?[j].substring(0,5)}", // Right-aligned part
                                         ),
-                                        TextSpan(
-                                          text: '  إلى  ', // Center part (extra spaces for spacing)
-                                        ),
+
 
                                       ],
                                     ),
@@ -808,7 +857,9 @@ class my_reservationState extends State<my_reservation>
                               child: GestureDetector(
                                 onTap: () async {
                                   print("locattttion${playgroundAllData[i].location!}");
+                                  print("convertmonthtonumber${playgroundbook[i].dateofBooking!}");
 
+                                  // convertmonthtonumber(playgroundbook[i].dateofBooking!);
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(builder: (context) => Maps(location: playgroundAllData[i].location!)),

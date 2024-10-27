@@ -5,20 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 import '../Controller/NavigationController.dart';
-import '../Favourite/Favourite_page.dart';
 import '../Menu/menu.dart';
 import '../PlayGround_Name/PlayGroundName.dart';
 import '../Register/SignInPage.dart';
@@ -27,12 +21,10 @@ import 'package:carousel_slider/carousel_slider.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import '../booking_playground/AddbookingModel/AddbookingModel.dart';
 import '../location/map_page.dart';
-import '../model_rate/model_rate.dart';
 import '../my_reservation/my_reservation.dart';
 import '../playground_model/AddPlaygroundModel.dart';
 import '../search/search_page.dart';
 import 'Userclass.dart';
-import 'carousel_slider.dart';
 import 'model_ratefetched.dart';
 
 class HomePage extends StatefulWidget {
@@ -1240,12 +1232,12 @@ print("order${rat_list}");
                                               children: [
                                                 //this print only first time
                                                 // for (var i = 0; i < playgroundbook[i].selectedTimes!.length; i++)
-                                                  TextSpan(
-                                                    text: playgroundbook[i].selectedTimes![i]), //
+                                                //   TextSpan(
+                                                //     text: playgroundbook[i].selectedTimes![i]), //
 
-                                                // TextSpan(
-                                                //   text: '${start.substring(0,7) } ${ " "}', // Right-aligned part
-                                                // ),
+                                                TextSpan(
+                                                  text: '${start.substring(0,7) } ${ " "}', // Right-aligned part
+                                                ),
 
                                                 // TextSpan(
                                                 //   text: '${end.substring(0,7) }', // Left-aligned part
@@ -1374,7 +1366,8 @@ print("order${rat_list}");
                     ),
 
                   ),
-                ):Padding(
+                ):
+                Padding(
                   padding: const EdgeInsets.only(right: 12.0,bottom: 12,top: 12),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
