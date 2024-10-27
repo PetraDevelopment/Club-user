@@ -96,7 +96,7 @@ class HomePageState extends State<HomePage> {
       getNearbystadiums(loctionval!);
    print("loctionval$loctionval");
 print("country${place.country.toString()}");
-      return "${place.street},${place.locality},${place.country}";
+      return "${place.street},${place.locality},${place.country},${place.administrativeArea}";
     } catch (e) {
       return "Unknown Location";
     }
@@ -323,7 +323,7 @@ print("country${place.country.toString()}");
           Map<String, dynamic> userData =
           document.data() as Map<String, dynamic>;
           AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
-if(user.location!.isNotEmpty&&user.location!.contains(city.substring(0,6))){
+if(user.location!.isNotEmpty&&user.location!.contains(city)){
   print("yes, there are some of playgrounds in this city");
   Nearbystadiums.add(user);
   for(int i=0;i<Nearbystadiums.length;i++){

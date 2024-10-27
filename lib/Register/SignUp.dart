@@ -294,7 +294,7 @@ class SignUpPageState extends State<SignUpPage>
                             builder: (context, child) {
                               return Transform.scale(
                                 scale: animation.value,
-                                child: Image.asset('assets/images/splach.png'),
+                                child: Image.asset('assets/images/registerphoto.png'),
                               );
                             },
                           ),
