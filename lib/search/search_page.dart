@@ -450,7 +450,7 @@ class SearchpageState extends State<Searchpage> {
                 ),
               ):Center(child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Text("loading"),
+                child:Container(),
               )),
               SizedBox(height: 20,),
             ],

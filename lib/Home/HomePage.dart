@@ -56,7 +56,7 @@ class HomePageState extends State<HomePage> {
     return '$formattedStartTime     الي     $formattedEndTime';
   }
   Future<void> _loadData() async {
-    fetchRatings();
+
     // load data here
     await Future.delayed(Duration(seconds: 2)); // simulate data loading
     setState(() {
@@ -125,12 +125,11 @@ print("country${place.country.toString()}");
   void initState() {
     super.initState();
     requestLocationPermission();
+
+    getPlaygroundbyname();
     getfourplaygroundsbytype();
     _loadData();
     fetchBookingData();
-
-    fetchRatings();
-    getPlaygroundbyname();
     _loadUserData();
 
     print("njbjbhbbb");
@@ -183,15 +182,17 @@ print("country${place.country.toString()}");
           // Update the playgroundbook list with fetched bookings
           playgroundbook = bookings;
           // Print and access specific fields for each booking
-          playgroundbook.forEach((booking) {
-            print('AdminId: ${booking.AdminId}');
-            print('Day_of_booking: ${booking.Day_of_booking}');
-            print('Name: ${booking.Name}');
-            print('Rent_the_ball: ${booking.rentTheBall}');
-            print('phoneshoka: ${booking.phoneCommunication}');
+          for (int g=0;g<playgroundbook.length;g++){
+            convertmonthtonumber(playgroundbook[g].dateofBooking,g);
 
-            // Access other fields as needed
-          });
+            print('AdminId: ${playgroundbook[g].AdminId}');
+            print('Day_of_booking: ${playgroundbook[g].Day_of_booking}');
+            print('Name: ${playgroundbook[g].Name}');
+            print('Rent_the_ball: ${playgroundbook[g].rentTheBall}');
+            print('phoneshoka: ${playgroundbook[g].phoneCommunication}');
+
+          }
+
 
         }
         else {
@@ -210,15 +211,16 @@ print("country${place.country.toString()}");
           // Update the playgroundbook list with fetched bookings
           playgroundbook = bookings;
           // Print and access specific fields for each booking
-          playgroundbook.forEach((booking) {
-            print('AdminId: ${booking.AdminId}');
-            print('Day_of_booking: ${booking.Day_of_booking}');
-            print('Name: ${booking.Name}');
-            print('Rent_the_ball: ${booking.rentTheBall}');
-            print('phoneshoka: ${booking.phoneCommunication}');
-            getPlaygroundbynameE(booking.groundID!);
+          for(int r=0;r<playgroundbook.length;r++) {
+            print('AdminId: ${playgroundbook[r].AdminId}');
+            convertmonthtonumber(playgroundbook[r].dateofBooking,r);
+            print('Day_of_booking: ${playgroundbook[r].Day_of_booking}');
+            print('Name: ${playgroundbook[r].Name}');
+            print('Rent_the_ball: ${playgroundbook[r].rentTheBall}');
+            print('phoneshoka: ${playgroundbook[r].phoneCommunication}');
+            getPlaygroundbynameE(playgroundbook[r].groundID!);
             // Access other fields as needed
-          });
+          }
 
         }
         else {
@@ -326,8 +328,10 @@ print("country${place.country.toString()}");
 if(user.location!.isNotEmpty&&user.location!.contains(city)){
   print("yes, there are some of playgrounds in this city");
   Nearbystadiums.add(user);
+
   for(int i=0;i<Nearbystadiums.length;i++){
     print("neeeeeeeear${Nearbystadiums[i].location}");
+
   }
   String?  bookType = Nearbystadiums[0].bookTypes![0].time;
   // Assuming 'time' is the field you want to split into start and end time
@@ -391,7 +395,30 @@ if(user.location!.isNotEmpty&&user.location!.contains(city)){
       print("Error getting playground: $e");
     }
   }
+  String date='';
+  Future<String> convertmonthtonumber(date,int index) async{
+    List<String>months=[ 'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',];
+    for(int k=0;k<months.length;k++){
+      if(date.contains(months[k])){
+        date=  date.replaceAll(months[k] ,'-${k+1}-');
+        print("updated done with ${date}");
+        playgroundbook[index].dateofBooking=date;
+      }
+    }
+    return date;
 
+  }
   int reversed=0;
   Future<void> getUserByPhone(String phoneNumber) async {
     try {
@@ -430,9 +457,9 @@ if(user.location!.isNotEmpty&&user.location!.contains(city)){
     }
   }
   List<Rate_fetched> rat_list = [];
-// Function to delete a document from the 'cancel_book' collection based on the phone number
-  // Function to delete a specific booking document based on phone number and playgroundId
-  Future<void> deleteCancelByPhoneAndPlaygroundId(String phone, String playgroundId,String selectedTime) async {
+  List<Rate_fetched> rat_list2 = [];
+
+Future<void> deleteCancelByPhoneAndPlaygroundId(String phone, String playgroundId,String selectedTime) async {
     final firestore = FirebaseFirestore.instance;
     print("phoneggggg${phone}");
     try {
@@ -464,85 +491,68 @@ if(user.location!.isNotEmpty&&user.location!.contains(city)){
     }
   }
 
-  Future<void> fetchRatings() async {
+
+  Future<void> fetchRatings(String id) async {
     try {
-      // Fetch all ratings from the 'Playground_Rate' collection
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('Playground_Rate')
+          .where('playground_idstars', isEqualTo: id)
           .get();
 
-      // Map the documents to a list of Rate_fetched
-      rat_list = querySnapshot.docs
-          .map((doc) => Rate_fetched.fromMap(doc.data() as Map<String, dynamic>))
-          .toList();
+      if (querySnapshot.docs.isNotEmpty) {
+        print("ID: $id");
 
-      // Sort the ratings by the calculated totalRating in descending order
-      rat_list.sort((a, b) => b.totalRating.compareTo(a.totalRating));
-print("order${rat_list}");
-      // Create a Set to track unique playground IDs
-      Set<String> uniquePlaygroundIds = {};
+        rat_list = querySnapshot.docs
+            .map((doc) => Rate_fetched.fromMap(doc.data() as Map<String, dynamic>))
+            .toList();
 
-      // Filter the list to ensure only unique playground IDs are kept
-      rat_list = rat_list.where((rating) {
-        if (uniquePlaygroundIds.contains(rating.playgroundIdstars ?? '')) {
-          return false; // Skip if already seen
-        } else {
-          uniquePlaygroundIds.add(rating.playgroundIdstars ?? '');
-          return true; // Include if not seen before
+        rat_list.sort((a, b) => b.totalRating.compareTo(a.totalRating));
+        print("Sorted Ratings: $rat_list");
+
+
+        Map<String, Rate_fetched> idToHighestRatingMap = {};
+        for (var rating in rat_list2) {
+
+          if (idToHighestRatingMap.containsKey(rating.playgroundIdstars!)) {
+            if (rating.totalRating > idToHighestRatingMap[rating.playgroundIdstars!]!.totalRating) {
+              idToHighestRatingMap[rating.playgroundIdstars!] = rating;
+              if (rat_list2.length < 5) {
+                var uniqueRatings = rat_list.where((rating) => !idToHighestRatingMap.containsKey(rating.playgroundIdstars!));
+                rat_list2.addAll(uniqueRatings.take(5 -rat_list2.length ));
+                print("erooooooooooooooooooooooooooooooooooooooooooooo   :${rat_list2.length}");
+              }
+            }
+          }
+          else {
+            idToHighestRatingMap[rating.playgroundIdstars!] = rating;
+          }
         }
-      }).toList();
 
-      // top 5 highest-rated
-      rat_list = rat_list.take(5).toList();
+        // If there are less than five unique ratings, include them
+        rat_list2 = idToHighestRatingMap.values.toList();
+        if (rat_list2.length < 5) {
+          var uniqueRatings = rat_list.where((rating) => !idToHighestRatingMap.containsKey(rating.playgroundIdstars!));
+        for(int k=0;k<uniqueRatings.length;k++){
+          if(rat_list2.contains(rat_list[k].playgroundIdstars)){
 
-      print("Filtered and sorted playgrounds: $rat_list");
+          }else{
+            rat_list2.addAll(uniqueRatings.take(5 -rat_list2.length ));
+            print("erooooooooooooooooooooooooooooooooooooooooooooo${rat_list2.length}");
+          }
+        }
 
-      // Refresh the UI with the updated list
-      setState(() {});
+
+        }
+
+        print("Final Ratings: $rat_list2");
+        print("legthikfjkvhk Ratings: ${rat_list2.length}");
+
+        setState(() {});
+      }
     } catch (e) {
       print('Error fetching ratings: $e');
     }
   }
-
-  // Future<void> fetchRatings() async {
-  //   try {
-  //     SharedPreferences prefs = await SharedPreferences.getInstance();
-  //     String? phoneValue = prefs.getString('phonev');
-  //
-  //     if (phoneValue != null && phoneValue.isNotEmpty) {
-  //       // Fetch ratings for the specific phone number and playground ID
-  //       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-  //           .collection('Playground_Rate')
-  //           .where('phone', isEqualTo: phoneValue)
-  //           .get();
-  //
-  //       rat_list = querySnapshot.docs
-  //           .map((doc) => Ratemodel.fromMap(doc.data() as Map<String, dynamic>))
-  //           .toList();
-  //
-  //       setState(() {});
-  //     } else if (user?.phoneNumber != null) {
-  //       // Fetch ratings for the user's phone number and playground ID
-  //       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-  //           .collection('Playground_Rate')
-  //           .where('phone', isEqualTo: user?.phoneNumber)
-  //           .get();
-  //
-  //       rat_list = querySnapshot.docs
-  //           .map((doc) => Ratemodel.fromMap(doc.data() as Map<String, dynamic>))
-  //           .toList();
-  //
-  //       print("rat_list${rat_list[0].playgroundIdstars}");
-  //       print("rat_list[0]${rat_list[0].rate}");
-  //
-  //       setState(() {});
-  //     } else {
-  //       print("No phone number available for fetching ratings.");
-  //     }
-  //   } catch (e) {
-  //     print('Error fetching ratings: $e');
-  //   }
-  // }
 
 
 
@@ -550,7 +560,6 @@ print("order${rat_list}");
   final Searchcontrol = TextEditingController();
   late List<AddPlayGroundModel> allplaygrounds = [];
   int _currentIndex = 3;
-  int _currentIndexcarousel_slider = 0;
   final PageController _pageController = PageController();
   Future<void>getfourplaygroundsbytype() async {
     try {
@@ -566,7 +575,15 @@ print("order${rat_list}");
           AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
 
           allplaygrounds.add(user);
+for(int m=0;m<allplaygrounds.length;m++) {
+  print("kkkkkkkkshok${allplaygrounds[m]}");
+  print("dddddddddddddddddddddd${allplaygrounds[m].id}");
 
+
+
+
+
+}
             if (user.playType == "كرة تنس"&&teniss.isEmpty) {
               teniss.add(user);
               print("tenisssssss$teniss");
@@ -653,13 +670,21 @@ print("order${rat_list}");
           AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
 
           allplaygrounds.add(user);
-          print("PlayGroung Id : ${document.id}"); // Print the latest playground
+          print("PlayGroung Id shoka: ${document.id}"); // Print the latest playground
 
           print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
 // Store the document ID in the AddPlayGroundModel object
           // user.id = document.id;
           user.id = document.id;
           print("Docummmmmm${user.id}");
+          for(int m=0;m<allplaygrounds.length;m++){
+            print("kkkkkkkkshok${allplaygrounds[m]}");
+            print("shimaaaaaaaplaygroundiddddd${allplaygrounds[m].id}");
+
+            fetchRatings(allplaygrounds[m].id!);
+
+          }
+
           // Store the document ID in the AddPlayGroundModel object
           // idddddd1 = document.id;
           // idddddd2=document.id;
@@ -865,15 +890,12 @@ print("order${rat_list}");
 
                 GestureDetector(
                   onTap: () {
-                    setState(() {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Searchpage(),
-                        ),
-                      );
-                    });
-
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Searchpage(),
+                      ),
+                    );
                   },
                   child: Padding(
                     padding: const EdgeInsets.only(left: 33, right: 33),
@@ -900,19 +922,21 @@ print("order${rat_list}");
                           Expanded(
                             child: Padding(
                               padding: const EdgeInsets.only(right: 20, top: 7, bottom: 7),
-                              child: TextField(
-                                controller: Searchcontrol,
-                                readOnly: true,
-                                textAlign: TextAlign.right,
-                                decoration: InputDecoration(
-                                  hintText: 'البحث'.tr,
-                                  hintStyle: TextStyle(
-                                    fontFamily: 'Cairo',
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 15,
-                                    color: Color(0xFFC1C1C1),
+                              child: IgnorePointer(
+                                child: TextField(
+                                  controller: Searchcontrol,
+                                  readOnly: true,
+                                  textAlign: TextAlign.right,
+                                  decoration: InputDecoration(
+                                    hintText: 'البحث'.tr,
+                                    hintStyle: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 15,
+                                      color: Color(0xFFC1C1C1),
+                                    ),
+                                    border: InputBorder.none,
                                   ),
-                                  border: InputBorder.none,
                                 ),
                               ),
                             ),
@@ -1206,12 +1230,13 @@ print("order${rat_list}");
                                     ),
                                   ),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
                                       Row(
                                         children: [
                                           Text(
                                             "${playgroundbook[i].dateofBooking!}",
+                                            textAlign: TextAlign.end,
                                             style: TextStyle(
                                               fontFamily: 'Cairo',
                                               fontSize: 14.0,
@@ -1219,32 +1244,16 @@ print("order${rat_list}");
                                               color: Color(0xFF7D90AC),
                                             ),
                                           ),
-                                          SizedBox(width: 19,),
-                                          RichText(
-                                           // Set the overall text direction to RTL
-                                            text: TextSpan(
-                                              style: TextStyle(
-                                                fontFamily: 'Cairo',
-                                                fontSize: 14.0,
-                                                fontWeight: FontWeight.w500,
-                                                color: Color(0xFF7D90AC),
-                                              ),
-                                              children: [
-                                                //this print only first time
-                                                // for (var i = 0; i < playgroundbook[i].selectedTimes!.length; i++)
-                                                //   TextSpan(
-                                                //     text: playgroundbook[i].selectedTimes![i]), //
 
-                                                TextSpan(
-                                                  text: '${start.substring(0,7) } ${ " "}', // Right-aligned part
-                                                ),
-
-                                                // TextSpan(
-                                                //   text: '${end.substring(0,7) }', // Left-aligned part
-                                                // ),
-                                              ],
-                                            ),
-                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 80,right: 10,top: 8,bottom: 8),
+                                            child: Text('${start.substring(0,7) } ${ " "}',  style: TextStyle(
+                                              fontFamily: 'Cairo',
+                                              fontSize: 14.0,
+                                              fontWeight: FontWeight.w500,
+                                              color: Color(0xFF7D90AC),
+                                            ),),
+                                          )
                                         ],
                                       ),
 
@@ -1289,7 +1298,7 @@ print("order${rat_list}");
 
                                         },
                                         child: Padding(
-                                          padding: const EdgeInsets.all(12.0),
+                                          padding: const EdgeInsets.all(14.0),
                                           child: Container(
                                             height: 29,
                                             width: 92,
@@ -1841,7 +1850,7 @@ print("order${rat_list}");
                 Padding(
                   padding: const EdgeInsets.only(right: 25,left: 26,top: 10,bottom: 10,),
                   child: Text(
-                    "الملاعب العلى تقييم".tr,
+                    "الملاعب الاعلى تقييم".tr,
                     style: TextStyle(
                       color: Color(0xFF495A71),
                       fontFamily: 'Cairo',
@@ -1853,30 +1862,28 @@ print("order${rat_list}");
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   reverse: true, // Reverses the scroll direction
-
-                  child:rat_list.isNotEmpty? Row(
+                  child: rat_list2.isNotEmpty
+                      ? Row(
                     children: [
-
-                      for (var i =  rat_list.length-1; i >-1 ; i--)
+                      for (var i = 0; i < rat_list2.length; i++)
                         GestureDetector(
+                          onTap: () {
+                            print("length equal ${rat_list2.length}");
+                            print("objectidddddd ${rat_list2[i].playgroundIdstars!}");
 
-                          onTap: (){
-                            print("objectidddddd${rat_list[i].playgroundIdstars!}");
-
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PlaygroundName(rat_list[i].playgroundIdstars!),
-
-                              ),
-                            );
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder: (context) => PlaygroundName(rat_list2[i].playgroundIdstars!),
+                            //   ),
+                            // );
                           },
                           child: Card(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20.0),
                             ),
-                            elevation: 4, // Adjust elevation to control the shadow
-                            margin: EdgeInsets.all(8), // Adjust margin as needed
+                            elevation: 4,
+                            margin: EdgeInsets.all(8),
                             child: Stack(
                               children: [
                                 Container(
@@ -1887,25 +1894,23 @@ print("order${rat_list}");
                                     shape: BoxShape.rectangle,
                                   ),
                                   child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
-                                      child: rat_list[i].img!.isNotEmpty?Image.network(
-                                        // Check if img is a list and has at least one image, otherwise use it as a string
-
-                                             rat_list[i].img![0], // Use the first image in the list (or the only image if it's a single string turned into a list)
-                                             height: 163,
-                                        width: 274,
-                                        fit: BoxFit.fill, // Ensure the image covers the container
-                                      ):Image(
+                                    borderRadius: BorderRadius.circular(20.0),
+                                    child: rat_list2[i].img!.isNotEmpty ? Image.network(
+                                      rat_list2[i].img![0],
+                                      height: 163,
+                                      width: 274,
+                                      fit: BoxFit.fill,
+                                    ) : Image(
                                       image: AssetImage("assets/images/newground.png"),
-                              color: Colors.white,
-                              height: 163,
-                              width: 274,
-                              fit: BoxFit.fill,
-                            ),
+                                      color: Colors.white,
+                                      height: 163,
+                                      width: 274,
+                                      fit: BoxFit.fill,
+                                    ),
                                   ),
                                 ),
                                 Positioned(
-                                  top: 6, // Match the top position of the text
+                                  top: 6,
                                   right: 0,
                                   left: 0,
                                   bottom: 0,
@@ -1913,9 +1918,9 @@ print("order${rat_list}");
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
-                                          Colors.transparent, // Start with transparent
-                                          Color(0x1F8C4B).withOpacity(0.0), // Start with #1F8C4B at 0% opacity (fully transparent)
-                                          Color(0x1F8C4B).withOpacity(1.0), // End with #1F8C4B at 100% opacity (fully opaque)
+                                          Colors.transparent,
+                                          Color(0x1F8C4B).withOpacity(0.0),
+                                          Color(0x1F8C4B).withOpacity(1.0),
                                         ],
                                         begin: Alignment.topCenter,
                                         end: Alignment.bottomCenter,
@@ -1928,18 +1933,18 @@ print("order${rat_list}");
                                   ),
                                 ),
                                 Positioned(
-                                  top: 113, // Adjust the top position
+                                  top: 113,
                                   right: 40,
                                   left: 55,
                                   child: Text(
-                                    rat_list[i].name!,
+                                    rat_list2[i].name!,
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
                                       color: Colors.white,
                                     ),
-                                    textAlign: TextAlign.center, // Center text alignment
+                                    textAlign: TextAlign.center,
                                   ),
                                 ),
                               ],
@@ -1947,13 +1952,12 @@ print("order${rat_list}");
                           ),
                         ),
                     ],
-                  ):
-                  Card(
+                  ) : Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20.0),
                     ),
-                    elevation: 4, // Adjust elevation to control the shadow
-                    margin: EdgeInsets.all(8), // Adjust margin as needed
+                    elevation: 4,
+                    margin: EdgeInsets.all(8),
                     child: Stack(
                       children: [
                         Container(
@@ -1964,18 +1968,18 @@ print("order${rat_list}");
                             shape: BoxShape.rectangle,
                           ),
                           child: ClipRRect(
-                              borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
-                              child:Image(
-                                image: AssetImage("assets/images/newground.png"),
-                                color: Colors.white,
-                                height: 163,
-                                width: 274,
-                                fit: BoxFit.fill,
-                              )
+                            borderRadius: BorderRadius.circular(20.0),
+                            child: Image(
+                              image: AssetImage("assets/images/newground.png"),
+                              color: Colors.white,
+                              height: 163,
+                              width: 274,
+                              fit: BoxFit.fill,
+                            ),
                           ),
                         ),
                         Positioned(
-                          top: 6, // Match the top position of the text
+                          top: 6,
                           right: 0,
                           left: 0,
                           bottom: 0,
@@ -1983,9 +1987,9 @@ print("order${rat_list}");
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  Colors.transparent, // Start with transparent
-                                  Color(0x1F8C4B).withOpacity(0.0), // Start with #1F8C4B at 0% opacity (fully transparent)
-                                  Color(0x1F8C4B).withOpacity(1.0), // End with #1F8C4B at 100% opacity (fully opaque)
+                                  Colors.transparent,
+                                  Color(0x1F8C4B).withOpacity(0.0),
+                                  Color(0x1F8C4B).withOpacity(1.0),
                                 ],
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
@@ -1998,7 +2002,7 @@ print("order${rat_list}");
                           ),
                         ),
                         Positioned(
-                          top: 113, // Adjust the top position
+                          top: 113,
                           right: 40,
                           left: 55,
                           child: Text(
@@ -2009,7 +2013,7 @@ print("order${rat_list}");
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
                             ),
-                            textAlign: TextAlign.center, // Center text alignment
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       ],

@@ -300,7 +300,7 @@ class my_reservationState extends State<my_reservation>
     }
   }
   late List<AddPlayGroundModel> playgroundAllData = [];
-  Future<void> deleteCancelByPhoneAndPlaygroundId(String phone, String playgroundId,String selectedTime) async {
+  Future<void> deleteCancelByPhoneAndPlaygroundId(String phone, String playgroundId,String selectedTime,String Dateofbooking) async {
     final firestore = FirebaseFirestore.instance;
     print("phoneggggg${phone}");
     try {
@@ -311,6 +311,8 @@ class my_reservationState extends State<my_reservation>
           .where('phoneCommunication', isEqualTo: phone)
           .where('groundID', isEqualTo: playgroundId)
           .where('selectedTimes', arrayContains: selectedTime)
+          .where('dateofBooking', isEqualTo: Dateofbooking)
+
           .get();
 
       // Check if any documents were found
@@ -427,536 +429,567 @@ class my_reservationState extends State<my_reservation>
     }
   }
   late List<AddPlayGroundModel> allplaygroundsData = [];
+  Future<String> convertmonthtonumber(date,int index) async{
+    List<String>months=[ 'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',];
+    for(int k=0;k<months.length;k++){
+      if(date.contains(months[k])){
+        date=  date.replaceAll(months[k] ,'-${k+1}-');
+        print("updated done with ${date}");
+        playgroundbook[index].dateofBooking=date;
+      }
+    }
+    return date;
 
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
-        child: Padding(
-          padding: EdgeInsets.only(top: 25.0,bottom: 12,right: 8,left: 8), // Add padding to the top of the title
-          child: AppBar(
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.transparent,
-            title: Text(
-              "الحجوزات".tr,
-              style: TextStyle(
-                fontSize: 16,
-                fontFamily: 'Cairo',
-                fontWeight: FontWeight.w700,
+    return WillPopScope(
+      onWillPop: () async {
+        Get.off(HomePage()); // Navigate to HomePage
+        return false;
+      },
+      child: Scaffold(
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
+          child: Padding(
+            padding: EdgeInsets.only(top: 25.0,bottom: 12,right: 8,left: 8), // Add padding to the top of the title
+            child: AppBar(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.transparent,
+              title: Text(
+                "الحجوزات".tr,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontFamily: 'Cairo',
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-            centerTitle: true, // Center the title horizontally
-            leading: IconButton(
-              onPressed: () {
-                Get.back();
-                // Navigator.of(context).pop(true); // Navigate back to the previous page
-              },
-              icon: Icon(
-                Directionality.of(context) == TextDirection.rtl
-                    ? Icons.arrow_forward_ios
-                    : Icons.arrow_back_ios_new_rounded,
-                size: 24,
-                color:  Color(0xFF62748E),
+              centerTitle: true, // Center the title horizontally
+              leading: IconButton(
+                onPressed: () {
+                  Get.off(HomePage());
+                  // Navigator.of(context).pop(true); // Navigate back to the previous page
+                },
+                icon: Icon(
+                  Directionality.of(context) == TextDirection.rtl
+                      ? Icons.arrow_forward_ios
+                      : Icons.arrow_back_ios_new_rounded,
+                  size: 24,
+                  color:  Color(0xFF62748E),
+                ),
               ),
-            ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 12.0),
-                child: Image.asset('assets/images/notification.png', height: 28, width: 28,),
-              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12.0),
+                  child: Image.asset('assets/images/notification.png', height: 28, width: 28,),
+                ),
 
-            ],
-          ),
-        ),
-      ),
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-
-            SizedBox(
-              height: 22,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                SizedBox(
-                  width: 25,
-                ),
-                Container(
-                  height: 93,
-                  width: 87,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                      bottomRight: Radius.circular(17),
-                      bottomLeft: Radius.circular(17),
-                      topRight: Radius.circular(20),
-                      topLeft: Radius.circular(20),
-                    ),
-                    shape: BoxShape.rectangle,
-                    color: Colors
-                        .black, // This color will be visible at the bottom
-                  ),
-                  child: Column(
-                    children: [
-                      Container(
-                        height: 92,
-                        width: 87,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: Color(0xFFF0F6FF), // Inner container color
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              "${wait}",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 30.0,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF334154),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 18,
-                            ),
-                            Text(
-                              "قيد الانتظار",
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 8.5,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF495A71),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  width: 25,
-                ),
-                Container(
-                  height: 93,
-                  width: 87,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                      bottomRight: Radius.circular(17),
-                      bottomLeft: Radius.circular(17),
-                      topRight: Radius.circular(20),
-                      topLeft: Radius.circular(20),
-                    ),
-                    shape: BoxShape.rectangle,
-                    color: Colors.red
-                        .shade200, // This color will be visible at the bottom
-                  ),
-                  child: Column(
-                    children: [
-                      Container(
-                        height: 92,
-                        width: 87,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: Color(0xFFF0F6FF), // Inner container color
-                        ),
-                        child: Column(
-                          children: [
-                            Text("$numbercanceled",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 30.0,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF334154),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 18,
-                            ),
-                            Text(
-                              "حجزات ملغية",
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 8.5,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF495A71),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  width: 25,
-                ),
-                Container(
-                  height: 93,
-                  width: 87,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                      bottomRight: Radius.circular(17),
-                      bottomLeft: Radius.circular(17),
-                      topRight: Radius.circular(20),
-                      topLeft: Radius.circular(20),
-                    ),
-                    shape: BoxShape.rectangle,
-                    color: Colors.green
-                        .shade400, // This color will be visible at the bottom
-                  ),
-                  child: Column(
-                    children: [
-                      Container(
-                        height: 92,
-                        width: 87,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: Color(0xFFF0F6FF), // Inner container color
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              "${ numberaccepted}",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 30.0,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF334154),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 18,
-                            ),
-                            Text(
-                              "حجزات مأكدة",
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 8.5,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF495A71),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  width: 25,
-                ),
               ],
             ),
-            SizedBox(
-              height: 28,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 26.0, left: 26),
-              child: Text(
-                "تاريخ الحجوزات".tr,
-                style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF495A71)),
+          ),
+        ),
+        backgroundColor: Colors.white,
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+
+              SizedBox(
+                height: 22,
               ),
-            ),
-            SizedBox(
-              height: 12,
-            ),
-            for (var i = 0; i < playgroundAllData.length; i++) // Repeat the container 5 times
-              Padding(
-                padding: const EdgeInsets.only(right: 12.0,bottom: 12,top: 10,left: 12),
-                child: Center(
-                  child: Container(
-
-                    width: MediaQuery.of(context).size.width/1.1,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20.0),
-                      shape: BoxShape.rectangle,
-                      color: Color(0xFFF0F6FF),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.7), // Increase opacity for a darker shadow
-                          spreadRadius: 0, // Increase spread to make the shadow larger
-                          blurRadius: 2, // Increase blur radius for a more diffused shadow
-                          offset: Offset(0, 0), // Increase offset for a more pronounced shadow effect
-                        ),
-                      ],
+              Container(
+                width: MediaQuery.of(context).size.width/1.1,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(
+                      width: 25,
                     ),
-                    child:playgroundAllData.isNotEmpty? Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 12.0, left: 12, top: 11),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end, // Aligns the content to the right
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    "${playgroundAllData[i].playgroundName!}",
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF334154),
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-
-                                      Text(
-                                        "${playgroundAllData[i].bookTypes![0].cost!}",
-                                        textDirection: TextDirection.rtl,  // Ensures the text direction is RTL
-
-                                        style: TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontSize: 17.0,
-                                          fontWeight: FontWeight.w800,
-                                          color: Color(0xFF7D90AC),
-                                        ),
-                                      ),
-                                      SizedBox( width: MediaQuery.of(context).size.width/4.2,),
-                                      Text(
-                                        "${playgroundbook[i].phoneCommunication!}",
-                                        textDirection: TextDirection.rtl,  // Ensures the text direction is RTL
-
-                                        style: TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontSize: 14.0,
-                                          fontWeight: FontWeight.w500,
-                                          color: Color(0xFF7D90AC),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              SizedBox(width: 10), // Adds space between the text and the image
-                              Image.asset(
-                                "assets/images/Wadi_Logo.png",
-                                height: 30,
-                                width: 30,
-                                // Adjust size as needed
-                              ),
-                            ],
-                          ),
+                    Container(
+                      height: 93,
+                      width: 87,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                          bottomRight: Radius.circular(17),
+                          bottomLeft: Radius.circular(17),
+                          topRight: Radius.circular(20),
+                          topLeft: Radius.circular(20),
                         ),
-
-                        Padding(
-                          padding: const EdgeInsets.only(right: 20.0, left: 12, top: 11),
-
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-
-                                  Text(
-                                    "التكلفة أجمالية  ".tr,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 13.0,
-                                      fontWeight: FontWeight.w400,
-                                      color: Color(0xFF334154),
-                                    ),
+                        shape: BoxShape.rectangle,
+                        color: Colors
+                            .black, // This color will be visible at the bottom
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 92,
+                            width: 87,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: Color(0xFFF0F6FF), // Inner container color
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  "${wait}",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 30.0,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF334154),
                                   ),
-
-                                  SizedBox(width: MediaQuery.of(context).size.width/23),
-                                  Text(
-                                    "${playgroundbook[i].dateofBooking!}",
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 12.0,
-                                      fontWeight: FontWeight.w400,
-                                      color: Color(0xFF7D90AC),
-                                    ),
+                                ),
+                                SizedBox(
+                                  height: 18,
+                                ),
+                                Text(
+                                  "قيد الانتظار",
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF495A71),
                                   ),
-                                  SizedBox(width: 19,),
-                                  RichText(
-                                    textDirection: TextDirection.rtl, // Set the overall text direction to RTL
-                                    text: TextSpan(
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      width: 25,
+                    ),
+                    Container(
+                      height: 93,
+                      width: 87,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                          bottomRight: Radius.circular(17),
+                          bottomLeft: Radius.circular(17),
+                          topRight: Radius.circular(20),
+                          topLeft: Radius.circular(20),
+                        ),
+                        shape: BoxShape.rectangle,
+                        color: Colors.red
+                            .shade200, // This color will be visible at the bottom
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 92,
+                            width: 87,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: Color(0xFFF0F6FF), // Inner container color
+                            ),
+                            child: Column(
+                              children: [
+                                Text("$numbercanceled",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 30.0,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF334154),
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 18,
+                                ),
+                                Text(
+                                  "حجزات ملغية",
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF495A71),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      width: 25,
+                    ),
+                    Container(
+                      height: 93,
+                      width: 87,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                          bottomRight: Radius.circular(17),
+                          bottomLeft: Radius.circular(17),
+                          topRight: Radius.circular(20),
+                          topLeft: Radius.circular(20),
+                        ),
+                        shape: BoxShape.rectangle,
+                        color: Colors.green
+                            .shade400, // This color will be visible at the bottom
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 92,
+                            width: 87,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: Color(0xFFF0F6FF), // Inner container color
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  "${ numberaccepted}",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 30.0,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF334154),
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 18,
+                                ),
+                                Text(
+                                  "حجزات مأكدة",
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF495A71),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      width: 25,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 28,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 26.0, left: 26),
+                child: Text(
+                  "تاريخ الحجوزات".tr,
+                  style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF495A71)),
+                ),
+              ),
+              SizedBox(
+                height: 12,
+              ),
+              for (var i = 0; i < playgroundAllData.length; i++) // Repeat the container 5 times
+                Padding(
+                  padding: const EdgeInsets.only(right: 12.0,bottom: 12,top: 10,left: 12),
+                  child: Center(
+                    child: Container(
+
+                      width: MediaQuery.of(context).size.width/1.1,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20.0),
+                        shape: BoxShape.rectangle,
+                        color: Color(0xFFF0F6FF),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.7), // Increase opacity for a darker shadow
+                            spreadRadius: 0, // Increase spread to make the shadow larger
+                            blurRadius: 2, // Increase blur radius for a more diffused shadow
+                            offset: Offset(0, 0), // Increase offset for a more pronounced shadow effect
+                          ),
+                        ],
+                      ),
+                      child:playgroundAllData.isNotEmpty? Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 12.0, left: 12, top: 11),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end, // Aligns the content to the right
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      "${playgroundAllData[i].playgroundName!}",
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF334154),
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+
+                                        Text(
+                                          "${playgroundAllData[i].bookTypes![0].cost!}",
+                                          textDirection: TextDirection.rtl,  // Ensures the text direction is RTL
+
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            fontSize: 17.0,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF7D90AC),
+                                          ),
+                                        ),
+                                        SizedBox( width: MediaQuery.of(context).size.width/4.2,),
+                                        Text(
+                                          "${playgroundbook[i].phoneCommunication!}",
+                                          textDirection: TextDirection.rtl,  // Ensures the text direction is RTL
+
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            fontSize: 14.0,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xFF7D90AC),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(width: 10), // Adds space between the text and the image
+                                Image.asset(
+                                  "assets/images/Wadi_Logo.png",
+                                  height: 30,
+                                  width: 30,
+                                  // Adjust size as needed
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Padding(
+                            padding: const EdgeInsets.only(right: 20.0, left: 12, top: 11),
+
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+
+                                    Text(
+                                      "التكلفة أجمالية  ".tr,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 13.0,
+                                        fontWeight: FontWeight.w400,
+                                        color: Color(0xFF334154),
+                                      ),
+                                    ),
+
+                                    SizedBox(width: MediaQuery.of(context).size.width/23),
+                                    Text(
+                                      "${playgroundbook[i].dateofBooking!}",
                                       style: TextStyle(
                                         fontFamily: 'Cairo',
                                         fontSize: 12.0,
                                         fontWeight: FontWeight.w400,
                                         color: Color(0xFF7D90AC),
                                       ),
-                                      children: [
-                                        for(int j=0;j<playgroundbook[i].selectedTimes!.length;j++)
-                                        TextSpan(
-                                          text: "${playgroundbook[i].selectedTimes?[j].substring(0,5)}", // Right-aligned part
+                                    ),
+                                    SizedBox(width: 19,),
+                                    RichText(
+                                      textDirection: TextDirection.rtl, // Set the overall text direction to RTL
+                                      text: TextSpan(
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 12.0,
+                                          fontWeight: FontWeight.w400,
+                                          color: Color(0xFF7D90AC),
                                         ),
+                                        children: [
+                                          for(int j=0;j<playgroundbook[i].selectedTimes!.length;j++)
+                                          TextSpan(
+                                            text: "${playgroundbook[i].selectedTimes?[j].substring(0,5)}", // Right-aligned part
+                                          ),
 
 
-                                      ],
+                                        ],
+                                      ),
+                                    ),
+
+                                  ],
+                                ),
+
+                              ],
+                            ),
+                          ),
+
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 12.0,bottom: 12,left: 30),
+                                child: GestureDetector(
+                                  onTap: (){
+                                    print("phooonefff${playgroundbook[i].phoneCommunication!}");
+                                    updateCancelCount(playgroundbook[i].phoneCommunication!);
+                                    deleteCancelByPhoneAndPlaygroundId(playgroundbook[i].phoneCommunication!,playgroundbook[i].groundID!,playgroundbook[i].selectedTimes!.first,playgroundbook[i].dateofBooking!);
+
+                                  },
+                                  child: Container(
+                                    height: 29,
+                                    width: 110,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(30.0),
+                                      shape: BoxShape.rectangle,
+                                      color: Color(0xFFB3261E), // Background color of the container
+                                      // border: Border.all(
+                                      //   width: 1.0, // Border width
+                                      //   color: Colors.black
+                                      // ),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        "إلغاء الحجز".tr,
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 16.0,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.white, // Text color
+                                        ),
+                                      ),
                                     ),
                                   ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 12.0,bottom: 12,right: 30),
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    print("locattttion${playgroundAllData[i].location!}");
+                                    print("convertmonthtonumber${playgroundbook[i].dateofBooking!}");
 
-                                ],
+                                    // convertmonthtonumber(playgroundbook[i].dateofBooking!);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => Maps(location: playgroundAllData[i].location!)),
+                                    );
+                                  },
+                                  child: Container(
+                                    height: 29,
+                                    width: 114,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(30.0),
+                                      shape: BoxShape.rectangle,
+                                      color: Color(0xFF064821), // Background color of the container
+                                      // border: Border.all(
+                                      //   width: 1.0, // Border width
+                                      //   color: Colors.black
+                                      // ),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        "الموقع".tr,
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 16.0,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.white, // Text color
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
 
                             ],
                           ),
-                        ),
+                          SizedBox(height: 5),
 
-
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 12.0,bottom: 12,left: 30),
-                              child: GestureDetector(
-                                onTap: (){
-                                  print("phooonefff${playgroundbook[i].phoneCommunication!}");
-                                  updateCancelCount(playgroundbook[i].phoneCommunication!);
-                                  deleteCancelByPhoneAndPlaygroundId(playgroundbook[i].phoneCommunication!,playgroundbook[i].groundID!,playgroundbook[i].selectedTimes!.first);
-
-                                },
-                                child: Container(
-                                  height: 29,
-                                  width: 110,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(30.0),
-                                    shape: BoxShape.rectangle,
-                                    color: Color(0xFFB3261E), // Background color of the container
-                                    // border: Border.all(
-                                    //   width: 1.0, // Border width
-                                    //   color: Colors.black
-                                    // ),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      "إلغاء الحجز".tr,
-                                      style: TextStyle(
-                                        fontFamily: 'Cairo',
-                                        fontSize: 16.0,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.white, // Text color
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 12.0,bottom: 12,right: 30),
-                              child: GestureDetector(
-                                onTap: () async {
-                                  print("locattttion${playgroundAllData[i].location!}");
-                                  print("convertmonthtonumber${playgroundbook[i].dateofBooking!}");
-
-                                  // convertmonthtonumber(playgroundbook[i].dateofBooking!);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => Maps(location: playgroundAllData[i].location!)),
-                                  );
-                                },
-                                child: Container(
-                                  height: 29,
-                                  width: 114,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(30.0),
-                                    shape: BoxShape.rectangle,
-                                    color: Color(0xFF064821), // Background color of the container
-                                    // border: Border.all(
-                                    //   width: 1.0, // Border width
-                                    //   color: Colors.black
-                                    // ),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      "الموقع".tr,
-                                      style: TextStyle(
-                                        fontFamily: 'Cairo',
-                                        fontSize: 16.0,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.white, // Text color
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                          ],
-                        ),
-                        SizedBox(height: 5),
-
-                      ],
-                    ):Container(),
+                        ],
+                      ):Container(),
+                    ),
                   ),
                 ),
-              ),
-            SizedBox(height: 55), // Adds space between the text and the image
-          ],
+              SizedBox(height: 55), // Adds space between the text and the image
+            ],
+          ),
         ),
+        bottomNavigationBar: CurvedNavigationBar(
+          height: 60,
+          index: 1,
+          // Use the dynamic index
+          items: [
+            Icon(Icons.more_horiz, color: Colors.white, size: 25),
+
+            Image.asset('assets/images/calendar.png',
+                height: 21, width: 21, color: Colors.white),
+            Image.asset('assets/images/stade.png',
+                height: 21, width: 21, color: Colors.white),
+            Image.asset('assets/images/home.png',
+                height: 21, width: 21, color: Colors.white),
+          ],
+          color: Color(0xFF064821),
+          buttonBackgroundColor: Color(0xFFBACCE6),
+          backgroundColor: Colors.white,
+          animationCurve: Curves.easeInOut,
+          animationDuration: Duration(milliseconds: 600),
+          onTap: (index) {
+            navigationController
+                .updateIndex(index); // Update the index dynamically
+            // Handle navigation based on index
+            switch (index) {
+              case 0:
+                Get.to(() => menupage())?.then((_) {
+                  navigationController
+                      .updateIndex(0); // Update index when navigating back
+                });
+                break;
+
+              case 1:
+              // Get.to(() => FavouritePage())?.then((_) {
+              //   navigationController
+              //       .updateIndex(1); // Update index when navigating back
+              // });
+              // break;
+              case 2:
+                Get.to(() => AppBarandNavigationBTN())?.then((_) {
+                  navigationController.updateIndex(2);
+                });
+                break;
+
+              case 3:
+                Get.to(() => HomePage())?.then((_) {
+                  navigationController.updateIndex(3);
+                });
+                break;
+            }
+          },
+        ),
+
       ),
-      bottomNavigationBar: CurvedNavigationBar(
-        height: 60,
-        index: 1,
-        // Use the dynamic index
-        items: [
-          Icon(Icons.more_horiz, color: Colors.white, size: 25),
-
-          Image.asset('assets/images/calendar.png',
-              height: 21, width: 21, color: Colors.white),
-          Image.asset('assets/images/stade.png',
-              height: 21, width: 21, color: Colors.white),
-          Image.asset('assets/images/home.png',
-              height: 21, width: 21, color: Colors.white),
-        ],
-        color: Color(0xFF064821),
-        buttonBackgroundColor: Color(0xFFBACCE6),
-        backgroundColor: Colors.white,
-        animationCurve: Curves.easeInOut,
-        animationDuration: Duration(milliseconds: 600),
-        onTap: (index) {
-          navigationController
-              .updateIndex(index); // Update the index dynamically
-          // Handle navigation based on index
-          switch (index) {
-            case 0:
-              Get.to(() => menupage())?.then((_) {
-                navigationController
-                    .updateIndex(0); // Update index when navigating back
-              });
-              break;
-
-            case 1:
-            // Get.to(() => FavouritePage())?.then((_) {
-            //   navigationController
-            //       .updateIndex(1); // Update index when navigating back
-            // });
-            // break;
-            case 2:
-              Get.to(() => AppBarandNavigationBTN())?.then((_) {
-                navigationController.updateIndex(2);
-              });
-              break;
-
-            case 3:
-              Get.to(() => HomePage())?.then((_) {
-                navigationController.updateIndex(3);
-              });
-              break;
-          }
-        },
-      ),
-
     );
   }
 }

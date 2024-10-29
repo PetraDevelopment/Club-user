@@ -282,8 +282,26 @@ class SignUpPageState extends State<SignUpPage>
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
+                    SizedBox(
+                      height: 40,
+                    ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 65.0),
+                      padding: const EdgeInsets.all(8.0),
+                      child: Center(
+                        child: Text(
+                          'إنشــــاء حســــــاب'.tr,
+                          style: TextStyle(
+                            color: Color(0xFF1F8C4B),
+                            fontFamily: 'Cairo',
+                            fontSize: 24.0,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20.0),
                       child: Align(
                         alignment: Alignment.topCenter,
                         child: Container(
@@ -302,20 +320,7 @@ class SignUpPageState extends State<SignUpPage>
                       ),
                     ),
                     SizedBox(height: 16,),
-                    Center(
-                      child: Text(
-                        'إنشــــاء حســــــاب'.tr,
-                        style: TextStyle(
-                          color: Color(0xFF1F8C4B),
-                          fontFamily: 'Cairo',
-                          fontSize: 24.0,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 12,
-                    ),
+
                     RichText(
                       textAlign: TextAlign.right,
                       text: TextSpan(
@@ -572,7 +577,7 @@ class SignUpPageState extends State<SignUpPage>
                         }
                       },
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 50.0, right: 20, left: 20),
+                        padding: const EdgeInsets.only(top: 120.0, right: 20, left: 20),
                         child: Container(
                           height: 50,
                           width: 320,

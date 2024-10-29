@@ -53,9 +53,12 @@ class PlaygroundNameState extends State<PlaygroundName>
       _isLoading = false; // set flag to false when data is loaded
     });
   }
+  int totalRating = 0;
+  int count=0;
 
   List<Favouritemodel> favlist = [];
   late List<User1> user1 = [];
+  List<bool>   isstared = [false,false,false,false,false];
 
 
   String idddddd = '';
@@ -388,10 +391,11 @@ class PlaygroundNameState extends State<PlaygroundName>
     // print('User data44444: ${user1[0].name}');
     setState(() {}); // Call setState to rebuild the widget tree
   }
-  double _averageRating = 0.0;
+  int _averageRating = 0;
 
-  Future<void> sendRating(List<bool> rating) async {
+  Future<void> sendRating(List<bool> isstared) async {
     try {
+print("total rate for thiws playground is $totalRating");
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? phoneValue = prefs.getString('phonev');
       print("newphoneValue${phoneValue.toString()}");
@@ -406,9 +410,11 @@ class PlaygroundNameState extends State<PlaygroundName>
             .get();
         if (querySnapshot.docs.isNotEmpty) {
           // Document exists, update the rating
+          if(totalRating>5){totalRating=5;}
           DocumentReference docRef = querySnapshot.docs.first.reference;
           await docRef.update({
-            'rate': rating,
+            'rate': isstared,
+            'totalrating':totalRating
           });
           Navigator.pushReplacement(
             context,
@@ -417,11 +423,12 @@ class PlaygroundNameState extends State<PlaygroundName>
         } else {
           // Document doesn't exist, create a new one
           DocumentReference docRef = await playerchat.add({
-            'rate': rating,
+            'rate': isstared,
             'phone': phoneValue,
             'playground_idstars': widget.id,
             'img': allplaygrounds[0].img!,
-            'name': allplaygrounds[0].playgroundName!
+            'name': allplaygrounds[0].playgroundName!,
+            'totalrating':totalRating
           });
           Navigator.pushReplacement(
             context,
@@ -438,10 +445,12 @@ class PlaygroundNameState extends State<PlaygroundName>
             .get();
 
         if (querySnapshot.docs.isNotEmpty) {
+          if(totalRating>5){totalRating=5;}
           // Document exists, update the rating
           DocumentReference docRef = querySnapshot.docs.first.reference;
           await docRef.update({
-            'rate': rating,
+            'rate': isstared,
+            'totalrating':totalRating
           });
           Navigator.pushReplacement(
             context,
@@ -450,11 +459,12 @@ class PlaygroundNameState extends State<PlaygroundName>
         } else {
           // Document doesn't exist, create a new one
           DocumentReference docRef = await playerchat.add({
-            'rate': rating,
+            'rate': isstared,
             'phone': user?.phoneNumber,
             'playground_idstars': widget.id,
             'img': allplaygrounds[0].img!,
-            'name': allplaygrounds[0].playgroundName!
+            'name': allplaygrounds[0].playgroundName!,
+            'totalrating':totalRating
           });
           Navigator.pushReplacement(
             context,
@@ -484,6 +494,10 @@ class PlaygroundNameState extends State<PlaygroundName>
         rat_list = querySnapshot.docs
             .map((doc) => Ratemodel.fromMap(doc.data() as Map<String, dynamic>))
             .toList();
+        for(int y=0;y<rat_list.length;y++){
+          print("rat_listrat_listrat_list${rat_list[y].phone}");
+
+        }
         _calculateAverageRating();
         setState(() {});
       } else if (user?.phoneNumber != null) {
@@ -496,7 +510,10 @@ class PlaygroundNameState extends State<PlaygroundName>
         rat_list = querySnapshot.docs
             .map((doc) => Ratemodel.fromMap(doc.data() as Map<String, dynamic>))
             .toList();
+        for(int y=0;y<rat_list.length;y++){
+          print("rat_listrat_listrat_list${rat_list[y].phone}");
 
+        }
         print("rat_list${rat_list[0].playgroundIdstars}");
         print("rat_list[0]${rat_list[0].rate}");
         _calculateAverageRating();
@@ -523,6 +540,7 @@ class PlaygroundNameState extends State<PlaygroundName>
        {
          return "assets/images/materialcloth.png";
        }
+
     else{
       return "assets/images/car-door.png";
     }
@@ -530,30 +548,31 @@ class PlaygroundNameState extends State<PlaygroundName>
 
   void _calculateAverageRating() {
     if (rat_list.isNotEmpty) {
-      double totalRating = 0.0;
-      int count = 0;
 
-      for (int rat =0;rat< rat_list.length;rat++) {
-        totalRating +=rat;
+      for(int i=0;i<rat_list.length;i++){
+        print("ratephoneuser${rat_list[i].phone}");
+        totalRating+=rat_list[i].totalrating!;
+
         count++;
+
       }
       print("conteeeer${count}");
+      print("total rate${totalRating}");
 
-      // Calculate average
-      if (count == 1) {
-        _averageRating = 1.0;
-      } else {
-        _averageRating = count > 0 ? totalRating / count : 0.0;
+      if(count > 1 ) {
+        _averageRating = ( totalRating / count).toInt() ;
+        print("_averageRating = $_averageRating");
       }
-    } else {
-      _averageRating = 0.0;
+       else {
+        _averageRating = totalRating;
+      }
     }
   }
   @override
   Widget build(BuildContext context) {
     List<List<bool>> allRatings = rat_list.map((r) => r.rate!).toList();
 
-    int filledStars = _averageRating.round();
+    double filledStars = _averageRating.toDouble();
 
     return Scaffold(
       // backgroundColor: Colors.white,
@@ -722,7 +741,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       GestureDetector(
-                        onTap:(){
+                        onTap: () {
                           showDialog(
                             context: Get.context!,
                             builder: (BuildContext context) {
@@ -763,51 +782,45 @@ class PlaygroundNameState extends State<PlaygroundName>
                                     ),
                                   ],
                                 ),
-                                content: Stack(
-                                  children: [Container(
-                                    height: 45.82,
-
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        for (int i = 0; i < 5; i++)
-                                          GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                if (i < _selectedStars) {
-                                                  _selectedStars = i;
-                                                } else {
-                                                  _selectedStars = i + 1;
-                                                }
-
-                                              });
-                                            },
-                                            child: _averageRating!=false
-                                                ? Icon(
-                                              // Check if the star at index `i` should be filled
-                                              i <
-                                                  _averageRating
-                                                  ? Icons.star
-                                                  : Icons.star_border_outlined,
-                                              color: Color(0xFFFFCC00),
+                                content: StatefulBuilder(//
+                                  builder: (BuildContext context, StateSetter setState) {
+                                    return Container(
+                                      height: 45.82,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          for (int i = 0; i < 5; i++)
+                                            GestureDetector(
+                                              onTap: () {
+                                                setState(() {
+                                                  isstared[i] = !isstared[i];
+                                                  if(totalRating<5&& isstared[i]==true){
+                                                    totalRating+=1;
+                                                  }
+                                                  // if( isstared[i]==true){
+                                                  //   totalRating=totalRating+1;
+                                                  // }
+                                                  print("starrrr value${isstared[i]}");
+                                                });
+                                              },
+                                              child: Icon(
+                                                isstared[i] ? Icons.star : Icons.star_border_outlined,
+                                                color: isstared[i] ? Color(0xFFFFCC00) : Colors.grey,
+                                              ),
                                             )
-                                                : Icon(
-                                              Icons.star_border_outlined,
-                                              color: Color(0xFFFFCC00),
-                                            ),
-                                          )
-                                      ],
-                                    ),
-                                  )],
+                                        ],
+                                      ),
+                                    );
+                                  },
                                 ),
                                 actions: [
                                   GestureDetector(
                                     onTap: () {
                                       List<bool> rating = List.generate(
-                                          5, (index) => index < _selectedStars);
+                                        5,
+                                            (index) => isstared[index],
+                                      );
                                       sendRating(rating);
-
-                                      // Add your navigation or confirmation logic here
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.only(top: 5, right: 20, left: 20, bottom: 20),
@@ -835,7 +848,8 @@ class PlaygroundNameState extends State<PlaygroundName>
                                 ],
                               );
                             },
-                          );                 },
+                          );
+                        },
                         child: Text(
                           "أضافة تقييم".tr,
                           style: TextStyle(
@@ -1203,6 +1217,7 @@ class PlaygroundNameState extends State<PlaygroundName>
     return Row(
     mainAxisAlignment: MainAxisAlignment.end,
     children: [
+      facility=="حجز نصف ساعة"?Container():
     Text(
     facility,
     style: TextStyle(
@@ -1213,7 +1228,7 @@ class PlaygroundNameState extends State<PlaygroundName>
     ),
     ),
     SizedBox(width: 8),
-    Image.asset(
+      facility=="حجز نصف ساعة"?Container():   Image.asset(
     _getIconForFacility(facility),
     color: Color(0xFF106A35),
     height: 20,
