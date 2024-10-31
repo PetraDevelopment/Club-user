@@ -96,7 +96,7 @@ class SportsController extends GetxController {
           // Normalize playType before comparing
           String playType = user.playType!.trim();
 
-          if (playType == "كرة طايره") {
+          if (playType == "كرة طائرة") {
             volybool.add(user);
           } else if (playType == "كرة قدم") {
             football.add(user);

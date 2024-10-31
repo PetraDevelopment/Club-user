@@ -201,10 +201,12 @@ setState(() {
       backgroundColor: Colors.white,
       body:Stack(
         children: [
-          SingleChildScrollView(
+           (isLoading == true)
+              ? const Positioned(top: 0, child: Loading()): SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.only(top: 15.0,bottom: 15,right: 22,left: 22),
-              child: Column(
+
+               child:     Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Padding(
@@ -450,9 +452,8 @@ setState(() {
             ),
 
           ),
-          (isLoading == true)
-              ? const Positioned(top: 0, child: Loading())
-              : Container(),
+
+
         ],
       ),
     );

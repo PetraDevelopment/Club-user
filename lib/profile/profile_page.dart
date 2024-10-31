@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:club_user/Menu/menu.dart';
-import 'package:club_user/shimmer_effect/shimmer_lines.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -10,14 +9,10 @@ import 'package:get/get.dart';
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:shimmer/shimmer.dart';
 import '../../Controller/NavigationController.dart';
 import '../../Home/HomePage.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../Register/SignInPage.dart';
-import '../../Register/SignUp.dart';
 import '../../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -347,7 +342,7 @@ class ProfilepageState extends State<Profilepage>
                                         width: 164,
                                         height: 164,
                                         child: Image.asset(
-                                          "assets/images/profile_img.png",
+                                          "assets/images/profile.png",
                                         ),
                                       )
                                     : ClipOval(
@@ -370,7 +365,7 @@ class ProfilepageState extends State<Profilepage>
                       ),
                       Positioned(
                         top: 129,
-                        left: 220,
+                        left: 200,
                         child: Container(
                           height: 35,
                           width: 35,

@@ -114,13 +114,13 @@ class AppBarandNavigationBTN extends StatelessWidget {
                     ),
                     SizedBox(width: 8,),
                     GestureDetector(
-                      onTap: () => controller.selectCategory("كرة طايره"),
+                      onTap: () => controller.selectCategory("كرة طائرة"),
                       child: Container(
                         height: 27,
                         width: 86,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20.0),
-                          color:controller.selectedCategory.value == "كرة طايره" ? Color(0xFF106A35)
+                          color:controller.selectedCategory.value == "كرة طائرة" ? Color(0xFF106A35)
                               : Color(0xFFE4EFFF),
                         ),
                         child: Center(
@@ -130,7 +130,7 @@ class AppBarandNavigationBTN extends StatelessWidget {
                                 fontFamily: 'Cairo',
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
-                                color:controller.selectedCategory.value == "كرة طايره" ?
+                                color:controller.selectedCategory.value == "كرة طائرة" ?
                                 Colors.white : Color(0xFF334154)
 
                             ),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../Controller/NavigationController.dart';
 import '../Favourite_model/AddPlaygroundModel.dart';
-import '../Home/HomePage.dart';
 import '../Menu/menu.dart';
 import '../PlayGround_Name/PlayGroundName.dart';
 import 'package:get/get.dart';
@@ -27,12 +26,12 @@ class FavouritePageState extends State<FavouritePage> {
   List<Favouritemodel>favlist=[];
   User? user = FirebaseAuth.instance.currentUser;
 
-  Future<void> getfavdata() async {
+  Future<void> getfavdata(String playgroundid) async {
     try {
       CollectionReference fav =
       FirebaseFirestore.instance.collection("Favourite");
 
-      QuerySnapshot querySnapshot = await fav.get();
+      QuerySnapshot querySnapshot = await fav.where('playground_id',isEqualTo: playgroundid).get();
 
       if (querySnapshot.docs.isNotEmpty) {
         for (QueryDocumentSnapshot document in querySnapshot.docs) {
@@ -69,7 +68,7 @@ class FavouritePageState extends State<FavouritePage> {
   @override
   void initState() {
     super.initState();
-    getfavdata();
+    getPlaygroundbyname();
   }
   Future<void> getPlaygroundbyname() async {
     try {
@@ -90,6 +89,9 @@ class FavouritePageState extends State<FavouritePage> {
 
           // Store the document ID in the AddPlayGroundModel object
           idddddd = document.id;
+          for(int x=0;x<allplaygrounds.length;x++){
+            getfavdata(allplaygrounds[x].id!);
+          }
         }
       }
     } catch (e) {

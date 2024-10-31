@@ -1,9 +1,10 @@
-
 import 'package:club_user/location/map_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'dart:async';
+
 import 'package:geocoding/geocoding.dart';
 import 'package:share/share.dart';
 import '../Controller/NavigationController.dart';
@@ -53,13 +54,12 @@ class PlaygroundNameState extends State<PlaygroundName>
       _isLoading = false; // set flag to false when data is loaded
     });
   }
-  int totalRating = 0;
-  int count=0;
+
+  int count = 0;
 
   List<Favouritemodel> favlist = [];
   late List<User1> user1 = [];
-  List<bool>   isstared = [false,false,false,false,false];
-
+  List<bool> isstared = [false, false, false, false, false];
 
   String idddddd = '';
 
@@ -155,8 +155,7 @@ class PlaygroundNameState extends State<PlaygroundName>
   }
 
   Future<bool> checkIfFavoriteExists(
-      String playgroundId, String userPhone)
-  async {
+      String playgroundId, String userPhone) async {
     try {
       print("kkkkk$userPhone");
       // Query Firebase to check if the playground is already marked as a favorite
@@ -391,30 +390,40 @@ class PlaygroundNameState extends State<PlaygroundName>
     // print('User data44444: ${user1[0].name}');
     setState(() {}); // Call setState to rebuild the widget tree
   }
+
   int _averageRating = 0;
+
+  int totalRating = 0;
 
   Future<void> sendRating(List<bool> isstared) async {
     try {
-print("total rate for thiws playground is $totalRating");
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? phoneValue = prefs.getString('phonev');
-      print("newphoneValue${phoneValue.toString()}");
+      print("new phoneValue ${phoneValue.toString()}");
 
       if (phoneValue != null && phoneValue.isNotEmpty) {
-        // Check if a document exists for the user and playground combination
         CollectionReference playerchat =
             FirebaseFirestore.instance.collection("Playground_Rate");
         QuerySnapshot querySnapshot = await playerchat
             .where('phone', isEqualTo: phoneValue)
             .where('playground_idstars', isEqualTo: widget.id)
             .get();
+//to avoid add to total rate that already exist
+        int newTotalRating = 0;
+        for (bool star in isstared) {
+          if (star) {
+            newTotalRating++;
+          }
+        }
+
+        if (newTotalRating > 5) newTotalRating = 5; // Cap the rating at 5
+
         if (querySnapshot.docs.isNotEmpty) {
           // Document exists, update the rating
-          if(totalRating>5){totalRating=5;}
           DocumentReference docRef = querySnapshot.docs.first.reference;
           await docRef.update({
-            'rate': isstared,
-            'totalrating':totalRating
+            'rate': isstared, // Update with the new stars only
+            'totalrating': newTotalRating // Use only the new rating value
           });
           Navigator.pushReplacement(
             context,
@@ -422,13 +431,13 @@ print("total rate for thiws playground is $totalRating");
           );
         } else {
           // Document doesn't exist, create a new one
-          DocumentReference docRef = await playerchat.add({
+          await playerchat.add({
             'rate': isstared,
             'phone': phoneValue,
             'playground_idstars': widget.id,
             'img': allplaygrounds[0].img!,
             'name': allplaygrounds[0].playgroundName!,
-            'totalrating':totalRating
+            'totalrating': newTotalRating
           });
           Navigator.pushReplacement(
             context,
@@ -436,7 +445,7 @@ print("total rate for thiws playground is $totalRating");
           );
         }
       } else if (user?.phoneNumber != null) {
-        // Check if a document exists for the user and playground combination
+        // Similar logic if phone number is obtained from `user`
         CollectionReference playerchat =
             FirebaseFirestore.instance.collection("Playground_Rate");
         QuerySnapshot querySnapshot = await playerchat
@@ -444,27 +453,33 @@ print("total rate for thiws playground is $totalRating");
             .where('playground_idstars', isEqualTo: widget.id)
             .get();
 
+        int newTotalRating = 0;
+        for (bool star in isstared) {
+          if (star) {
+            newTotalRating++;
+          }
+        }
+
+        if (newTotalRating > 5) newTotalRating = 5; // Cap the rating at 5
+
         if (querySnapshot.docs.isNotEmpty) {
-          if(totalRating>5){totalRating=5;}
           // Document exists, update the rating
           DocumentReference docRef = querySnapshot.docs.first.reference;
-          await docRef.update({
-            'rate': isstared,
-            'totalrating':totalRating
-          });
+          await docRef
+              .update({'rate': isstared, 'totalrating': newTotalRating});
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => PlaygroundName(widget.id)),
           );
         } else {
           // Document doesn't exist, create a new one
-          DocumentReference docRef = await playerchat.add({
+          await playerchat.add({
             'rate': isstared,
             'phone': user?.phoneNumber,
             'playground_idstars': widget.id,
             'img': allplaygrounds[0].img!,
             'name': allplaygrounds[0].playgroundName!,
-            'totalrating':totalRating
+            'totalrating': newTotalRating
           });
           Navigator.pushReplacement(
             context,
@@ -478,6 +493,79 @@ print("total rate for thiws playground is $totalRating");
       print('Error updating rating: $e');
     }
   }
+
+  // Future<void> sendRating(List<bool> isstared) async {
+  //   try {
+  //    for(bool star in isstared){
+  //      if(star==true){
+  //        totalRating++;
+  //
+  //      }
+  //    }
+  //
+  //     print("Total rate for this playground is $totalRating");
+  //
+  //     SharedPreferences prefs = await SharedPreferences.getInstance();
+  //     String? phoneValue = prefs.getString('phonev');
+  //     print("new phoneValue ${phoneValue.toString()}");
+  //
+  //     if (phoneValue != null && phoneValue.isNotEmpty) {
+  //       CollectionReference playerchat = FirebaseFirestore.instance.collection("Playground_Rate");
+  //       QuerySnapshot querySnapshot = await playerchat
+  //           .where('phone', isEqualTo: phoneValue)
+  //           .where('playground_idstars', isEqualTo: widget.id)
+  //           .get();
+  //
+  //       if (querySnapshot.docs.isNotEmpty) {
+  //         // Document exists, update the rating
+  //         DocumentReference docRef = querySnapshot.docs.first.reference;
+  //         await docRef.update({
+  //           'rate': isstared,
+  //           'totalrating': totalRating
+  //         });
+  //       } else {
+  //         // Document doesn't exist, create a new one
+  //         await playerchat.add({
+  //           'rate': isstared,
+  //           'phone': phoneValue,
+  //           'playground_idstars': widget.id,
+  //           'img': allplaygrounds[0].img!,
+  //           'name': allplaygrounds[0].playgroundName!,
+  //           'totalrating': totalRating
+  //         });
+  //       }
+  //     } else if (user?.phoneNumber != null) {
+  //       CollectionReference playerchat = FirebaseFirestore.instance.collection("Playground_Rate");
+  //       QuerySnapshot querySnapshot = await playerchat
+  //           .where('phone', isEqualTo: user?.phoneNumber)
+  //           .where('playground_idstars', isEqualTo: widget.id)
+  //           .get();
+  //
+  //       if (querySnapshot.docs.isNotEmpty) {
+  //         // Document exists, update the rating
+  //         DocumentReference docRef = querySnapshot.docs.first.reference;
+  //         await docRef.update({
+  //           'rate': isstared,
+  //           'totalrating': totalRating
+  //         });
+  //       } else {
+  //         // Document doesn't exist, create a new one
+  //         await playerchat.add({
+  //           'rate': isstared,
+  //           'phone': user?.phoneNumber,
+  //           'playground_idstars': widget.id,
+  //           'img': allplaygrounds[0].img!,
+  //           'name': allplaygrounds[0].playgroundName!,
+  //           'totalrating': totalRating
+  //         });
+  //       }
+  //     } else {
+  //       print("No phone number available.");
+  //     }
+  //   } catch (e) {
+  //     print('Error updating rating: $e');
+  //   }
+  // }
 
   Future<void> fetchRatings() async {
     try {
@@ -494,9 +582,8 @@ print("total rate for thiws playground is $totalRating");
         rat_list = querySnapshot.docs
             .map((doc) => Ratemodel.fromMap(doc.data() as Map<String, dynamic>))
             .toList();
-        for(int y=0;y<rat_list.length;y++){
+        for (int y = 0; y < rat_list.length; y++) {
           print("rat_listrat_listrat_list${rat_list[y].phone}");
-
         }
         _calculateAverageRating();
         setState(() {});
@@ -510,9 +597,8 @@ print("total rate for thiws playground is $totalRating");
         rat_list = querySnapshot.docs
             .map((doc) => Ratemodel.fromMap(doc.data() as Map<String, dynamic>))
             .toList();
-        for(int y=0;y<rat_list.length;y++){
+        for (int y = 0; y < rat_list.length; y++) {
           print("rat_listrat_listrat_list${rat_list[y].phone}");
-
         }
         print("rat_list${rat_list[0].playgroundIdstars}");
         print("rat_list[0]${rat_list[0].rate}");
@@ -525,49 +611,41 @@ print("total rate for thiws playground is $totalRating");
       print('Error fetching ratings: $e');
     }
   }
+
   String _getIconForFacility(String facility) {
-    if(facility=="كافتيريا"){
+    if (facility == "كافتيريا") {
       return "assets/images/ion_cafe.png";
-    }else if(facility=='الحمامات'){
+    } else if (facility == 'الحمامات') {
       return "assets/images/bathroom.png";
-    }
-    else if(facility=='موقف سيارات'){
-
+    } else if (facility == 'موقف سيارات') {
       return "assets/images/car-door.png";
-    }
-      else if(facility=='غرف تغيير الملابس')
-
-       {
-         return "assets/images/materialcloth.png";
-       }
-
-    else{
+    } else if (facility == 'غرف تغيير الملابس') {
+      return "assets/images/materialcloth.png";
+    } else {
       return "assets/images/car-door.png";
     }
   }
 
   void _calculateAverageRating() {
     if (rat_list.isNotEmpty) {
-
-      for(int i=0;i<rat_list.length;i++){
+      for (int i = 0; i < rat_list.length; i++) {
         print("ratephoneuser${rat_list[i].phone}");
-        totalRating+=rat_list[i].totalrating!;
+        totalRating += rat_list[i].totalrating!;
 
         count++;
-
       }
       print("conteeeer${count}");
       print("total rate${totalRating}");
 
-      if(count > 1 ) {
-        _averageRating = ( totalRating / count).toInt() ;
+      if (count > 1) {
+        _averageRating = (totalRating / count).toInt();
         print("_averageRating = $_averageRating");
-      }
-       else {
+      } else {
         _averageRating = totalRating;
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     List<List<bool>> allRatings = rat_list.map((r) => r.rate!).toList();
@@ -582,7 +660,9 @@ print("total rate for thiws playground is $totalRating");
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Stack(
+                (_isLoading == true)
+                    ? const Positioned(top: 0, child: Loading())
+                    : Stack(
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.only(
@@ -597,17 +677,71 @@ print("total rate for thiws playground is $totalRating");
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 8.0),
                                   // Add some space between images
-                                  child: Image.network(
-                                    allplaygrounds[0].img![index],
-                                    height: 250,
-                                    width: MediaQuery.of(context).size.width,
-                                    fit: BoxFit
-                                        .cover, // Ensure the image covers the container
+                                  child: Stack(
+                                    children: [
+                                      Material(
+                                        elevation: 4, // Elevation of 4
+                                        borderRadius:
+                                            BorderRadius.circular(20.0),
+                                        child: Container(
+                                          height: 200,
+                                          width: 274,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(20.0),
+                                            shape: BoxShape.rectangle,
+                                          ),
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(20.0),
+                                            child: allplaygrounds[0]
+                                                    .img!
+                                                    .isNotEmpty
+                                                ? Image.network(
+                                                    allplaygrounds[0]
+                                                        .img![index],
+                                                    height: 200,
+                                                    width: 274,
+                                                    fit: BoxFit.cover,
+                                                  )
+                                                : Image.asset(
+                                                    'assets/images/newwadi.png',
+                                                    height: 163,
+                                                    width: 274,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                          ),
+                                        ),
+                                      ),
+                                      // Positioned(
+                                      //   top: 6,
+                                      //   right: 0,
+                                      //   left: 0,
+                                      //   bottom: 0,
+                                      //   child: Container(
+                                      //     decoration: BoxDecoration(
+                                      //       gradient: LinearGradient(
+                                      //         colors: [
+                                      //           Colors.transparent,
+                                      //           Color(0x1F8C4B).withOpacity(0.0),
+                                      //           Color(0x1F8C4B).withOpacity(1.0),
+                                      //         ],
+                                      //         begin: Alignment.topCenter,
+                                      //         end: Alignment.bottomCenter,
+                                      //       ),
+                                      //       borderRadius: BorderRadius.only(
+                                      //         bottomLeft: Radius.circular(20.0),
+                                      //         bottomRight: Radius.circular(20.0),
+                                      //       ),
+                                      //     ),
+                                      //   ),
+                                      // ),
+                                    ],
                                   ),
                                 );
                               },
                               options: CarouselOptions(
-                                height: 250,
+                                height: 200,
                                 viewportFraction: 0.9,
                                 // Adjust this value to change the width of each image
                                 enableInfiniteScroll: true,
@@ -624,7 +758,6 @@ print("total rate for thiws playground is $totalRating");
                                   .fill, // Ensure the placeholder image covers the container
                             ),
                     ),
-
 
                     Positioned(
                       top: 5,
@@ -656,6 +789,38 @@ print("total rate for thiws playground is $totalRating");
                         ),
                       ),
                     ),
+                    allplaygrounds.isNotEmpty
+                        ? Positioned(
+                            top: 150,
+                            right: 40,
+                            left: 55,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text(
+                                  allplaygrounds[0].playgroundName!.contains('ملعب')?allplaygrounds[0].playgroundName!
+                                  :'ملعب '+allplaygrounds[0].playgroundName!,
+                                  // Updated English text
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Image.asset(
+                                  "assets/images/Wadi_Logo.png",
+                                  height: 30,
+                                  width: 30,
+                                ),
+                              ],
+                            ),
+                          )
+                        : Container(),
                     // Top left icon with green shadow
                     Positioned(
                       top: 40,
@@ -752,7 +917,8 @@ print("total rate for thiws playground is $totalRating");
                                     Align(
                                       alignment: Alignment.center,
                                       child: Padding(
-                                        padding: const EdgeInsets.only(top: 30.0),
+                                        padding:
+                                            const EdgeInsets.only(top: 30.0),
                                         child: Text(
                                           "أضافة تقييم",
                                           textAlign: TextAlign.center,
@@ -782,30 +948,40 @@ print("total rate for thiws playground is $totalRating");
                                     ),
                                   ],
                                 ),
-                                content: StatefulBuilder(//
-                                  builder: (BuildContext context, StateSetter setState) {
+                                content: StatefulBuilder(
+                                  //
+                                  builder: (BuildContext context,
+                                      StateSetter setState) {
                                     return Container(
                                       height: 45.82,
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           for (int i = 0; i < 5; i++)
                                             GestureDetector(
                                               onTap: () {
                                                 setState(() {
                                                   isstared[i] = !isstared[i];
-                                                  if(totalRating<5&& isstared[i]==true){
-                                                    totalRating+=1;
+                                                  if (totalRating < 5 &&
+                                                      isstared[i] == true) {
+                                                    totalRating += 1;
                                                   }
                                                   // if( isstared[i]==true){
                                                   //   totalRating=totalRating+1;
                                                   // }
-                                                  print("starrrr value${isstared[i]}");
+                                                  print(
+                                                      "starrrr value${isstared[i]}");
                                                 });
                                               },
                                               child: Icon(
-                                                isstared[i] ? Icons.star : Icons.star_border_outlined,
-                                                color: isstared[i] ? Color(0xFFFFCC00) : Colors.grey,
+                                                isstared[i]
+                                                    ? Icons.star
+                                                    : Icons
+                                                        .star_border_outlined,
+                                                color: isstared[i]
+                                                    ? Color(0xFFFFCC00)
+                                                    : Colors.grey,
                                               ),
                                             )
                                         ],
@@ -818,17 +994,22 @@ print("total rate for thiws playground is $totalRating");
                                     onTap: () {
                                       List<bool> rating = List.generate(
                                         5,
-                                            (index) => isstared[index],
+                                        (index) => isstared[index],
                                       );
                                       sendRating(rating);
                                     },
                                     child: Padding(
-                                      padding: const EdgeInsets.only(top: 5, right: 20, left: 20, bottom: 20),
+                                      padding: const EdgeInsets.only(
+                                          top: 5,
+                                          right: 20,
+                                          left: 20,
+                                          bottom: 20),
                                       child: Container(
                                         height: 45,
                                         width: double.infinity,
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(30.0),
+                                          borderRadius:
+                                              BorderRadius.circular(30.0),
                                           color: Color(0xFF064821),
                                         ),
                                         child: Center(
@@ -865,20 +1046,22 @@ print("total rate for thiws playground is $totalRating");
                         children: [
                           for (int i = 0; i < 5; i++)
                             GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  if (i < _selectedStars) {
-                                    _selectedStars = i;
-                                  } else {
-                                    _selectedStars = i + 1;
-                                  }
-                                  List<bool> rating = List.generate(
-                                      5, (index) => index < _selectedStars);
-                                  sendRating(rating);
-                                });
-                              },
-                              child:Icon(
-                                i < filledStars ? Icons.star : Icons.star_border_outlined,
+                              // onTap: () {
+                              //   setState(() {
+                              //     if (i < _selectedStars) {
+                              //       _selectedStars = i;
+                              //     } else {
+                              //       _selectedStars = i + 1;
+                              //     }
+                              //     List<bool> rating = List.generate(
+                              //         5, (index) => index < _selectedStars);
+                              //     sendRating(rating);
+                              //   });
+                              // },
+                              child: Icon(
+                                i < filledStars
+                                    ? Icons.star
+                                    : Icons.star_border_outlined,
                                 color: Color(0xFFFFCC00),
                               ),
                             )
@@ -924,7 +1107,7 @@ print("total rate for thiws playground is $totalRating");
                                         ),
                                       )
                                     : Text(
-                                        'كرة الطائرة',
+                                        'كرة طائرة',
                                         style: TextStyle(
                                           fontFamily: 'Cairo',
                                           fontSize: 14,
@@ -949,13 +1132,11 @@ print("total rate for thiws playground is $totalRating");
                               children: [
                                 allplaygrounds.isNotEmpty
                                     ? Text(
-                                        allplaygrounds[0].width!.length < 5 &&
-                                                allplaygrounds[0]
-                                                        .length!
-                                                        .length <
-                                                    5
+                                  allplaygrounds[0].width!.length < 5 && allplaygrounds[0]
+                                      .length!
+                                      .length < 5
                                             ? '   ${allplaygrounds[0].width!}x${allplaygrounds[0].length!} م '
-                                            : '   ${allplaygrounds[0].width!.substring(0, 4)}x${allplaygrounds[0].length!.substring(0, 4)} م ',
+                                           :  '   ${allplaygrounds[0].width!.length>10?allplaygrounds[0].width!.substring(0,5):allplaygrounds[0].width!}x${allplaygrounds[0].length!.length>10?allplaygrounds[0].length!.substring(0,5):allplaygrounds[0].length!} م ',
                                         textDirection: TextDirection.rtl,
                                         // Ensures the text direction is RTL
 
@@ -1046,7 +1227,7 @@ print("total rate for thiws playground is $totalRating");
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(4.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
@@ -1187,6 +1368,61 @@ print("total rate for thiws playground is $totalRating");
                       )
                     : Container(),
 
+                //               allplaygrounds.isNotEmpty &&
+                //                       allplaygrounds[0].availableFacilities != null &&
+                //                       allplaygrounds[0].availableFacilities!.isNotEmpty
+                //                   ? Column(
+                //                       mainAxisAlignment: MainAxisAlignment.end,
+                //                       crossAxisAlignment: CrossAxisAlignment.end,
+                //                       children: [
+                //                         Padding(
+                //                           padding:
+                //                               const EdgeInsets.only(right: 26.0, left: 26),
+                //                           child: Text(
+                //                             "المرفقات".tr,
+                //                             style: TextStyle(
+                //                                 fontFamily: 'Cairo',
+                //                                 fontSize: 14.0,
+                //                                 fontWeight: FontWeight.w700,
+                //                                 color: Color(0xFF495A71)),
+                //                           ),
+                //                         ),
+                //                         SizedBox(
+                //                           height: 12,
+                //                         ),
+                //                         Padding(
+                //                           padding: const EdgeInsets.only(right: 26),
+                //                           child: Column(
+                //                             children: allplaygrounds[0].availableFacilities!.map((facility) {
+                //
+                //   return Row(
+                //   mainAxisAlignment: MainAxisAlignment.end,
+                //   children: [
+                //     facility=="حجز نصف ساعة"?Container():
+                //   Text(
+                //   facility,
+                //   style: TextStyle(
+                //   fontFamily: 'Cairo',
+                //   fontSize: 14,
+                //   fontWeight: FontWeight.w500,
+                //   color: Color(0xFF106A35),
+                //   ),
+                //   ),
+                //   SizedBox(width: 8),
+                //     facility=="حجز نصف ساعة"?Container():   Image.asset(
+                //   _getIconForFacility(facility),
+                //   color: Color(0xFF106A35),
+                //   height: 20,
+                //   width: 22,
+                //   ),
+                //   ],
+                //   );
+                // }).toList(),
+                // ),
+                // ),
+                // SizedBox(height: 50),
+                // ],
+                // ):Container(),
                 allplaygrounds.isNotEmpty &&
                         allplaygrounds[0].availableFacilities != null &&
                         allplaygrounds[0].availableFacilities!.isNotEmpty
@@ -1206,42 +1442,147 @@ print("total rate for thiws playground is $totalRating");
                                   color: Color(0xFF495A71)),
                             ),
                           ),
-                          SizedBox(
-                            height: 12,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 26),
-                            child: Column(
-                              children: allplaygrounds[0].availableFacilities!.map((facility) {
+                          SizedBox(height: 12),
+                          Column(
+                            textDirection: TextDirection.rtl,
+                            mainAxisAlignment: MainAxisAlignment.end, // Aligns the content to the right
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: List.generate(
+                              (allplaygrounds[0].availableFacilities!
+                                  .where((facility) => facility != "حجز نصف ساعة")
+                                  .length / 2)
+                                  .ceil(),
+                                  (index) {
+                                // Get two items at a time, skipping "حجز نصف ساعة"
+                                final facilitiesChunk = allplaygrounds[0].availableFacilities!
+                                    .where((facility) => facility != "حجز نصف ساعة")
+                                    .skip(index * 2)
+                                    .take(2)
+                                    .toList();
 
-    return Row(
-    mainAxisAlignment: MainAxisAlignment.end,
-    children: [
-      facility=="حجز نصف ساعة"?Container():
-    Text(
-    facility,
-    style: TextStyle(
-    fontFamily: 'Cairo',
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-    color: Color(0xFF106A35),
-    ),
-    ),
-    SizedBox(width: 8),
-      facility=="حجز نصف ساعة"?Container():   Image.asset(
-    _getIconForFacility(facility),
-    color: Color(0xFF106A35),
-    height: 20,
-    width: 22,
-    ),
-    ],
-    );
-  }).toList(),
-  ),
-  ),
-  SizedBox(height: 50),
-  ],
-  ):Container(),
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 15.0),
+                                  child: Row(
+                                    textDirection: TextDirection.rtl,
+                                    mainAxisAlignment: MainAxisAlignment.end, // Aligns the content to the right
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: List.generate(
+                                      2,
+                                          (facilityIndex) {
+                                        if (facilityIndex >= facilitiesChunk.length) {
+                                          // Add Spacer if facilitiesChunk has only 1 item in this row
+                                          return Spacer(flex: 1);
+                                        }
+                                        return Expanded(
+                                          flex: 1,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.end, // Aligns the content to the right
+                                              crossAxisAlignment: CrossAxisAlignment.end,
+                                              children: [
+                                                Row(
+                                                  textDirection: TextDirection.rtl,
+                                                  children: [
+                                                    Image.asset(
+                                                      _getIconForFacility(facilitiesChunk[facilityIndex]),
+                                                      color: Color(0xFF106A35),
+                                                      height: 20,
+                                                      width: 22,
+                                                    ),
+                                                    SizedBox(width: 8),
+                                                    Text(
+                                                      facilitiesChunk[facilityIndex],
+                                                      style: TextStyle(
+                                                        fontFamily: 'Cairo',
+                                                        fontSize: 14,
+                                                        fontWeight: FontWeight.w500,
+                                                        color: Color(0xFF106A35),
+                                                      ),
+                                                    ),
+
+
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+
+
+
+                          // Column(
+                          //   children: List.generate(
+                          //     (allplaygrounds[0]
+                          //                 .availableFacilities!
+                          //                 .where((facility) =>
+                          //                     facility != "حجز نصف ساعة")
+                          //                 .length /
+                          //             2)
+                          //         .ceil(),
+                          //     (index) {
+                          //       // Get two items at a time, skipping "حجز نصف ساعة"
+                          //       final facilitiesChunk = allplaygrounds[0]
+                          //           .availableFacilities!
+                          //           .where((facility) =>
+                          //               facility != "حجز نصف ساعة")
+                          //           .skip(index * 2)
+                          //           .take(2)
+                          //           .toList();
+                          //
+                          //       return Row(
+                          //         mainAxisAlignment: MainAxisAlignment.start,
+                          //         crossAxisAlignment:
+                          //             CrossAxisAlignment.center,
+                          //         children:
+                          //             List.generate(facilitiesChunk.length,
+                          //                 (facilityIndex) {
+                          //           // Aligns first and third items to the same start point and second, fourth items to another start point
+                          //           return Expanded(
+                          //             flex: 1,
+                          //             child: Row(
+                          //               mainAxisAlignment:
+                          //                   facilityIndex % 2 == 0
+                          //                       ? MainAxisAlignment.end
+                          //                       : MainAxisAlignment.center,
+                          //               children: [
+                          //                 Text(
+                          //                   facilitiesChunk[facilityIndex],
+                          //                   style: TextStyle(
+                          //                     fontFamily: 'Cairo',
+                          //                     fontSize: 14,
+                          //                     fontWeight: FontWeight.w500,
+                          //                     color: Color(0xFF106A35),
+                          //                   ),
+                          //                 ),
+                          //                 SizedBox(width: 8),
+                          //                 Image.asset(
+                          //                   _getIconForFacility(
+                          //                       facilitiesChunk[
+                          //                           facilityIndex]),
+                          //                   color: Color(0xFF106A35),
+                          //                   height: 20,
+                          //                   width: 22,
+                          //                 ),
+                          //               ],
+                          //             ),
+                          //           );
+                          //         }),
+                          //       );
+                          //     },
+                          //   ),
+                          // ),
+                          SizedBox(height: 50),
+                        ],
+                      )
+                    : Container(),
 
                 GestureDetector(
                   onTap: () {
@@ -1287,9 +1628,6 @@ print("total rate for thiws playground is $totalRating");
               ],
             ),
           ),
-          (_isLoading == true)
-              ? const Positioned(top: 0, child: Loading())
-              : Container(),
         ],
       ),
       bottomNavigationBar: CurvedNavigationBar(

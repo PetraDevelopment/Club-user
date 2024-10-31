@@ -1,29 +1,22 @@
-import 'dart:math';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:share/share.dart';
-
 import 'package:get/get.dart';
-import '../Controller/NavigationController.dart';
+import 'package:intl/intl.dart' ;
 
-import 'package:geocoding/geocoding.dart';
-import '../Home/HomePage.dart';
+import 'package:flutter/services.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../Home/Userclass.dart';
+import '../Controller/NavigationController.dart';
 import '../Menu/menu.dart';
 import '../Register/SignInPage.dart';
-import 'package:shimmer/shimmer.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import '../booking_playground/AddbookingModel/AddbookingModel.dart';
 import '../location/map_page.dart';
 import '../playground_model/AddPlaygroundModel.dart';
-import '../shimmer_effect/shimmer_lines.dart';
+import '../Home/HomePage.dart';
+import '../Home/Userclass.dart';
 
 class my_reservation extends StatefulWidget {
 
@@ -182,6 +175,29 @@ class my_reservationState extends State<my_reservation>
       print('Error fetching data: $e');
     }
   }
+  Future<String> convertmonthtonumber(date,int index) async{
+    List<String>months=[ 'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',];
+    for(int k=0;k<months.length;k++){
+      if(date.contains(months[k])){
+        date=  date.replaceAll(months[k] ,'-${k+1}-');
+        print("updated done with ${date}");
+        playgroundbook[index].dateofBooking=date;
+      }
+    }
+    return date;
+
+  }
   Future<void> getAccepted_bookDataByPhone(String userPhone) async {
     final firestore = FirebaseFirestore.instance;
 
@@ -276,6 +292,17 @@ class my_reservationState extends State<my_reservation>
           }).toList();
           // Update the playgroundbook list with fetched bookings
           playgroundbook = bookings;
+          for (int g=0;g<playgroundbook.length;g++){
+            convertmonthtonumber(playgroundbook[g].dateofBooking,g);
+
+            print('AdminId: ${playgroundbook[g].AdminId}');
+            print('Day_of_booking: ${playgroundbook[g].Day_of_booking}');
+            print('Name: ${playgroundbook[g].Name}');
+            print('Rent_the_ball: ${playgroundbook[g].rentTheBall}');
+            print('phoneshoka: ${playgroundbook[g].phoneCommunication}');
+
+          }
+
           // Print and access specific fields for each booking
           playgroundbook.forEach((booking) {
             print("convertmonthtonumber${booking.dateofBooking!}");
@@ -333,29 +360,78 @@ class my_reservationState extends State<my_reservation>
       print('Error deleting document: $e');
     }
   }
-  Future<void> updateCancelCount(String userPhone) async {
+  // Future<void> updateCancelCount(String userPhone) async {
+  //   final firestore = FirebaseFirestore.instance;
+  //   final query = await firestore
+  //       .collection('cancel_book')
+  //       .where('user_phone', isEqualTo: userPhone)
+  //       .get();
+  //
+  //   if (query.docs.isNotEmpty) {
+  //     // Document exists, increment the numberofcancel field
+  //     final doc = query.docs.first;
+  //     final currentCount = doc['numberofcancel'] ?? 0;
+  //
+  //     await firestore
+  //         .collection('cancel_book')
+  //         .doc(doc.id)
+  //         .update({'numberofcancel': currentCount + 1});
+  //   } else {
+  //     // Document does not exist, create a new one with numberofcancel set to 1
+  //     await firestore.collection('cancel_book').add({
+  //       'user_phone': userPhone,
+  //       'numberofcancel': 1,
+  //     });
+  //   }
+  // }
+  Future<void> updateCancelCount(String userPhone,String idAdmin, String idGround) async {
     final firestore = FirebaseFirestore.instance;
     final query = await firestore
         .collection('cancel_book')
         .where('user_phone', isEqualTo: userPhone)
+        .where('adminid', isEqualTo: idAdmin)
+        .where('playgroundId', isEqualTo: idGround)
         .get();
 
     if (query.docs.isNotEmpty) {
       // Document exists, increment the numberofcancel field
       final doc = query.docs.first;
       final currentCount = doc['numberofcancel'] ?? 0;
-
       await firestore
           .collection('cancel_book')
           .doc(doc.id)
           .update({'numberofcancel': currentCount + 1});
+      print("dooooc$doc");
+
     } else {
       // Document does not exist, create a new one with numberofcancel set to 1
       await firestore.collection('cancel_book').add({
         'user_phone': userPhone,
         'numberofcancel': 1,
+        'playgroundId':idGround,
+        'adminid':idAdmin,
       });
     }
+  }
+  String getTimeRange(String startTime) {
+    DateTime start = DateFormat.jm().parse(startTime); // Parse the start time
+    DateTime end = start.add(Duration(hours: 1)); // Add 1 hour for the end time
+
+    // Format the time in Arabic but numbers in English
+    String formattedStartTime = DateFormat('h:mm a', 'ar')
+        .format(start)
+        .replaceAllMapped(RegExp(r'\d+'), (match) {
+      return NumberFormat('en').format(
+          int.parse(match.group(0)!)); // Ensure numbers are in English
+    });
+
+    String formattedEndTime = DateFormat('h:mm a', 'ar')
+        .format(end)
+        .replaceAllMapped(RegExp(r'\d+'), (match) {
+      return NumberFormat('en').format(int.parse(match.group(0)!));
+    });
+
+    return '$formattedStartTime     الي     $formattedEndTime';
   }
   Future<void> getPlaygroundbyname(String iiid) async {
     try {
@@ -429,29 +505,6 @@ class my_reservationState extends State<my_reservation>
     }
   }
   late List<AddPlayGroundModel> allplaygroundsData = [];
-  Future<String> convertmonthtonumber(date,int index) async{
-    List<String>months=[ 'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',];
-    for(int k=0;k<months.length;k++){
-      if(date.contains(months[k])){
-        date=  date.replaceAll(months[k] ,'-${k+1}-');
-        print("updated done with ${date}");
-        playgroundbook[index].dateofBooking=date;
-      }
-    }
-    return date;
-
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -483,7 +536,7 @@ class my_reservationState extends State<my_reservation>
                   // Navigator.of(context).pop(true); // Navigate back to the previous page
                 },
                 icon: Icon(
-                  Directionality.of(context) == TextDirection.rtl
+                  Directionality.of(context) == TextDirection.RTL
                       ? Icons.arrow_forward_ios
                       : Icons.arrow_back_ios_new_rounded,
                   size: 24,
@@ -706,7 +759,7 @@ class my_reservationState extends State<my_reservation>
               ),
               for (var i = 0; i < playgroundAllData.length; i++) // Repeat the container 5 times
                 Padding(
-                  padding: const EdgeInsets.only(right: 12.0,bottom: 12,top: 10,left: 12),
+                  padding: const EdgeInsets.only(bottom: 12,top: 10),
                   child: Center(
                     child: Container(
 
@@ -750,7 +803,7 @@ class my_reservationState extends State<my_reservation>
 
                                         Text(
                                           "${playgroundAllData[i].bookTypes![0].cost!}",
-                                          textDirection: TextDirection.rtl,  // Ensures the text direction is RTL
+                                          // textDirection: TextDirection.RTL,  // Ensures the text direction is RTL
 
                                           style: TextStyle(
                                             fontFamily: 'Cairo',
@@ -762,7 +815,7 @@ class my_reservationState extends State<my_reservation>
                                         SizedBox( width: MediaQuery.of(context).size.width/4.2,),
                                         Text(
                                           "${playgroundbook[i].phoneCommunication!}",
-                                          textDirection: TextDirection.rtl,  // Ensures the text direction is RTL
+                                          // textDirection: TextDirection.RTL,  // Ensures the text direction is RTL
 
                                           style: TextStyle(
                                             fontFamily: 'Cairo',
@@ -819,21 +872,24 @@ class my_reservationState extends State<my_reservation>
                                     ),
                                     SizedBox(width: 19,),
                                     RichText(
-                                      textDirection: TextDirection.rtl, // Set the overall text direction to RTL
                                       text: TextSpan(
                                         style: TextStyle(
+                                          color: Color(
+                                              0xFF7C90AB),
+                                          fontSize: 12,
                                           fontFamily: 'Cairo',
-                                          fontSize: 12.0,
-                                          fontWeight: FontWeight.w400,
-                                          color: Color(0xFF7D90AC),
+                                          fontWeight: FontWeight
+                                              .w400,
+                                          height: 0,
+                                          letterSpacing: 0.36,
                                         ),
                                         children: [
-                                          for(int j=0;j<playgroundbook[i].selectedTimes!.length;j++)
-                                          TextSpan(
-                                            text: "${playgroundbook[i].selectedTimes?[j].substring(0,5)}", // Right-aligned part
-                                          ),
 
-
+                                            TextSpan(
+                                              text: getTimeRange(
+                                                  playgroundbook[i]
+                                                      .selectedTimes![i]) ,// Add formatted time range
+                                            ),
                                         ],
                                       ),
                                     ),
@@ -854,7 +910,7 @@ class my_reservationState extends State<my_reservation>
                                 child: GestureDetector(
                                   onTap: (){
                                     print("phooonefff${playgroundbook[i].phoneCommunication!}");
-                                    updateCancelCount(playgroundbook[i].phoneCommunication!);
+                                    updateCancelCount(playgroundbook[i].phoneCommunication!,playgroundbook[i].AdminId!,playgroundbook[i].groundID!);
                                     deleteCancelByPhoneAndPlaygroundId(playgroundbook[i].phoneCommunication!,playgroundbook[i].groundID!,playgroundbook[i].selectedTimes!.first,playgroundbook[i].dateofBooking!);
 
                                   },
@@ -891,7 +947,7 @@ class my_reservationState extends State<my_reservation>
                                     print("locattttion${playgroundAllData[i].location!}");
                                     print("convertmonthtonumber${playgroundbook[i].dateofBooking!}");
 
-                                    // convertmonthtonumber(playgroundbook[i].dateofBooking!);
+
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(builder: (context) => Maps(location: playgroundAllData[i].location!)),

@@ -128,7 +128,7 @@ class SearchpageState extends State<Searchpage> {
             Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
             AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
 
-            if (user.playgroundName!.toLowerCase().contains(userInput.toLowerCase())) {
+            if (user.playgroundName!.toLowerCase().contains(userInput.toLowerCase().trim())) {
               searchPlaygrounds.add(user);
               user.id = document.id;
               print("shimaaaaaaaaaaaaaaaaa${user.id}");
@@ -322,8 +322,10 @@ class SearchpageState extends State<Searchpage> {
                           child: TextField(
                             controller: Searchcontrol,
                             // readOnly: true,
-                            textAlign: TextAlign.right, // Align text to the right
+
+                            textAlign: TextAlign.end, // Align text to the right
                             decoration: InputDecoration(
+
                               hintText: 'البحث'.tr,
                               hintStyle: TextStyle(
                                 fontFamily: 'Cairo',
@@ -448,10 +450,39 @@ class SearchpageState extends State<Searchpage> {
                     ],
                   ),
                 ),
-              ):Center(child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child:Container(),
-              )),
+              ): Padding(
+                padding: const EdgeInsets.only(top: 100.0),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Center(
+                        child: Container(
+                          height: 142.51,
+                          width: 142.51,
+
+                          child:  Image.asset(
+                            "assets/images/searchzero.png",
+
+                            // Adjust size as needed
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 2,),
+                      Text(
+                        'لم يتم اضافة بيانات يمكن عرضها بعد',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 14.62,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF181A20),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               SizedBox(height: 20,),
             ],
           ),

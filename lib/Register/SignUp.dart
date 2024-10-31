@@ -15,6 +15,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
+import 'package:image_picker/image_picker.dart';
+
 class SignUpPage extends StatefulWidget {
   @override
   State<SignUpPage> createState() {
@@ -52,6 +54,8 @@ class SignUpPageState extends State<SignUpPage>
   //send data to firebase
 
   bool isLoading = false;
+  File? selectedImages;
+  String img_profile = '';
 
   String NameErrorTxT ='';
 
@@ -151,7 +155,8 @@ class SignUpPageState extends State<SignUpPage>
         MaterialPageRoute(builder: (context) => SigninPage()),
       );
       print('Phone number exists, navigating to Sign-in page');
-    } else {
+    }
+    else {
       // Phone number does not exist, proceed to send data and call verifyPhone
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -164,16 +169,15 @@ class SignUpPageState extends State<SignUpPage>
       );
 
       _sendData(); // Function to send data to Firestore
-
-      // Call verifyPhone to initiate OTP verification
       await verifyPhone(value.trim());  // Pass context here
+
     }
   }
 
   void _sendData() async {
     final name = _nameController.text;
     final phoneNumber = _phoneNumberController.text;
-
+  final imggggg=img_profile;
     final connectivityResult = await Connectivity().checkConnectivity();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -195,28 +199,28 @@ class SignUpPageState extends State<SignUpPage>
       );
       return; // No need to return null; just return to exit the method.
     }
-    final storageRef = FirebaseStorage.instance.ref();
-    final profileImageRef = storageRef.child('profile_images/$phoneNumber.png');
+    // final storageRef = FirebaseStorage.instance.ref();
+    // final profileImageRef = storageRef.child('profile_images/$phoneNumber.png');
+    //
+    // // Load the image from the assets folder
+    // final bytes = await rootBundle.load('assets/images/profile.png');
+    // final directory = await getApplicationDocumentsDirectory();
+    // final file = File('${directory.path}/profile.png');
+    // await file.writeAsBytes(bytes.buffer.asUint8List());
+    //
+    // // Upload the image to Firebase Storage
+    // await profileImageRef.putFile(file);
+    //
+    // // Get the download URL
+    // final downloadUrl = await profileImageRef.getDownloadURL();
 
-    // Load the image from the assets folder
-    final bytes = await rootBundle.load('assets/images/profile.png');
-    final directory = await getApplicationDocumentsDirectory();
-    final file = File('${directory.path}/profile.png');
-    await file.writeAsBytes(bytes.buffer.asUint8List());
 
-    // Upload the image to Firebase Storage
-    await profileImageRef.putFile(file);
-
-    // Get the download URL
-    final downloadUrl = await profileImageRef.getDownloadURL();
-
-
-    if (name.isNotEmpty && phoneNumber.isNotEmpty ) {
+    if (name.isNotEmpty && phoneNumber.isNotEmpty && imggggg.isNotEmpty) {
       // Add data to Firestore and get the document reference
       DocumentReference docRef = await FirebaseFirestore.instance.collection('Users').add({
         'name': name,
         'phone': phoneNumber,
-        'profile_image':downloadUrl,
+        'profile_image': imggggg,
       });
 
       // Get the document ID of phone number
@@ -228,18 +232,96 @@ class SignUpPageState extends State<SignUpPage>
       _nameController.clear();
       _phoneNumberController.clear();
 
-    } else {
+    }
+    else if(name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'هذا الحساب حدث به خطا', // "There was an error with this account"
+            'يجب ادخال الاسم', // "There was an error with this account"
             textAlign: TextAlign.center,
           ),
           backgroundColor: Color(0xFF1F8C4B),
         ),
       );
+      isLoading=false;
+    }
+    else if( phoneNumber.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'يجب ادخال رقم التليفون', // "There was an error with this account"
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Color(0xFF1F8C4B),
+        ),
+      );
+      isLoading=false;
+
+    }
+    else if(imggggg.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'يجب ادخال الصورة', // "There was an error with this account"
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Color(0xFF1F8C4B),
+        ),
+      );
+      isLoading=false;
+
+    }
+
+  }
+  Future<void> takePhoto() async {
+    final pickedFile =
+    await ImagePicker().pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      setState(() {
+        selectedImages = File(pickedFile.path); // Update the selected image
+         img_profile = pickedFile.path; // Update the img_profile variable
+        setState(() {
+
+        });
+      });
     }
   }
+  Future<void> uploadImagesAndSaveUrls() async {
+    File? image = await pickImageFromGallery();
+    if (image == null) return;
+
+    setState(() {
+      selectedImages = image; // Update the selected image
+      // img_profile = image.path.toString(); // Update the img_profile variable
+    });
+
+    String downloadUrl = await _uploadImage(image);
+    print("downloadUrl$downloadUrl");
+    img_profile = downloadUrl;
+    setState(() {
+
+    });
+  }
+
+  Future<File?> pickImageFromGallery() async {
+    final XFile? image =
+    await ImagePicker().pickImage(source: ImageSource.gallery);
+    return image != null ? File(image.path) : null;
+  }
+
+  Future<String> _uploadImage(File image) async {
+    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+    Reference storageRef =
+    FirebaseStorage.instance.ref().child('Users/$fileName');
+    await storageRef.putFile(image);
+    String downloadUrl = await storageRef.getDownloadURL();
+    img_profile = downloadUrl;
+setState(() {
+
+});
+    return downloadUrl;
+  }
+
 
   @override
   void initState() {
@@ -304,17 +386,96 @@ class SignUpPageState extends State<SignUpPage>
                       padding: const EdgeInsets.only(top: 20.0),
                       child: Align(
                         alignment: Alignment.topCenter,
-                        child: Container(
-                          width: 135,
-                          height: 160.72,
-                          child: AnimatedBuilder(
-                            animation: animationController,
-                            builder: (context, child) {
-                              return Transform.scale(
-                                scale: animation.value,
-                                child: Image.asset('assets/images/registerphoto.png'),
-                              );
-                            },
+                        child: GestureDetector(
+                          onTap: (){
+                            _showImageSourceDialog();
+                          },
+                          child: Container(
+                            width: 140,
+                            height: 160.72,
+                            child: Stack(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 10.0),
+                                  child: Align(
+                                      alignment: Alignment.topCenter,
+                                      child: selectedImages == null
+                                          ? img_profile == ''
+                                          ? ClipOval(
+                                            child: Container(
+                                                                                    width: 200,
+                                                                                    height: 164,
+                                                                                    color: Color(0xFFDCDCDC),
+                                                                                    
+                                                                                    child: Image.asset('assets/images/profile.png',width: 100,height: 102,),
+                                                                                  ),
+                                          )
+                                          : Container(
+                                        width: 200, // Set a fixed width
+                                        height: 164, // Set a fixed height
+                                        color: Color(0xFFDCDCDC),
+                                            child: ClipOval(
+                                                                                    child: Image(
+                                            image: NetworkImage(img_profile),
+                                            width: 200,
+                                            height: 164,
+                                            fit: BoxFit.fitWidth,
+                                                                                    ),
+                                                                                  ),
+                                          )
+                                          : ClipOval(
+                                          child: Image.file(
+                                            selectedImages!,
+                                            height: 200,
+                                            width: 164,
+                                            fit: BoxFit.cover,
+                                          )) // Display selected image
+
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 108,
+                                  left: 110,
+                                  child: Container(
+                                    height: 30,
+                                    width: 30,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                      shape: BoxShape.rectangle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.white.withOpacity(0.2),
+                                          // Increase opacity for a darker shadow
+                                          spreadRadius: 0,
+                                          // Increase spread to make the shadow larger
+                                          blurRadius: 5,
+                                          // Increase blur radius for a more diffused shadow
+                                          offset: Offset(0,
+                                              0), // Increase offset for a more pronounced shadow effect
+                                        ),
+                                      ],
+                                    ),
+                                    child: FloatingActionButton(
+                                      onPressed: () {
+                                        _showImageSourceDialog(); // Show dialog on tap
+                                        // Get.to(() => AddNewPlayGround()); // Use GetX navigation
+                                      },
+                                      child: Icon(
+                                        Icons.add,
+                                        color: Colors.white,
+                                        size: 26,
+                                      ),
+                                      backgroundColor: Color(0xFF064821),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            30), // Adjust the circular shape here
+                                      ),
+                                      // elevation: 6.0, // Adjust the elevation if needed
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -520,7 +681,7 @@ class SignUpPageState extends State<SignUpPage>
                       onTap: () async {
                         // Check if any field is empty or if the passwords do not match
                         if (_nameController.text.isEmpty ||
-                            _phoneNumberController.text.isEmpty ) {
+                            _phoneNumberController.text.isEmpty ||img_profile.isEmpty) {
                           setState(() {
                             // Show a SnackBar with the error message
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -639,6 +800,42 @@ class SignUpPageState extends State<SignUpPage>
         ],
       ),
 
+    );
+  }
+
+  void _showImageSourceDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('اختر مصدر الصورة',textAlign: TextAlign.center, style: TextStyle(
+            fontFamily: 'Cairo',
+            fontSize: 20.0,
+            fontWeight: FontWeight.w500,
+            color: Colors.black,
+          ),),
+          actions: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  child: Icon(Icons.camera_alt_outlined,color: Color(0xFF064821),),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                    takePhoto(); // Call method to take a photo
+                  },
+                ),
+                TextButton(
+                  child:  Icon(Icons.photo_library_outlined,color:Color(0xFF064821)),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                    uploadImagesAndSaveUrls(); // Call method to pick images from gallery
+                  },
+                ),
+              ],)
+          ],
+        );
+      },
     );
   }
 }

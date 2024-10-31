@@ -53,15 +53,42 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
       if (normalizedPhoneNumber != null) {
         // Reference to the Firestore collection
         CollectionReference playerchat = FirebaseFirestore.instance.collection('Users');
+        CollectionReference fav = FirebaseFirestore.instance.collection('Favourite');
+        CollectionReference booking = FirebaseFirestore.instance.collection('booking');
+        CollectionReference teamData = FirebaseFirestore.instance.collection('teamData');
 
         // Get documents where phone number matches
         QuerySnapshot querySnapshot = await playerchat.where('phone', isEqualTo: normalizedPhoneNumber).get();
+        QuerySnapshot querySnapshotfav = await fav.where('user_phone', isEqualTo: normalizedPhoneNumber).get();
+        QuerySnapshot querySnapshotbooking = await booking.where('phoneCommunication', isEqualTo: normalizedPhoneNumber).get();
+        QuerySnapshot querySnapshotteamData = await teamData.where('phone', isEqualTo: normalizedPhoneNumber).get();
 
         // Check if a document is found
         if (querySnapshot.docs.isNotEmpty) {
           // Iterate over the documents and delete them
           for (var doc in querySnapshot.docs) {
             await doc.reference.delete();
+            if(querySnapshotfav.docs.isNotEmpty){
+              for (var doc in querySnapshotfav.docs){
+                await doc.reference.delete();
+                print("Favorite data with phone number $normalizedPhoneNumber deleted successfully.");
+
+              }
+            }
+            if(querySnapshotteamData.docs.isNotEmpty){
+              for (var doc in querySnapshotteamData.docs){
+                await doc.reference.delete();
+                print("teamData data with phone number $normalizedPhoneNumber deleted successfully.");
+
+              }
+            }
+            if(querySnapshotbooking.docs.isNotEmpty){
+              for (var doc in querySnapshotbooking.docs){
+                await doc.reference.delete();
+                print("booking data with phone number $normalizedPhoneNumber deleted successfully.");
+
+              }
+            }
             print("Document with phone number $normalizedPhoneNumber deleted successfully.");
           }
 
@@ -249,8 +276,8 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                           children: [
                             Image.asset(
                               "assets/images/profile.png",
-                              width: 63,
-                              height: 63,
+                              width: 35,
+                              height: 35,
                               // Adjust size as needed
                             ),
                             SizedBox(width: 10), // Adds space between the text and the image
@@ -309,6 +336,8 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                             padding: const EdgeInsets.only(right: 34.0),
                             child: Image.asset(
                               "assets/images/profile.png",
+                              width: 35,
+                              height: 35,
                               // Adjust size as needed
                             ),
                           ),

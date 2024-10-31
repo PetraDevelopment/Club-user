@@ -40,21 +40,6 @@ class HomePageState extends State<HomePage> {
   bool _isLoading = true; // flag to control shimmer effect
   String start="";
   String end ="";
-  String getTimeRange(String startTime) {
-    DateTime start = DateFormat.jm().parse(startTime); // Parse the start time
-    DateTime end = start.add(Duration(hours: 1)); // Add 1 hour for the end time
-
-    // Format the time in Arabic but numbers in English
-    String formattedStartTime = DateFormat('h:mm a', 'ar').format(start).replaceAllMapped(RegExp(r'\d+'), (match) {
-      return NumberFormat('en').format(int.parse(match.group(0)!));  // Ensure numbers are in English
-    });
-
-    String formattedEndTime = DateFormat('h:mm a', 'ar').format(end).replaceAllMapped(RegExp(r'\d+'), (match) {
-      return NumberFormat('en').format(int.parse(match.group(0)!));
-    });
-
-    return '$formattedStartTime     الي     $formattedEndTime';
-  }
   Future<void> _loadData() async {
 
     // load data here
@@ -240,6 +225,26 @@ print("country${place.country.toString()}");
   late List<AddPlayGroundModel> fourtypes = [];
 
   late List<AddPlayGroundModel> Nearbystadiums = [];
+  String getTimeRange(String startTime) {
+    DateTime start = DateFormat.jm().parse(startTime); // Parse the start time
+    DateTime end = start.add(Duration(hours: 1)); // Add 1 hour for the end time
+
+    // Format the time in Arabic but numbers in English
+    String formattedStartTime = DateFormat('h:mm a', 'ar')
+        .format(start)
+        .replaceAllMapped(RegExp(r'\d+'), (match) {
+      return NumberFormat('en').format(
+          int.parse(match.group(0)!)); // Ensure numbers are in English
+    });
+
+    String formattedEndTime = DateFormat('h:mm a', 'ar')
+        .format(end)
+        .replaceAllMapped(RegExp(r'\d+'), (match) {
+      return NumberFormat('en').format(int.parse(match.group(0)!));
+    });
+
+    return '$formattedStartTime     الي     $formattedEndTime';
+  }
 
   Future<void> getPlaygroundbynameE(String iiid) async {
     try {
@@ -395,6 +400,7 @@ if(user.location!.isNotEmpty&&user.location!.contains(city)){
       print("Error getting playground: $e");
     }
   }
+  String docId='';
   String date='';
   Future<String> convertmonthtonumber(date,int index) async{
     List<String>months=[ 'January',
@@ -431,6 +437,9 @@ if(user.location!.isNotEmpty&&user.location!.contains(city)){
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
+        var playerDoc = querySnapshot.docs.first;
+        docId = playerDoc.id; // Get the docId of the matching Phoone number
+        print("Document ID for the Phoone number: $docId");
         Map<String, dynamic> userData =
         querySnapshot.docs.first.data() as Map<String, dynamic>;
         User1 user = User1.fromMap(userData);
@@ -612,7 +621,7 @@ for(int m=0;m<allplaygrounds.length;m++) {
               print("footbal.length${footbal.length}");
 
             }
-            if (user.playType == "كرة طايره"&&volly.isEmpty) {
+            if (user.playType == "كرة طائرة"&&volly.isEmpty) {
               volly.add(user);
               print("volly$volly");
 
@@ -1060,100 +1069,35 @@ for(int m=0;m<allplaygrounds.length;m++) {
                     ),
 
                   ],
-                ): Stack(
-                  children: [
-                    Padding(
+                ):
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Center(
+                        child: Container(
+                          height: 142.51,
+                          width: 142.51,
 
-                      padding: const EdgeInsets.only(right: 5,left: 5,bottom: 10),
+                          child:  Image.asset(
+                            "assets/images/amico.png",
 
-                      child: CarouselSlider(
-                        options: CarouselOptions(
-                          height: 165.0,
-                          aspectRatio: 16 / 9,
-                          viewportFraction: 0.7,
-                          initialPage: 1,
-                          enableInfiniteScroll: false,
-                          autoPlay: false,
-                          enlargeCenterPage: true,
-                          onPageChanged: (index, reason) {},
-                          scrollDirection: Axis.horizontal,
-                          reverse: true, // Reverses the scroll direction
-
+                            // Adjust size as needed
+                          ),
                         ),
-                        items: [
-                          for (int i = 0; i < 3; i++)
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 5.0,vertical: 5), // Add space between items
-                              child: Stack(
-                                children: [
-                                  Material(
-                                    elevation: 4, // Elevation of 4
-                                    borderRadius: BorderRadius.circular(20.0),
-                                    child: Container(
-                                      height: 163,
-                                      width: 274,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(20.0),
-                                        shape: BoxShape.rectangle,
-
-                                      ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(20.0),
-                                        child: Image.asset(
-                                          'assets/images/newwadi.png',
-                                          height: 163,
-                                          width: 274,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 6,
-                                    right: 0,
-                                    left: 0,
-                                    bottom: 0,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Colors.transparent,
-                                            Color(0x1F8C4B).withOpacity(0.0),
-                                            Color(0x1F8C4B).withOpacity(1.0),
-                                          ],
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                        ),
-                                        borderRadius: BorderRadius.only(
-                                          bottomLeft: Radius.circular(20.0),
-                                          bottomRight: Radius.circular(20.0),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 113,
-                                    right: 40,
-                                    left: 55,
-                                    child: Text(
-                                      'ملاعب نادى الرجاء', // Updated English text
-                                      style: TextStyle(
-                                        fontFamily: 'Cairo',
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
                       ),
-                    ),
-
-                  ],
+                      SizedBox(height: 2,),
+                      Text(
+                        'لم يتم اضافة بيانات يمكن عرضها بعد',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 14.62,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF181A20),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 SizedBox(height: 10,),
                 Padding(
@@ -1229,35 +1173,54 @@ for(int m=0;m<allplaygrounds.length;m++) {
                                       ],
                                     ),
                                   ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            "${playgroundbook[i].dateofBooking!}",
-                                            textAlign: TextAlign.end,
-                                            style: TextStyle(
-                                              fontFamily: 'Cairo',
-                                              fontSize: 14.0,
-                                              fontWeight: FontWeight.w500,
-                                              color: Color(0xFF7D90AC),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 12.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+
+                                              "${playgroundbook[i].dateofBooking!}",
+                                              textAlign: TextAlign.end,
+                                              style: TextStyle(
+
+                                                fontFamily: 'Cairo',
+                                                fontSize: 14.0,
+                                                fontWeight: FontWeight.w500,
+                                                color: Color(0xFF7D90AC),
+                                              ),
                                             ),
-                                          ),
 
-                                          Padding(
-                                            padding: const EdgeInsets.only(left: 80,right: 10,top: 8,bottom: 8),
-                                            child: Text('${start.substring(0,7) } ${ " "}',  style: TextStyle(
+
+                                          ],
+                                        ),
+                                        SizedBox(width: 20,),
+                                        RichText(
+                                          text: TextSpan(
+                                            style: TextStyle(
+                                              color: Color(
+                                                  0xFF7C90AB),
+                                              fontSize: 12,
                                               fontFamily: 'Cairo',
-                                              fontSize: 14.0,
-                                              fontWeight: FontWeight.w500,
-                                              color: Color(0xFF7D90AC),
-                                            ),),
-                                          )
-                                        ],
-                                      ),
+                                              fontWeight: FontWeight
+                                                  .w400,
+                                              height: 0,
+                                              letterSpacing: 0.36,
+                                            ),
+                                            children: [
 
-                                    ],
+                                              TextSpan(
+                                                text: getTimeRange(
+                                                    playgroundbook[i]
+                                                        .selectedTimes![0]), // Add formatted time range
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                   SizedBox(height: 5),
                                   Row(
@@ -1376,204 +1339,30 @@ for(int m=0;m<allplaygrounds.length;m++) {
 
                   ),
                 ):
-                Padding(
-                  padding: const EdgeInsets.only(right: 12.0,bottom: 12,top: 12),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    reverse: true, // Reverses the scroll direction
+                Center(
+                  child: Column(
+                    children: [
+                      Container(
+                  height: 142.51,
+                        width: 142.51,
 
-                    child:Row(
-                      children: [
-                        for (var i = 0; i < 1; i++) // Repeat the container 5 times
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8.0,left: 12,bottom: 3), // Adds spacing between containers
-                            child: Container(
+                        child:  Image.asset(
+                          "assets/images/amico.png",
 
-                              width: 252,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20.0),
-                                shape: BoxShape.rectangle,
-                                color: Color(0xFFF0F6FF),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.7), // Increase opacity for a darker shadow
-                                    spreadRadius: 0, // Increase spread to make the shadow larger
-                                    blurRadius: 2, // Increase blur radius for a more diffused shadow
-                                    offset: Offset(0, 0), // Increase offset for a more pronounced shadow effect
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 12.0, left: 12, top: 11),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end, // Aligns the content to the right
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.end,
-                                          children: [
-                                            Text(
-                                              "ملعب وادى دجلــــة",
-                                              style: TextStyle(
-                                                fontFamily: 'Cairo',
-                                                fontSize: 16.0,
-                                                fontWeight: FontWeight.w700,
-                                                color: Color(0xFF334154),
-                                              ),
-                                            )
-
-                                          ],
-                                        ),
-                                        SizedBox(width: 10), // Adds space between the text and the image
-                                        Image.asset(
-                                          "assets/images/Wadi_Logo.png",
-                                          height: 30,
-                                          width: 30,
-                                          // Adjust size as needed
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            "13-08-2024".tr,
-                                            style: TextStyle(
-                                              fontFamily: 'Cairo',
-                                              fontSize: 14.0,
-                                              fontWeight: FontWeight.w500,
-                                              color: Color(0xFF7D90AC),
-                                            ),
-                                          ),
-                                          SizedBox(width: 19,),
-                                          RichText(
-                                            text: TextSpan(
-                                              style: TextStyle(
-                                                fontFamily: 'Cairo',
-                                                fontSize: 14.0,
-                                                fontWeight: FontWeight.w500,
-                                                color: Color(0xFF7D90AC),
-                                              ),
-                                              children: [
-                                                TextSpan(
-                                                  text: '4:00 م', // Right-aligned part
-                                                ),
-                                                TextSpan(
-                                                  text: '  إلى  ', // Center part (extra spaces for spacing)
-                                                ),
-                                                TextSpan(
-                                                  text: '6:00 م', // Left-aligned part
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-
-                                    ],
-                                  ),
-                                  SizedBox(height: 5),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        "   620 ج.م".tr,
-
-                                        style: TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontSize: 14.0,
-                                          fontWeight: FontWeight.w800,
-                                          color: Color(0xFF7D90AC),
-                                        ),
-                                      ),
-                                      Text(
-                                        "  التكلفة أجمالية   ".tr,
-                                        style: TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontSize: 12.0,
-                                          fontWeight: FontWeight.w400,
-                                          color: Color(0xFF334154),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 5),
-
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(12.0),
-                                        child: Container(
-                                          height: 29,
-                                          width: 92,
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(30.0),
-                                            shape: BoxShape.rectangle,
-                                            color: Color(0xFFB3261E), // Background color of the container
-                                            // border: Border.all(
-                                            //   width: 1.0, // Border width
-                                            //   color: Colors.black
-                                            // ),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              "إلغاء الحجز".tr,
-                                              style: TextStyle(
-                                                fontFamily: 'Cairo',
-                                                fontSize: 16.0,
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.white, // Text color
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(15.0),
-                                        child: Container(
-                                          height: 29,
-                                          width: 75,
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(30.0),
-                                            shape: BoxShape.rectangle,
-                                            color: Color(0xFF064821), // Background color of the container
-                                            // border: Border.all(
-                                            //   width: 1.0, // Border width
-                                            //   color: Colors.black
-                                            // ),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              "الموقع".tr,
-                                              style: TextStyle(
-                                                fontFamily: 'Cairo',
-                                                fontSize: 16.0,
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.white, // Text color
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-
-                                    ],
-                                  ),
-                                  SizedBox(height: 5),
-
-                                ],
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-
+                          // Adjust size as needed
+                        ),
+                      ),
+                      SizedBox(height: 2,),
+                      Text(
+                        'لم يتم اضافة حجوزات يمكن عرضها بعد',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 14.62,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF181A20),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 Padding(
@@ -1588,7 +1377,7 @@ for(int m=0;m<allplaygrounds.length;m++) {
                     ),
                   ),
                 ),
-                SingleChildScrollView(
+                Nearbystadiums.isNotEmpty? SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   reverse: true, // Reverses the scroll direction
 
@@ -1778,72 +1567,62 @@ for(int m=0;m<allplaygrounds.length;m++) {
                         ),
                     ],
                   ):
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0),
-                    ),
-                    elevation: 4, // Adjust elevation to control the shadow
-                    margin: EdgeInsets.all(8), // Adjust margin as needed
-                    child: Stack(
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(
-                          height: 163,
-                          width: 274,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20.0),
-                            shape: BoxShape.rectangle,
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
-                            child: Image(
-                              image: AssetImage("assets/images/newground.png"),
-                              color: Colors.white,
-                              height: 163,
-                              width: 274,
-                              fit: BoxFit.fill,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 6, // Match the top position of the text
-                          right: 0,
-                          left: 0,
-                          bottom: 0,
+                        Center(
                           child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.transparent, // Start with transparent
-                                  Color(0x1F8C4B).withOpacity(0.0), // Start with #1F8C4B at 0% opacity (fully transparent)
-                                  Color(0x1F8C4B).withOpacity(1.0), // End with #1F8C4B at 100% opacity (fully opaque)
-                                ],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                              ),
-                              borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(20.0),
-                                bottomRight: Radius.circular(20.0),
-                              ),
+                            height: 142.51,
+                            width: 142.51,
+
+                            child:  Image.asset(
+                              "assets/images/amico.png",
+
+                              // Adjust size as needed
                             ),
                           ),
                         ),
-                        Positioned(
-                          top: 113, // Adjust the top position
-                          right: 40,
-                          left: 55,
-                          child: Text(
-                            "",
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                            textAlign: TextAlign.center, // Center text alignment
+                        SizedBox(height: 2,),
+                        Text(
+                          'لم يتم اضافة بيانات يمكن عرضها بعد',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.62,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF181A20),
                           ),
                         ),
                       ],
                     ),
+                  )
+                ): Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Center(
+                        child: Container(
+                          height: 142.51,
+                          width: 142.51,
+
+                          child:  Image.asset(
+                            "assets/images/amico.png",
+
+                            // Adjust size as needed
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 2,),
+                      Text(
+                        'لم يتم اضافة بيانات يمكن عرضها بعد',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 14.62,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF181A20),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 SizedBox(height: 20,),
@@ -1859,7 +1638,7 @@ for(int m=0;m<allplaygrounds.length;m++) {
                     ),
                   ),
                 ),
-                SingleChildScrollView(
+                rat_list2.isNotEmpty?    SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   reverse: true, // Reverses the scroll direction
                   child: rat_list2.isNotEmpty
@@ -1871,12 +1650,12 @@ for(int m=0;m<allplaygrounds.length;m++) {
                             print("length equal ${rat_list2.length}");
                             print("objectidddddd ${rat_list2[i].playgroundIdstars!}");
 
-                            // Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //     builder: (context) => PlaygroundName(rat_list2[i].playgroundIdstars!),
-                            //   ),
-                            // );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PlaygroundName(rat_list2[i].playgroundIdstars!),
+                              ),
+                            );
                           },
                           child: Card(
                             shape: RoundedRectangleBorder(
@@ -1952,72 +1731,62 @@ for(int m=0;m<allplaygrounds.length;m++) {
                           ),
                         ),
                     ],
-                  ) : Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0),
-                    ),
-                    elevation: 4,
-                    margin: EdgeInsets.all(8),
-                    child: Stack(
+                  ) : Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(
-                          height: 163,
-                          width: 274,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20.0),
-                            shape: BoxShape.rectangle,
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(20.0),
-                            child: Image(
-                              image: AssetImage("assets/images/newground.png"),
-                              color: Colors.white,
-                              height: 163,
-                              width: 274,
-                              fit: BoxFit.fill,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 6,
-                          right: 0,
-                          left: 0,
-                          bottom: 0,
+                        Center(
                           child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.transparent,
-                                  Color(0x1F8C4B).withOpacity(0.0),
-                                  Color(0x1F8C4B).withOpacity(1.0),
-                                ],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                              ),
-                              borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(20.0),
-                                bottomRight: Radius.circular(20.0),
-                              ),
+                            height: 142.51,
+                            width: 142.51,
+
+                            child:  Image.asset(
+                              "assets/images/amico.png",
+
+                              // Adjust size as needed
                             ),
                           ),
                         ),
-                        Positioned(
-                          top: 113,
-                          right: 40,
-                          left: 55,
-                          child: Text(
-                            "",
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                            textAlign: TextAlign.center,
+                        SizedBox(height: 2,),
+                        Text(
+                          'لم يتم اضافة بيانات يمكن عرضها بعد',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.62,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF181A20),
                           ),
                         ),
                       ],
                     ),
+                  ),
+                ): Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Center(
+                        child: Container(
+                          height: 142.51,
+                          width: 142.51,
+
+                          child:  Image.asset(
+                            "assets/images/amico.png",
+
+                            // Adjust size as needed
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 2,),
+                      Text(
+                        'لم يتم اضافة بيانات يمكن عرضها بعد',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 14.62,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF181A20),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 SizedBox(height: 20,),
