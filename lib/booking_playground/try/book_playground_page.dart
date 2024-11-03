@@ -663,7 +663,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
       DateTime day = today.add(Duration(days: i));
 
       // Format day name and date
-      String dayName = DateFormat('EEEE').format(day); // Full day name, e.g., Monday
+      String dayName = DateFormat('EEEE','ar').format(day); // Full day name, e.g., Monday
       String dayDate = DateFormat('dd MMMM yyyy').format(day);
 
       // Add to the list as a map
@@ -680,7 +680,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
         child: Padding(
-          padding: EdgeInsets.only(top: 25.0, bottom: 12, right: 12, left: 12),
+          padding: EdgeInsets.only(top: 25.0, right: 12, left: 12),
           // Add padding to the top of the title
           child: AppBar(
             backgroundColor: Colors.white,

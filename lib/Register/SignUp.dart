@@ -215,7 +215,7 @@ class SignUpPageState extends State<SignUpPage>
     // final downloadUrl = await profileImageRef.getDownloadURL();
 
 
-    if (name.isNotEmpty && phoneNumber.isNotEmpty && imggggg.isNotEmpty) {
+    if (name.isNotEmpty && phoneNumber.isNotEmpty ) {
       // Add data to Firestore and get the document reference
       DocumentReference docRef = await FirebaseFirestore.instance.collection('Users').add({
         'name': name,
@@ -681,7 +681,7 @@ setState(() {
                       onTap: () async {
                         // Check if any field is empty or if the passwords do not match
                         if (_nameController.text.isEmpty ||
-                            _phoneNumberController.text.isEmpty ||img_profile.isEmpty) {
+                            _phoneNumberController.text.isEmpty ) {
                           setState(() {
                             // Show a SnackBar with the error message
                             ScaffoldMessenger.of(context).showSnackBar(

@@ -8,7 +8,7 @@ import '../../PlayGround_Name/PlayGroundName.dart';
 import '../../playground_model/AddPlaygroundModel.dart';
 class SportsController extends GetxController {
   // Observable variable for the current selected category
-  RxString selectedCategory = 'كرة قدم'.obs; // Initialize with "كرة قدم"
+  RxString selectedCategory = "كرة قدم".obs; // Initialize with "كرة قدم"
 
   var sportData = <Widget>[].obs; // List of widgets
   late List<AddPlayGroundModel> allplaygrounds = [];
@@ -121,54 +121,54 @@ class SportsController extends GetxController {
     for (var i = 0; i < allplaygrounds.length; i++) {
       if (i < volybool.length && volybool[i].playType == category) {
         sportData.addAll([
-          SizedBox(height: 28),
+          // SizedBox(height: 28),
           _buildStadiumCard(
             volybool[i].img![0], // Image, fallback if null
             '${volybool[i].playgroundName}',volybool[i].id! // Name and type
           ),
-          SizedBox(height: 22),
+          // SizedBox(height: 22),
         ]);
       }
       if (i < football.length && football[i].playType == category) {
         sportData.addAll([
-          SizedBox(height: 28),
+          // SizedBox(height: 28),
           _buildStadiumCard(
             football[i].img![0], // Image, fallback if null
             '${football[i].playgroundName}',football[i].id! // Name and type
           ),
-          SizedBox(height: 22),
+          // SizedBox(height: 22),
         ]);
 
       }
       if (i < basketball.length && basketball[i].playType == category) {
         sportData.addAll([
-          SizedBox(height: 28),
+          // SizedBox(height: 28),
           _buildStadiumCard(
             basketball[i].img![0], // Image, fallback if null
             '${basketball[i].playgroundName}',basketball[i].id!,  // Name and type
           ),
-          SizedBox(height: 22),
+          // SizedBox(height: 22),
         ]);
       }
       if (i < tennis.length && tennis[i].playType == category) {
         sportData.addAll([
-          SizedBox(height: 28),
+          // SizedBox(height: 28),
           _buildStadiumCard(
             tennis[i].img![0], // Image, fallback if null
             '${tennis[i].playgroundName}', tennis[i].id!, // Name and type
           ),
-          SizedBox(height: 22),
+          // SizedBox(height: 22),
         ]);
       }
     }
 
     // Add a bottom space for better UI
-    sportData.add(SizedBox(height: 58));
+    // sportData.add(SizedBox(height: 10));
   }
 
   Widget _buildStadiumCard(String? imagePath, String title,String id) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 22.0),
+      padding: const EdgeInsets.only(top: 15.0,bottom: 5,right: 20,left: 20),
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Use MediaQuery to determine the available width

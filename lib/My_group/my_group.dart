@@ -38,9 +38,12 @@ class My_groupState extends State<My_group> {
   Future<void> getUserGroup(String phoneNumber) async {
     try {
       String normalizedPhoneNumber = phoneNumber.replaceFirst('+20', '0');
-      CollectionReference playerchat = FirebaseFirestore.instance.collection('teamData');
+      CollectionReference playerchat =
+          FirebaseFirestore.instance.collection('teamData');
 
-      QuerySnapshot querySnapshot = await playerchat.where('phone', isEqualTo: normalizedPhoneNumber).get();
+      QuerySnapshot querySnapshot = await playerchat
+          .where('phone', isEqualTo: normalizedPhoneNumber)
+          .get();
 
       if (querySnapshot.docs.isNotEmpty) {
         List<GroupModel> groupdata = querySnapshot.docs.map((doc) {
@@ -58,16 +61,19 @@ class My_groupState extends State<My_group> {
       setState(() {});
     }
   }
+
   Future<void> getGroupdata(String id) async {
     try {
-      CollectionReference playerchat = FirebaseFirestore.instance.collection('MyTeam');
+      CollectionReference playerchat =
+          FirebaseFirestore.instance.collection('MyTeam');
       print("idddddddddddddddddddddddddddd $id");
 
       DocumentSnapshot documentSnapshot = await playerchat.doc(id).get();
       print("ffffffffffffffffffff${documentSnapshot.exists}");
 
       if (documentSnapshot.exists) {
-        Map<String, dynamic>? data = documentSnapshot.data() as Map<String, dynamic>?;
+        Map<String, dynamic>? data =
+            documentSnapshot.data() as Map<String, dynamic>?;
 
         if (data != null) {
           GroupModel2 group = GroupModel2.fromMap(data);
@@ -155,19 +161,19 @@ class My_groupState extends State<My_group> {
   }
 
   @override
-  void  initState()  {
+  void initState() {
     super.initState();
     _loadUserData();
     // Now you can access the user1 list
     // print('User data44444: ${user1[0].name}');
     setState(() {}); // Call setState to rebuild the widget tree
   }
+
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
   }
-
 
   final Searchcontrol = TextEditingController();
   late List<AddPlayGroundModel> allplaygrounds = [];
@@ -175,8 +181,8 @@ class My_groupState extends State<My_group> {
   int _currentIndexcarousel_slider = 0;
   final PageController _pageController = PageController();
 
-
-  final NavigationController navigationController = Get.put(NavigationController());
+  final NavigationController navigationController =
+      Get.put(NavigationController());
 
   @override
   Widget build(BuildContext context) {
@@ -184,7 +190,8 @@ class My_groupState extends State<My_group> {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
         child: Padding(
-          padding: EdgeInsets.only(top: 25.0,bottom: 12,right: 8,left: 8), // Add padding to the top of the title
+          padding: EdgeInsets.only(top: 25.0, right: 8, left: 8),
+          // Add padding to the top of the title
           child: AppBar(
             backgroundColor: Colors.white,
             surfaceTintColor: Colors.transparent,
@@ -196,7 +203,8 @@ class My_groupState extends State<My_group> {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            centerTitle: true, // Center the title horizontally
+            centerTitle: true,
+            // Center the title horizontally
             leading: IconButton(
               onPressed: () {
                 Get.back();
@@ -207,15 +215,18 @@ class My_groupState extends State<My_group> {
                     ? Icons.arrow_forward_ios
                     : Icons.arrow_back_ios_new_rounded,
                 size: 24,
-                color:  Color(0xFF62748E),
+                color: Color(0xFF62748E),
               ),
             ),
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 12.0),
-                child: Image.asset('assets/images/notification.png', height: 28, width: 28,),
+                child: Image.asset(
+                  'assets/images/notification.png',
+                  height: 28,
+                  width: 28,
+                ),
               ),
-
             ],
           ),
         ),
@@ -226,90 +237,134 @@ class My_groupState extends State<My_group> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             isLoading
-                ? Center(child: CircularProgressIndicator(color: Colors.green,)):
-            stordataofgroup.isNotEmpty?
-            Padding(
-              padding: const EdgeInsets.only(top: 10.0,bottom: 10,right: 20,left: 20),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.0),
-                  shape: BoxShape.rectangle,
-                  color: Color(0xFFF0F6FF),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.7), // Increase opacity for a darker shadow
-                      spreadRadius: 0, // Increase spread to make the shadow larger
-                      blurRadius: 2, // Increase blur radius for a more diffused shadow
-                      offset: Offset(0, 0), // Increase offset for a more pronounced shadow effect
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 33.0),
+                ? Center(
+                    child: CircularProgressIndicator(
+                    color: Colors.green,
+                  ))
+                : stordataofgroup.isNotEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.only(
+                            top: 10.0, bottom: 10, right: 20, left: 20),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20.0),
+                            shape: BoxShape.rectangle,
+                            color: Color(0xFFF0F6FF),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.7),
+                                // Increase opacity for a darker shadow
+                                spreadRadius: 0,
+                                // Increase spread to make the shadow larger
+                                blurRadius: 2,
+                                // Increase blur radius for a more diffused shadow
+                                offset: Offset(0,
+                                    0), // Increase offset for a more pronounced shadow effect
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 33.0),
+                                child: Image.asset(
+                                  'assets/images/callgroup.png',
+                                  color: Colors.green,
+                                  width: 28,
+                                  height: 28,
+                                ),
+                              ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        bottom: 14.0, right: 12),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        SizedBox(
+                                          height: 5,
+                                        ),
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 8.0),
+                                          child: Text(
+                                            "${stordataofgroup[0].name!}",
+                                            style: TextStyle(
+                                              fontFamily: 'Cairo',
+                                              fontSize: 16.0,
+                                              fontWeight: FontWeight.w700,
+                                              color: Color(0xFF334154),
+                                            ),
+                                          ),
+                                        ),
 
-                      child: Image.asset('assets/images/callgroup.png',
-                          color: Colors.green, width: 28,height: 28,),
-                    ),
+                                        Text(
+                                          stordataofgroup[0].phone!,
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            fontSize: 15.0,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xFF7D90AC),
+                                          ),
+                                        )
 
-
-                     Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Padding(
-                            padding:
-                            const EdgeInsets.only(bottom: 14.0, right: 12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                SizedBox(height: 5,),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8.0),
-                                  child: Text(
-                                  "${stordataofgroup[0].name!}",
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF334154),
+                                        // You can show a placeholder or nothing if the list is empty.
+                                      ],
                                     ),
                                   ),
-                                ),
-
-                                     Text(
-                                       stordataofgroup[0].phone!,
-                                  style: TextStyle(
-                                    fontFamily: 'Cairo',
-                                    fontSize: 15.0,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF7D90AC),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 30.0),
+                                    child: Image.network(
+                                      stordataofgroup[0].profileImage!,
+                                      width: 32,
+                                      height: 60,
+                                      // Adjust size as needed
+                                    ),
                                   ),
-                                )
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    :Center(
+                      child: SizedBox(
+                                    height: MediaQuery.of(context).size.height/2,
+                        child: Stack(
+                          children: [
+                            Center(
+                              child: Align(
+                                            alignment: Alignment.bottomCenter,
+                                child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
 
-                                // You can show a placeholder or nothing if the list is empty.
-                              ],
+                                    Image.asset(
+                                      "assets/images/Group4.png",
+                                    width: 200,
+                                    height: 200,
+                                    ),
+                                      Text(
+                                        'لم يتم أضافتك فى مجموعة حتى الأن',
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 14.62,
+                                          fontWeight: FontWeight.w500,
+                                          color: Color(0xFF181A20),
+                                        ),
+                                      ),
+                                    ]),
+                              ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 30.0),
-                            child: Image.network(
-                              stordataofgroup[0].profileImage!,
-                               width: 32,
-                              height: 60,
-                              // Adjust size as needed
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-
-                  ],
-                ),
-              ),
-            ):Container(),
-
-
+                    )
+            ,
           ],
         ),
       ),
@@ -320,7 +375,6 @@ class My_groupState extends State<My_group> {
         // Use the dynamic index
         items: [
           Icon(Icons.more_horiz, color: Colors.white, size: 25),
-
           Image.asset('assets/images/calendar.png',
               height: 21, width: 21, color: Colors.white),
           Image.asset('assets/images/stade.png',
@@ -358,9 +412,9 @@ class My_groupState extends State<My_group> {
               break;
 
             case 3:
-            // Get.to(() => HomePage())?.then((_) {
-            //   navigationController.updateIndex(3);
-            // });
+              // Get.to(() => HomePage())?.then((_) {
+              //   navigationController.updateIndex(3);
+              // });
               break;
           }
         },

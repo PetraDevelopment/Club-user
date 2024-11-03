@@ -56,18 +56,26 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
         CollectionReference fav = FirebaseFirestore.instance.collection('Favourite');
         CollectionReference booking = FirebaseFirestore.instance.collection('booking');
         CollectionReference teamData = FirebaseFirestore.instance.collection('teamData');
+        CollectionReference accepted = FirebaseFirestore.instance.collection('accepted');
 
         // Get documents where phone number matches
         QuerySnapshot querySnapshot = await playerchat.where('phone', isEqualTo: normalizedPhoneNumber).get();
         QuerySnapshot querySnapshotfav = await fav.where('user_phone', isEqualTo: normalizedPhoneNumber).get();
         QuerySnapshot querySnapshotbooking = await booking.where('phoneCommunication', isEqualTo: normalizedPhoneNumber).get();
         QuerySnapshot querySnapshotteamData = await teamData.where('phone', isEqualTo: normalizedPhoneNumber).get();
-
+        QuerySnapshot querySnapshotaccepted = await accepted.where('phone_number', isEqualTo: normalizedPhoneNumber).get();
         // Check if a document is found
         if (querySnapshot.docs.isNotEmpty) {
           // Iterate over the documents and delete them
           for (var doc in querySnapshot.docs) {
             await doc.reference.delete();
+            if(querySnapshotaccepted.docs.isNotEmpty){
+              for (var doc in querySnapshotaccepted.docs){
+                await doc.reference.delete();
+                print("Favorite data with phone number $normalizedPhoneNumber deleted successfully.");
+
+              }
+            }
             if(querySnapshotfav.docs.isNotEmpty){
               for (var doc in querySnapshotfav.docs){
                 await doc.reference.delete();
@@ -216,7 +224,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
           child: Padding(
-            padding: EdgeInsets.only(top: 25.0,bottom: 12,right: 8,left: 8), // Add padding to the top of the title
+            padding: EdgeInsets.only(top: 25.0,right: 8,left: 8), // Add padding to the top of the title
             child: AppBar(
               backgroundColor: Colors.white,
               surfaceTintColor: Colors.transparent,
@@ -266,7 +274,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                     SizedBox(width: 8,),
 
                     Padding(
-                      padding: const EdgeInsets.only(right: 12.0,left: 12,top: 11),
+                      padding: const EdgeInsets.only(left: 12,top: 11),
                       child:_isLoading?Shimmer.fromColors(
                         baseColor: Colors.grey[300]!,
                         highlightColor: Colors.grey[100]!,
@@ -323,7 +331,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                         mainAxisAlignment: MainAxisAlignment.start, // Aligns the content to the right
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          user1.isNotEmpty && user1[0].img!=null? ClipOval(
+                          user1.isNotEmpty && user1[0].img!=null &&user1[0].img!=""? ClipOval(
                             child: Image(image:  NetworkImage(
                               user1[0].img!,
 
@@ -332,14 +340,11 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                               height: 63,
                               fit: BoxFit.fitWidth,),
                           ):
-                          Padding(
-                            padding: const EdgeInsets.only(right: 34.0),
-                            child: Image.asset(
-                              "assets/images/profile.png",
-                              width: 35,
-                              height: 35,
-                              // Adjust size as needed
-                            ),
+                          Image.asset(
+                            "assets/images/profile.png",
+                            width: 60,
+                            height: 50,
+                            // Adjust size as needed
                           ),
                           SizedBox(width: 10), // Adds space between the text and the image
 

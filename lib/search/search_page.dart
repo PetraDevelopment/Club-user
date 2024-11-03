@@ -238,7 +238,7 @@ class SearchpageState extends State<Searchpage> {
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
           child: Padding(
-            padding: EdgeInsets.only(top: 25.0, bottom: 12, right: 12, left: 12),
+            padding: EdgeInsets.only(top: 25.0,  right: 12, left: 12),
             // Add padding to the top of the title
             child: AppBar(
               backgroundColor: Colors.white,
@@ -262,7 +262,8 @@ class SearchpageState extends State<Searchpage> {
                   Directionality.of(context) == TextDirection
                       ? Icons.arrow_forward_ios
                       : Icons.arrow_back_ios_new_rounded,
-                  size: 24,
+                  // size: 24,
+
                   color: Color(0xFF62748E),
                 ),
               ),
@@ -315,7 +316,7 @@ class SearchpageState extends State<Searchpage> {
                           child: Image.asset('assets/images/search.png',height: 20,width: 25,),
                         ),
                       ),
-        
+
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.only(right: 20,top: 7,bottom: 7),
@@ -323,7 +324,9 @@ class SearchpageState extends State<Searchpage> {
                             controller: Searchcontrol,
                             // readOnly: true,
 
-                            textAlign: TextAlign.end, // Align text to the right
+                            textInputAction: TextInputAction.next,
+                            keyboardType: TextInputType.text,
+                            textAlign: TextAlign.right,
                             decoration: InputDecoration(
 
                               hintText: 'البحث'.tr,
@@ -471,7 +474,7 @@ class SearchpageState extends State<Searchpage> {
                       ),
                       SizedBox(height: 2,),
                       Text(
-                        'لم يتم اضافة بيانات يمكن عرضها بعد',
+                        'لا يوجد نتائج لهذا البحث',
                         style: TextStyle(
                           fontFamily: 'Cairo',
                           fontSize: 14.62,

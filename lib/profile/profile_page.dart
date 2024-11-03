@@ -264,7 +264,7 @@ class ProfilepageState extends State<Profilepage>
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
         child: Padding(
-          padding: EdgeInsets.only(top: 25.0, bottom: 12, right: 8, left: 8),
+          padding: EdgeInsets.only(top: 25.0, right: 8, left: 8),
           // Add padding to the top of the title
           child: AppBar(
             backgroundColor: Colors.white,
@@ -468,7 +468,7 @@ class ProfilepageState extends State<Profilepage>
                             cursorColor: Color(0xFF064821),
                             textInputAction: TextInputAction.next,
                             keyboardType: TextInputType.text,
-                            textAlign: TextAlign.right,
+                            textAlign: TextAlign.end,
                             // Align text to the right
                             decoration: InputDecoration(
                               hintText: 'الأسم'.tr,

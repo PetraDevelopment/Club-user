@@ -236,16 +236,26 @@ print("country${place.country.toString()}");
       return NumberFormat('en').format(
           int.parse(match.group(0)!)); // Ensure numbers are in English
     });
-
+print("formattedStartTime$formattedStartTime");
     String formattedEndTime = DateFormat('h:mm a', 'ar')
         .format(end)
         .replaceAllMapped(RegExp(r'\d+'), (match) {
       return NumberFormat('en').format(int.parse(match.group(0)!));
     });
+    print("formattedEndTime$formattedEndTime");
 
-    return '$formattedStartTime     الي     $formattedEndTime';
+    return '$formattedStartTime الي $formattedEndTime';
   }
-
+//   String getTimeRange(String startTime) {
+//     DateTime start = DateFormat.jm().parse(startTime);
+//     DateTime end = start.add(Duration(hours: 1)); //if book one hour
+//
+//
+//     String formattedStartTime = DateFormat('h:mm a', 'en_US').format(start);
+//     String formattedEndTime = DateFormat('h:mm a', 'en_US').format(end);
+//
+//     return '$formattedStartTime    :   $formattedEndTime';
+//   }
   Future<void> getPlaygroundbynameE(String iiid) async {
     try {
       CollectionReference playerchat =
@@ -422,6 +432,18 @@ if(user.location!.isNotEmpty&&user.location!.contains(city)){
         playgroundbook[index].dateofBooking=date;
       }
     }
+//loop in date to convert every en number to ar
+
+    date = date.replaceAllMapped(RegExp(r'\d'), (match) { const englishToArabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+
+      playgroundbook[index].dateofBooking=englishToArabicNumbers[int.parse(match.group(0)!)];
+      return englishToArabicNumbers[int.parse(match.group(0)!)];
+
+    });
+
+    print(" date in Arabic : $date");
+    playgroundbook[index].dateofBooking = date;
+
     return date;
 
   }
@@ -562,7 +584,23 @@ Future<void> deleteCancelByPhoneAndPlaygroundId(String phone, String playgroundI
       print('Error fetching ratings: $e');
     }
   }
+  String toArabicNumerals(num number, int i) {
+    const englishToArabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
 
+    // Convert the number to a string for processing
+    String numberString = number.toString();
+
+    // Replace each digit in the number string with its Arabic equivalent
+    String convertedNumber = numberString.replaceAllMapped(RegExp(r'\d'), (match) {
+      return englishToArabicNumbers[int.parse(match.group(0)!)];
+    });
+print("kkkkkkk$convertedNumber");
+    // If you want to assign the converted number back to the cost
+    // playgroundAllData[i].bookTypes![0].cost = convertedNumber; // Assuming cost is a String
+
+    print("number equal $convertedNumber");
+    return convertedNumber; // Return the converted number
+  }
 
 
   int selectedIndex=3;
@@ -1113,7 +1151,7 @@ for(int m=0;m<allplaygrounds.length;m++) {
                   ),
                 ),
                 playgroundAllData.isNotEmpty?   Padding(
-                  padding: const EdgeInsets.only(right: 12.0,bottom: 12,top: 12),
+                  padding: const EdgeInsets.only(right: 17.0,bottom: 9,top: 9,left: 17),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     reverse: true, // Reverses the scroll direction
@@ -1125,7 +1163,7 @@ for(int m=0;m<allplaygrounds.length;m++) {
                             padding: const EdgeInsets.only(right: 8.0,left: 12,bottom: 3), // Adds spacing between containers
                             child: Container(
 
-                              width: 252,
+                              width: 230,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20.0),
                                 shape: BoxShape.rectangle,
@@ -1143,7 +1181,7 @@ for(int m=0;m<allplaygrounds.length;m++) {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.only(right: 12.0, left: 12, top: 11),
+                                    padding: const EdgeInsets.only(right: 17.0, left: 17, top: 9),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.end, // Aligns the content to the right
                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1151,13 +1189,17 @@ for(int m=0;m<allplaygrounds.length;m++) {
                                         Column(
                                           crossAxisAlignment: CrossAxisAlignment.end,
                                           children: [
-                                            Text(
-                                              "${ playgroundAllData[i].playgroundName!}",
-                                              style: TextStyle(
-                                                fontFamily: 'Cairo',
-                                                fontSize: 16.0,
-                                                fontWeight: FontWeight.w700,
-                                                color: Color(0xFF334154),
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 4.0),
+                                              child: Text(
+                                                "${ playgroundAllData[i].playgroundName!}",
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  fontSize: 14.0,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Color(0xFF334154),
+                                                ),
                                               ),
                                             )
 
@@ -1174,7 +1216,8 @@ for(int m=0;m<allplaygrounds.length;m++) {
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.only(right: 12.0),
+                                    padding: const EdgeInsets.only(right: 20.0, left: 8, top: 4),
+
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
@@ -1196,7 +1239,7 @@ for(int m=0;m<allplaygrounds.length;m++) {
 
                                           ],
                                         ),
-                                        SizedBox(width: 20,),
+                                        SizedBox(width: 30,),
                                         RichText(
                                           text: TextSpan(
                                             style: TextStyle(
@@ -1223,32 +1266,47 @@ for(int m=0;m<allplaygrounds.length;m++) {
                                     ),
                                   ),
                                   SizedBox(height: 5),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        "${playgroundAllData[i].bookTypes![0].cost!}",
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8.0, left: 8, top: 1,bottom: 4),
+
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          "  ج.م  ",
 
 
-                                        style: TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontSize: 14.0,
-                                          fontWeight: FontWeight.w800,
-                                          color: Color(0xFF7D90AC),
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            fontSize: 14.0,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF7D90AC),
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        " " +":"+ "  التكلفة الأجمالية   ".tr,
-                                        style: TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontSize: 12.0,
-                                          fontWeight: FontWeight.w400,
-                                          color: Color(0xFF334154),
+                                        Text(
+                                         // " ${playgroundAllData[i].bookTypes![0].cost!}",
+
+                                         toArabicNumerals(playgroundAllData[i].bookTypes![0].cost!,i),
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            fontSize: 14.0,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF7D90AC),
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                        Text(
+                                          "  " +":"+ "  التكلفة الأجمالية   ".tr,
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            fontSize: 12.0,
+                                            fontWeight: FontWeight.w400,
+                                            color: Color(0xFF334154),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  SizedBox(height: 5),
+
 
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1261,10 +1319,10 @@ for(int m=0;m<allplaygrounds.length;m++) {
 
                                         },
                                         child: Padding(
-                                          padding: const EdgeInsets.all(14.0),
+                                          padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),
                                           child: Container(
-                                            height: 29,
-                                            width: 92,
+                                            height: 23,
+                                            width: 74,
                                             decoration: BoxDecoration(
                                               borderRadius: BorderRadius.circular(30.0),
                                               shape: BoxShape.rectangle,
@@ -1279,7 +1337,7 @@ for(int m=0;m<allplaygrounds.length;m++) {
                                                 "إلغاء الحجز".tr,
                                                 style: TextStyle(
                                                   fontFamily: 'Cairo',
-                                                  fontSize: 16.0,
+                                                  fontSize: 11.0,
                                                   fontWeight: FontWeight.w500,
                                                   color: Colors.white, // Text color
                                                 ),
@@ -1298,10 +1356,11 @@ for(int m=0;m<allplaygrounds.length;m++) {
                                           );
                                         },
                                         child: Padding(
-                                          padding: const EdgeInsets.all(15.0),
+                                          padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),
+
                                           child: Container(
-                                            height: 29,
-                                            width: 75,
+                                            height: 23,
+                                            width: 66,
                                             decoration: BoxDecoration(
                                               borderRadius: BorderRadius.circular(30.0),
                                               shape: BoxShape.rectangle,
@@ -1316,7 +1375,7 @@ for(int m=0;m<allplaygrounds.length;m++) {
                                                 "الموقع".tr,
                                                 style: TextStyle(
                                                   fontFamily: 'Cairo',
-                                                  fontSize: 16.0,
+                                                  fontSize : 11,
                                                   fontWeight: FontWeight.w500,
                                                   color: Colors.white, // Text color
                                                 ),
@@ -1382,97 +1441,101 @@ for(int m=0;m<allplaygrounds.length;m++) {
                   reverse: true, // Reverses the scroll direction
 
                   child:Nearbystadiums.isNotEmpty?
-                  Row(
+                  Padding(
+                    padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),
 
-                    children: [
-                      for (var i = 0; i < Nearbystadiums.length; i++)
-                        GestureDetector(
-                          onTap: (){
-                            print("111114${Nearbystadiums[i].id!}");
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PlaygroundName(Nearbystadiums[i].id!),
+                    child: Row(
+
+                      children: [
+                        for (var i = 0; i < Nearbystadiums.length; i++)
+                          GestureDetector(
+                            onTap: (){
+                              print("111114${Nearbystadiums[i].id!}");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PlaygroundName(Nearbystadiums[i].id!),
+                                ),
+                              );
+                            },
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.0),
                               ),
-                            );
-                          },
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                            ),
-                            elevation: 4, // Adjust elevation to control the shadow
-                            margin: EdgeInsets.all(8), // Adjust margin as needed
-                            child: Stack(
-                              children: [
-                                Container(
-                                  height: 163,
-                                  width: 274,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20.0),
-                                    shape: BoxShape.rectangle,
-                                  ),
-                                  child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
-                                      child: Nearbystadiums[i].img!.isNotEmpty?Image.network(
-                                        // Check if img is a list and has at least one image, otherwise use it as a string
-
-                                        Nearbystadiums[i].img![0], // Use the first image in the list (or the only image if it's a single string turned into a list)
-                                          // Fallback to an empty string if no image is available
-                                        height: 163,
-                                        width: 274,
-                                        fit: BoxFit.fill, // Ensure the image covers the container
-                                      ):Image(
-                                        image: AssetImage("assets/images/newground.png"),
-                                        color: Colors.white,
-                                        height: 163,
-                                        width: 274,
-                                        fit: BoxFit.fill,
-                                      ),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 6, // Match the top position of the text
-                                  right: 0,
-                                  left: 0,
-                                  bottom: 0,
-                                  child: Container(
+                              elevation: 4, // Adjust elevation to control the shadow
+                              margin: EdgeInsets.all(8), // Adjust margin as needed
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    height: 163,
+                                    width: 274,
                                     decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Colors.transparent, // Start with transparent
-                                          Color(0x1F8C4B).withOpacity(0.0), // Start with #1F8C4B at 0% opacity (fully transparent)
-                                          Color(0x1F8C4B).withOpacity(1.0), // End with #1F8C4B at 100% opacity (fully opaque)
-                                        ],
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                      ),
-                                      borderRadius: BorderRadius.only(
-                                        bottomLeft: Radius.circular(20.0),
-                                        bottomRight: Radius.circular(20.0),
+                                      borderRadius: BorderRadius.circular(20.0),
+                                      shape: BoxShape.rectangle,
+                                    ),
+                                    child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
+                                        child: Nearbystadiums[i].img!.isNotEmpty?Image.network(
+                                          // Check if img is a list and has at least one image, otherwise use it as a string
+
+                                          Nearbystadiums[i].img![0], // Use the first image in the list (or the only image if it's a single string turned into a list)
+                                            // Fallback to an empty string if no image is available
+                                          height: 163,
+                                          width: 274,
+                                          fit: BoxFit.fill, // Ensure the image covers the container
+                                        ):Image(
+                                          image: AssetImage("assets/images/newground.png"),
+                                          color: Colors.white,
+                                          height: 163,
+                                          width: 274,
+                                          fit: BoxFit.fill,
+                                        ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 6, // Match the top position of the text
+                                    right: 0,
+                                    left: 0,
+                                    bottom: 0,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Colors.transparent, // Start with transparent
+                                            Color(0x1F8C4B).withOpacity(0.0), // Start with #1F8C4B at 0% opacity (fully transparent)
+                                            Color(0x1F8C4B).withOpacity(1.0), // End with #1F8C4B at 100% opacity (fully opaque)
+                                          ],
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                        ),
+                                        borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(20.0),
+                                          bottomRight: Radius.circular(20.0),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                Positioned(
-                                  top: 113, // Adjust the top position
-                                  right: 40,
-                                  left: 55,
-                                  child: Text(
-                                    Nearbystadiums[i].playgroundName!,
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
+                                  Positioned(
+                                    top: 113, // Adjust the top position
+                                    right: 40,
+                                    left: 55,
+                                    child: Text(
+                                      Nearbystadiums[i].playgroundName!,
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                      textAlign: TextAlign.center, // Center text alignment
                                     ),
-                                    textAlign: TextAlign.center, // Center text alignment
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   )
                       :Nearbystadiums.isEmpty&&playgroundAllData.isNotEmpty&&playgroundAllData.length>3?
                   Row(
@@ -1642,96 +1705,100 @@ for(int m=0;m<allplaygrounds.length;m++) {
                   scrollDirection: Axis.horizontal,
                   reverse: true, // Reverses the scroll direction
                   child: rat_list2.isNotEmpty
-                      ? Row(
-                    children: [
-                      for (var i = 0; i < rat_list2.length; i++)
-                        GestureDetector(
-                          onTap: () {
-                            print("length equal ${rat_list2.length}");
-                            print("objectidddddd ${rat_list2[i].playgroundIdstars!}");
+                      ? Padding(
+                    padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),
 
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PlaygroundName(rat_list2[i].playgroundIdstars!),
+                    child: Row(
+                                            children: [
+                        for (var i = 0; i < rat_list2.length; i++)
+                          GestureDetector(
+                            onTap: () {
+                              print("length equal ${rat_list2.length}");
+                              print("objectidddddd ${rat_list2[i].playgroundIdstars!}");
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PlaygroundName(rat_list2[i].playgroundIdstars!),
+                                ),
+                              );
+                            },
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.0),
                               ),
-                            );
-                          },
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                            ),
-                            elevation: 4,
-                            margin: EdgeInsets.all(8),
-                            child: Stack(
-                              children: [
-                                Container(
-                                  height: 163,
-                                  width: 274,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20.0),
-                                    shape: BoxShape.rectangle,
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(20.0),
-                                    child: rat_list2[i].img!.isNotEmpty ? Image.network(
-                                      rat_list2[i].img![0],
-                                      height: 163,
-                                      width: 274,
-                                      fit: BoxFit.fill,
-                                    ) : Image(
-                                      image: AssetImage("assets/images/newground.png"),
-                                      color: Colors.white,
-                                      height: 163,
-                                      width: 274,
-                                      fit: BoxFit.fill,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 6,
-                                  right: 0,
-                                  left: 0,
-                                  bottom: 0,
-                                  child: Container(
+                              elevation: 4,
+                              margin: EdgeInsets.all(8),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    height: 163,
+                                    width: 274,
                                     decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Colors.transparent,
-                                          Color(0x1F8C4B).withOpacity(0.0),
-                                          Color(0x1F8C4B).withOpacity(1.0),
-                                        ],
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                      ),
-                                      borderRadius: BorderRadius.only(
-                                        bottomLeft: Radius.circular(20.0),
-                                        bottomRight: Radius.circular(20.0),
+                                      borderRadius: BorderRadius.circular(20.0),
+                                      shape: BoxShape.rectangle,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                      child: rat_list2[i].img!.isNotEmpty ? Image.network(
+                                        rat_list2[i].img![0],
+                                        height: 163,
+                                        width: 274,
+                                        fit: BoxFit.fill,
+                                      ) : Image(
+                                        image: AssetImage("assets/images/newground.png"),
+                                        color: Colors.white,
+                                        height: 163,
+                                        width: 274,
+                                        fit: BoxFit.fill,
                                       ),
                                     ),
                                   ),
-                                ),
-                                Positioned(
-                                  top: 113,
-                                  right: 40,
-                                  left: 55,
-                                  child: Text(
-                                    rat_list2[i].name!,
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
+                                  Positioned(
+                                    top: 6,
+                                    right: 0,
+                                    left: 0,
+                                    bottom: 0,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Colors.transparent,
+                                            Color(0x1F8C4B).withOpacity(0.0),
+                                            Color(0x1F8C4B).withOpacity(1.0),
+                                          ],
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                        ),
+                                        borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(20.0),
+                                          bottomRight: Radius.circular(20.0),
+                                        ),
+                                      ),
                                     ),
-                                    textAlign: TextAlign.center,
                                   ),
-                                ),
-                              ],
+                                  Positioned(
+                                    top: 113,
+                                    right: 40,
+                                    left: 55,
+                                    child: Text(
+                                      rat_list2[i].name!,
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                    ],
-                  ) : Center(
+                                            ],
+                                          ),
+                      ) : Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

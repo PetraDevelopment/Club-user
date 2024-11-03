@@ -108,7 +108,7 @@ class FavouritePageState extends State<FavouritePage> {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
         child: Padding(
-          padding: EdgeInsets.only(top: 25.0,bottom: 12,right: 8,left: 8), // Add padding to the top of the title
+          padding: EdgeInsets.only(top: 25.0,right: 8,left: 8), // Add padding to the top of the title
           child: AppBar(
             backgroundColor: Colors.white,
             surfaceTintColor: Colors.transparent,
@@ -205,7 +205,7 @@ class FavouritePageState extends State<FavouritePage> {
           ? Center(child: CircularProgressIndicator(color: Color(0xFF4AD080),))
           : SingleChildScrollView(
         child: Center(
-          child: Column(
+          child:favlist.isNotEmpty? Column(
             children: [
               for (var i = 0; i < favlist.length; i++)
                 GestureDetector(
@@ -291,6 +291,38 @@ class FavouritePageState extends State<FavouritePage> {
                   ),
                 ),
             ],
+          ):Center(
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height/2,
+              child: Stack(
+                children: [
+                  Center(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+
+                            Image.asset(
+                              "assets/images/bro.png",
+                              width: 200,
+                              height: 200,
+                            ),
+                            Text(
+                              'لم يتم اضافة ملاعب بعد',
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                fontSize: 14.62,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF181A20),
+                              ),
+                            ),
+                          ]),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       )

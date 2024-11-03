@@ -166,25 +166,25 @@ class AppBarandNavigationBTN extends StatelessWidget {
                     ),
                     SizedBox(width: 8,),
                     GestureDetector(
-                      onTap: () => controller.selectCategory('كرة قدم'),
+                      onTap: () => controller.selectCategory("كرة قدم"),
                       child: Container(
                         height: 27,
                         width: 86,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20.0),
-                          color: controller.selectedCategory.value == 'كرة قدم'
+                          color: controller.selectedCategory.value == "كرة قدم"
                               ? Color(0xFF106A35)
 
                               : Color(0xFFE4EFFF),
                         ),
                         child: Center(
                           child: Text(
-                            'كرة قدم',
+                            "كرة قدم",
                             style: TextStyle(
                               fontFamily: 'Cairo',
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: controller.selectedCategory.value == 'كرة قدم'
+                              color: controller.selectedCategory.value == "كرة قدم"
                                   ? Colors.white
                                   : Color(0xFF334154)
                               ,
@@ -201,7 +201,39 @@ class AppBarandNavigationBTN extends StatelessWidget {
             Expanded(
               child: Obx(() {
                 if (controller.sportData == null || controller.sportData.isEmpty) {
-                  return Center(child: Text(" data Will add Soon"));
+                  return Center(
+                child: SizedBox(
+                height: MediaQuery.of(context).size.height/2.9,
+                child: Stack(
+                children: [
+                Center(
+                child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+
+                Image.asset(
+                "assets/images/bro.png",
+                width: 200,
+                height: 200,
+                ),
+                Text(
+                'لم يتم اضافة ملاعب بعد',
+                style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 14.62,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF181A20),
+                ),
+                ),
+                ]),
+                ),
+                ),
+                ],
+                ),
+                ),
+                );
                 }
                 return ListView.builder(
 

@@ -918,7 +918,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                                       alignment: Alignment.center,
                                       child: Padding(
                                         padding:
-                                            const EdgeInsets.only(top: 30.0),
+                                            const EdgeInsets.only(top: 30.0,left: 10),
                                         child: Text(
                                           "أضافة تقييم",
                                           textAlign: TextAlign.center,
@@ -1177,7 +1177,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                   height: 10,
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(right: 30.0),
+                  padding: const EdgeInsets.only(right: 25.0),
                   child:
                       Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                     Padding(
@@ -1222,7 +1222,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                 ),
 
                 Padding(
-                  padding: const EdgeInsets.only(right: 30.0),
+                  padding: const EdgeInsets.only(right: 25.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -1360,7 +1360,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                                   fontFamily: 'Cairo',
                                   fontSize: 14.0,
                                   fontWeight: FontWeight.w500,
-                                  color: Color(0xFF495A71)),
+                                  color: Color(0xFF106A35)),
                             ),
                           ),
                           SizedBox(height: 30),

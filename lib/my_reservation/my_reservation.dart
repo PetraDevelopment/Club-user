@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart' ;
+import 'package:intl/intl.dart';
 
 import 'package:flutter/services.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -111,24 +111,27 @@ class my_reservationState extends State<my_reservation>
       print("No phone number available.");
     }
   }
-  void _load_cancel_book()async{
+
+  void _load_cancel_book() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? phoneValue = prefs.getString('phonev');
     print("newphoneValue${phoneValue.toString()}");
 
-    if (phoneValue != null && phoneValue.isNotEmpty){
+    if (phoneValue != null && phoneValue.isNotEmpty) {
       String? normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
 
       getcancel_bookDataByPhone(normalizedPhoneNumber);
     }
-    else if (user?.phoneNumber != null){
-      String? normalizedPhoneNumber = user?.phoneNumber !.replaceFirst('+20', '0');
+    else if (user?.phoneNumber != null) {
+      String? normalizedPhoneNumber = user?.phoneNumber !.replaceFirst(
+          '+20', '0');
 
       getcancel_bookDataByPhone(normalizedPhoneNumber!);
-
     }
   }
-  int wait=0;
+
+  int wait = 0;
+
   @override
   void initState() {
     super.initState();
@@ -141,9 +144,10 @@ class my_reservationState extends State<my_reservation>
     // print("groundId${widget.groundId}");
     setState(() {});
   }
+
   late List<AddbookingModel> playgroundbook = [];
-  int numbercanceled=0;
-  int numberaccepted=0;
+  int numbercanceled = 0;
+  int numberaccepted = 0;
 
   Future<void> getcancel_bookDataByPhone(String userPhone) async {
     final firestore = FirebaseFirestore.instance;
@@ -166,7 +170,7 @@ class my_reservationState extends State<my_reservation>
           // Do something with the retrieved data
           print('User Phone: ${data['user_phone']}');
           print('Number of Cancels: $numberOfCancel');
-          numbercanceled=numberOfCancel;
+          numbercanceled = numberOfCancel;
         });
       } else {
         print('No data found for this phone number.');
@@ -175,8 +179,32 @@ class my_reservationState extends State<my_reservation>
       print('Error fetching data: $e');
     }
   }
-  Future<String> convertmonthtonumber(date,int index) async{
-    List<String>months=[ 'January',
+
+  // Future<String> convertmonthtonumber(date,int index) async{
+  //   List<String>months=[ 'January',
+  //     'February',
+  //     'March',
+  //     'April',
+  //     'May',
+  //     'June',
+  //     'July',
+  //     'August',
+  //     'September',
+  //     'October',
+  //     'November',
+  //     'December',];
+  //   for(int k=0;k<months.length;k++){
+  //     if(date.contains(months[k])){
+  //       date=  date.replaceAll(months[k] ,'-${k+1}-');
+  //       print("updated done with ${date}");
+  //       playgroundbook[index].dateofBooking=date;
+  //     }
+  //   }
+  //   return date;
+  //
+  // }
+  Future<String> convertmonthtonumber(date, int index) async {
+    List<String>months = [ 'January',
       'February',
       'March',
       'April',
@@ -187,17 +215,42 @@ class my_reservationState extends State<my_reservation>
       'September',
       'October',
       'November',
-      'December',];
-    for(int k=0;k<months.length;k++){
-      if(date.contains(months[k])){
-        date=  date.replaceAll(months[k] ,'-${k+1}-');
+      'December',
+    ];
+    for (int k = 0; k < months.length; k++) {
+      if (date.contains(months[k])) {
+        date = date.replaceAll(months[k], '-${k + 1}-');
         print("updated done with ${date}");
-        playgroundbook[index].dateofBooking=date;
+        playgroundbook[index].dateofBooking = date;
       }
     }
-    return date;
+//loop in date to convert every en number to ar
 
+    date = date.replaceAllMapped(RegExp(r'\d'), (match) {
+      const englishToArabicNumbers = [
+        '٠',
+        '١',
+        '٢',
+        '٣',
+        '٤',
+        '٥',
+        '٦',
+        '٧',
+        '٨',
+        '٩'
+      ];
+
+      playgroundbook[index].dateofBooking =
+      englishToArabicNumbers[int.parse(match.group(0)!)];
+      return englishToArabicNumbers[int.parse(match.group(0)!)];
+    });
+
+    print(" date in Arabic : $date");
+    playgroundbook[index].dateofBooking = date;
+
+    return date;
   }
+
   Future<void> getAccepted_bookDataByPhone(String userPhone) async {
     final firestore = FirebaseFirestore.instance;
 
@@ -206,7 +259,7 @@ class my_reservationState extends State<my_reservation>
       // Query the collection where user_phone matches the provided phone number
       final querySnapshot = await firestore
           .collection('accepted')
-      .where('phone_number', isEqualTo: userPhone)
+          .where('phone_number', isEqualTo: userPhone)
           .get();
 
       // Check if any documents are returned
@@ -220,7 +273,7 @@ class my_reservationState extends State<my_reservation>
           // Do something with the retrieved data
           print('User Phone: ${data['phone_number']}');
           print('Number of accepted: $numberOfaccepted');
-          numberaccepted=numberOfaccepted;
+          numberaccepted = numberOfaccepted;
         });
       } else {
         print('No data found for this phone number.');
@@ -229,26 +282,29 @@ class my_reservationState extends State<my_reservation>
       print('Error fetching data: $e');
     }
   }
-  void _load_Accepted_book()async{
+
+  void _load_Accepted_book() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? phoneValue = prefs.getString('phonev');
     print("newphoneValue${phoneValue.toString()}");
 
-    if (phoneValue != null && phoneValue.isNotEmpty){
+    if (phoneValue != null && phoneValue.isNotEmpty) {
       String? normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
 
       getAccepted_bookDataByPhone(normalizedPhoneNumber);
     }
-    else if (user?.phoneNumber != null){
-      String? normalizedPhoneNumber = user?.phoneNumber !.replaceFirst('+20', '0');
+    else if (user?.phoneNumber != null) {
+      String? normalizedPhoneNumber = user?.phoneNumber !.replaceFirst(
+          '+20', '0');
 
       getAccepted_bookDataByPhone(normalizedPhoneNumber!);
-
     }
   }
+
   Future<void> fetchBookingData() async {
     try {
-      CollectionReference bookingCollection = FirebaseFirestore.instance.collection("booking");
+      CollectionReference bookingCollection = FirebaseFirestore.instance
+          .collection("booking");
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? phoneValue = prefs.getString('phonev');
@@ -256,11 +312,13 @@ class my_reservationState extends State<my_reservation>
 
       if (phoneValue != null && phoneValue.isNotEmpty) {
         String normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
-        QuerySnapshot querySnapshot = await bookingCollection.where('phoneCommunication', isEqualTo: normalizedPhoneNumber).get();
+        QuerySnapshot querySnapshot = await bookingCollection.where(
+            'phoneCommunication', isEqualTo: normalizedPhoneNumber).get();
 
         if (querySnapshot.docs.isNotEmpty) {
           List<AddbookingModel> bookings = querySnapshot.docs.map((doc) {
-            Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // Explicit casting
+            Map<String, dynamic> data = doc.data() as Map<String,
+                dynamic>; // Explicit casting
             return AddbookingModel.fromMap(data);
           }).toList();
           // Update the playgroundbook list with fetched bookings
@@ -275,32 +333,33 @@ class my_reservationState extends State<my_reservation>
 
             // Access other fields as needed
           });
-
         }
         else {
           print('No documents found in the "booking" collection.');
         }
       }
       else if (user?.phoneNumber != null) {
-        String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
-        QuerySnapshot querySnapshot = await bookingCollection.where('phoneCommunication', isEqualTo: normalizedPhoneNumber).get();
+        String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst(
+            '+20', '0');
+        QuerySnapshot querySnapshot = await bookingCollection.where(
+            'phoneCommunication', isEqualTo: normalizedPhoneNumber).get();
 
         if (querySnapshot.docs.isNotEmpty) {
           List<AddbookingModel> bookings = querySnapshot.docs.map((doc) {
-            Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // Explicit casting
+            Map<String, dynamic> data = doc.data() as Map<String,
+                dynamic>; // Explicit casting
             return AddbookingModel.fromMap(data);
           }).toList();
           // Update the playgroundbook list with fetched bookings
           playgroundbook = bookings;
-          for (int g=0;g<playgroundbook.length;g++){
-            convertmonthtonumber(playgroundbook[g].dateofBooking,g);
+          for (int g = 0; g < playgroundbook.length; g++) {
+            convertmonthtonumber(playgroundbook[g].dateofBooking, g);
 
             print('AdminId: ${playgroundbook[g].AdminId}');
             print('Day_of_booking: ${playgroundbook[g].Day_of_booking}');
             print('Name: ${playgroundbook[g].Name}');
             print('Rent_the_ball: ${playgroundbook[g].rentTheBall}');
             print('phoneshoka: ${playgroundbook[g].phoneCommunication}');
-
           }
 
           // Print and access specific fields for each booking
@@ -316,7 +375,6 @@ class my_reservationState extends State<my_reservation>
             getPlaygroundbyname(booking.groundID!);
             // Access other fields as needed
           });
-
         }
         else {
           print('No documents found in the "booking" collection.');
@@ -326,8 +384,11 @@ class my_reservationState extends State<my_reservation>
       print('Error fetching booking data: $e');
     }
   }
+
   late List<AddPlayGroundModel> playgroundAllData = [];
-  Future<void> deleteCancelByPhoneAndPlaygroundId(String phone, String playgroundId,String selectedTime,String Dateofbooking) async {
+
+  Future<void> deleteCancelByPhoneAndPlaygroundId(String phone,
+      String playgroundId, String selectedTime, String Dateofbooking) async {
     final firestore = FirebaseFirestore.instance;
     print("phoneggggg${phone}");
     try {
@@ -347,19 +408,22 @@ class my_reservationState extends State<my_reservation>
         // Loop through the documents and delete them
         for (var doc in querySnapshot.docs) {
           await firestore.collection('booking').doc(doc.id).delete();
-          print('Document with phone $phone, playgroundId $playgroundId, and selectedTime $selectedTime deleted successfully.');
+          print(
+              'Document with phone $phone, playgroundId $playgroundId, and selectedTime $selectedTime deleted successfully.');
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => my_reservation()),
           );
         }
       } else {
-        print('No document found for phone number: $phone and playgroundId: $playgroundId');
+        print(
+            'No document found for phone number: $phone and playgroundId: $playgroundId');
       }
     } catch (e) {
       print('Error deleting document: $e');
     }
   }
+
   // Future<void> updateCancelCount(String userPhone) async {
   //   final firestore = FirebaseFirestore.instance;
   //   final query = await firestore
@@ -384,7 +448,8 @@ class my_reservationState extends State<my_reservation>
   //     });
   //   }
   // }
-  Future<void> updateCancelCount(String userPhone,String idAdmin, String idGround) async {
+  Future<void> updateCancelCount(String userPhone, String idAdmin,
+      String idGround) async {
     final firestore = FirebaseFirestore.instance;
     final query = await firestore
         .collection('cancel_book')
@@ -402,17 +467,17 @@ class my_reservationState extends State<my_reservation>
           .doc(doc.id)
           .update({'numberofcancel': currentCount + 1});
       print("dooooc$doc");
-
     } else {
       // Document does not exist, create a new one with numberofcancel set to 1
       await firestore.collection('cancel_book').add({
         'user_phone': userPhone,
         'numberofcancel': 1,
-        'playgroundId':idGround,
-        'adminid':idAdmin,
+        'playgroundId': idGround,
+        'adminid': idAdmin,
       });
     }
   }
+
   String getTimeRange(String startTime) {
     DateTime start = DateFormat.jm().parse(startTime); // Parse the start time
     DateTime end = start.add(Duration(hours: 1)); // Add 1 hour for the end time
@@ -431,8 +496,9 @@ class my_reservationState extends State<my_reservation>
       return NumberFormat('en').format(int.parse(match.group(0)!));
     });
 
-    return '$formattedStartTime     الي     $formattedEndTime';
+    return '$formattedStartTime الي $formattedEndTime';
   }
+
   Future<void> getPlaygroundbyname(String iiid) async {
     try {
       CollectionReference playerchat =
@@ -448,7 +514,7 @@ class my_reservationState extends State<my_reservation>
           if (document.id == iiid) {
             playgroundAllData.add(user);
 
-            String?  bookType = playgroundAllData[0].bookTypes![0].time;
+            String? bookType = playgroundAllData[0].bookTypes![0].time;
             // Assuming 'time' is the field you want to split into start and end time
             String timeofAddedPlayground = bookType ?? '';
             print("timeofAddedPlayground: $timeofAddedPlayground");
@@ -458,14 +524,15 @@ class my_reservationState extends State<my_reservation>
             if (times.length == 2) {
               String startTime = times[0];
               String endTime = times[1];
-              for(int i=0;i<playgroundAllData.length;i++){
+              for (int i = 0; i < playgroundAllData.length; i++) {
                 print("locattttion${playgroundAllData[i].location}");
-
               }
               print("Start Time: $startTime");
               print("End Time: $endTime");
-              String adminId = userData['AdminId'] ?? ''; // Fetch AdminId directly from userData
-              user.adminId = adminId; // Assuming your model has a property for AdminId
+              String adminId = userData['AdminId'] ??
+                  ''; // Fetch AdminId directly from userData
+              user.adminId =
+                  adminId; // Assuming your model has a property for AdminId
               print("Admin ID: $adminId");
               // USerID=adminId;
               // // You can use these times to update the UI or for other logic
@@ -487,7 +554,8 @@ class my_reservationState extends State<my_reservation>
             // }
 // الوقت  هو سبب المشكله
             print(
-                "PlayGroungboook Iiid : ${document.id}"); // Print the latest playground
+                "PlayGroungboook Iiid : ${document
+                    .id}"); // Print the latest playground
             // groundIiid = document.id;
             // print("Docummmmmmbook$groundIiid");
             // Normalize playType before comparing
@@ -497,13 +565,14 @@ class my_reservationState extends State<my_reservation>
           // Store the document ID in the AddPlayGroundModel object
           user.id = document.id;
         }
-        wait=playgroundAllData.length - numberaccepted ;
+        wait = playgroundAllData.length - numberaccepted;
         print("wait${wait}");
       }
     } catch (e) {
       print("Error getting playground: $e");
     }
   }
+
   late List<AddPlayGroundModel> allplaygroundsData = [];
 
   @override
@@ -517,7 +586,8 @@ class my_reservationState extends State<my_reservation>
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
           child: Padding(
-            padding: EdgeInsets.only(top: 25.0,bottom: 12,right: 8,left: 8), // Add padding to the top of the title
+            padding: EdgeInsets.only(top: 25.0, right: 8, left: 8),
+            // Add padding to the top of the title
             child: AppBar(
               backgroundColor: Colors.white,
               surfaceTintColor: Colors.transparent,
@@ -529,7 +599,8 @@ class my_reservationState extends State<my_reservation>
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              centerTitle: true, // Center the title horizontally
+              centerTitle: true,
+              // Center the title horizontally
               leading: IconButton(
                 onPressed: () {
                   Get.off(HomePage());
@@ -540,13 +611,14 @@ class my_reservationState extends State<my_reservation>
                       ? Icons.arrow_forward_ios
                       : Icons.arrow_back_ios_new_rounded,
                   size: 24,
-                  color:  Color(0xFF62748E),
+                  color: Color(0xFF62748E),
                 ),
               ),
               actions: [
                 Padding(
                   padding: const EdgeInsets.only(right: 12.0),
-                  child: Image.asset('assets/images/notification.png', height: 28, width: 28,),
+                  child: Image.asset(
+                    'assets/images/notification.png', height: 28, width: 28,),
                 ),
 
               ],
@@ -562,182 +634,190 @@ class my_reservationState extends State<my_reservation>
               SizedBox(
                 height: 22,
               ),
-              Container(
-                width: MediaQuery.of(context).size.width/1.1,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(
-                      width: 25,
-                    ),
-                    Container(
-                      height: 93,
-                      width: 87,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          bottomRight: Radius.circular(17),
-                          bottomLeft: Radius.circular(17),
-                          topRight: Radius.circular(20),
-                          topLeft: Radius.circular(20),
-                        ),
-                        shape: BoxShape.rectangle,
-                        color: Colors
-                            .black, // This color will be visible at the bottom
-                      ),
-                      child: Column(
-                        children: [
-                          Container(
-                            height: 92,
-                            width: 87,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: Color(0xFFF0F6FF), // Inner container color
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  "${wait}",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: 'Cairo',
-                                    fontSize: 30.0,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF334154),
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: 18,
-                                ),
-                                Text(
-                                  "قيد الانتظار",
-                                  style: TextStyle(
-                                    fontFamily: 'Cairo',
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF495A71),
-                                  ),
-                                ),
-                              ],
-                            ),
+              Center(
+                child: Container(
+                  width: MediaQuery
+                      .of(context)
+                      .size
+                      .width,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      // SizedBox(
+                      //   width: 12,
+                      // ),
+                      Container(
+                        height: 93,
+                        width: 87,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.only(
+                            bottomRight: Radius.circular(17),
+                            bottomLeft: Radius.circular(17),
+                            topRight: Radius.circular(20),
+                            topLeft: Radius.circular(20),
                           ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      width: 25,
-                    ),
-                    Container(
-                      height: 93,
-                      width: 87,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          bottomRight: Radius.circular(17),
-                          bottomLeft: Radius.circular(17),
-                          topRight: Radius.circular(20),
-                          topLeft: Radius.circular(20),
+                          shape: BoxShape.rectangle,
+                          color: Colors
+                              .black, // This color will be visible at the bottom
                         ),
-                        shape: BoxShape.rectangle,
-                        color: Colors.red
-                            .shade200, // This color will be visible at the bottom
-                      ),
-                      child: Column(
-                        children: [
-                          Container(
-                            height: 92,
-                            width: 87,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: Color(0xFFF0F6FF), // Inner container color
-                            ),
-                            child: Column(
-                              children: [
-                                Text("$numbercanceled",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: 'Cairo',
-                                    fontSize: 30.0,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF334154),
+                        child: Column(
+                          children: [
+                            Container(
+                              height: 92,
+                              width: 87,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                color: Color(
+                                    0xFFF0F6FF), // Inner container color
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    "${wait}",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 30.0,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF334154),
+                                    ),
                                   ),
-                                ),
-                                SizedBox(
-                                  height: 18,
-                                ),
-                                Text(
-                                  "حجزات ملغية",
-                                  style: TextStyle(
-                                    fontFamily: 'Cairo',
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF495A71),
+                                  SizedBox(
+                                    height: 18,
                                   ),
-                                ),
-                              ],
+                                  Text(
+                                    "قيد الانتظار",
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 8.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF495A71),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      width: 25,
-                    ),
-                    Container(
-                      height: 93,
-                      width: 87,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          bottomRight: Radius.circular(17),
-                          bottomLeft: Radius.circular(17),
-                          topRight: Radius.circular(20),
-                          topLeft: Radius.circular(20),
+                          ],
                         ),
-                        shape: BoxShape.rectangle,
-                        color: Colors.green
-                            .shade400, // This color will be visible at the bottom
                       ),
-                      child: Column(
-                        children: [
-                          Container(
-                            height: 92,
-                            width: 87,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: Color(0xFFF0F6FF), // Inner container color
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  "${ numberaccepted}",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: 'Cairo',
-                                    fontSize: 30.0,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF334154),
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: 18,
-                                ),
-                                Text(
-                                  "حجزات مأكدة",
-                                  style: TextStyle(
-                                    fontFamily: 'Cairo',
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF495A71),
-                                  ),
-                                ),
-                              ],
-                            ),
+                      SizedBox(
+                        width: 25,
+                      ),
+                      Container(
+                        height: 93,
+                        width: 87,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.only(
+                            bottomRight: Radius.circular(17),
+                            bottomLeft: Radius.circular(17),
+                            topRight: Radius.circular(20),
+                            topLeft: Radius.circular(20),
                           ),
-                        ],
+                          shape: BoxShape.rectangle,
+                          color: Colors.red
+                              .shade200, // This color will be visible at the bottom
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              height: 92,
+                              width: 87,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                color: Color(
+                                    0xFFF0F6FF), // Inner container color
+                              ),
+                              child: Column(
+                                children: [
+                                  Text("$numbercanceled",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 30.0,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF334154),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 18,
+                                  ),
+                                  Text(
+                                    "حجزات ملغية",
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 8.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF495A71),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      width: 25,
-                    ),
-                  ],
+                      SizedBox(
+                        width: 25,
+                      ),
+                      Container(
+                        height: 93,
+                        width: 87,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.only(
+                            bottomRight: Radius.circular(17),
+                            bottomLeft: Radius.circular(17),
+                            topRight: Radius.circular(20),
+                            topLeft: Radius.circular(20),
+                          ),
+                          shape: BoxShape.rectangle,
+                          color: Colors.green
+                              .shade400, // This color will be visible at the bottom
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              height: 92,
+                              width: 87,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                color: Color(
+                                    0xFFF0F6FF), // Inner container color
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    "${ numberaccepted}",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 30.0,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF334154),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 18,
+                                  ),
+                                  Text(
+                                    "حجزات مأكدة",
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 8.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF495A71),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        width: 25,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               SizedBox(
@@ -757,33 +837,76 @@ class my_reservationState extends State<my_reservation>
               SizedBox(
                 height: 12,
               ),
+if(playgroundAllData.isEmpty)Center(
+  child: SizedBox(
+    height: MediaQuery.of(context).size.height/2.5,
+    child: Stack(
+      children: [
+        Center(
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+
+                  Image.asset(
+                    "assets/images/reservationzerostate.png",
+                    width: 200,
+                    height: 200,
+                  ),
+                  Text(
+                    'لا يوجد حجوزات حتى الأن',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 14.62,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF181A20),
+                    ),
+                  ),
+                ]),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
               for (var i = 0; i < playgroundAllData.length; i++) // Repeat the container 5 times
+                playgroundAllData.isNotEmpty ?
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 12,top: 10),
+                  padding: const EdgeInsets.only(bottom: 12, top: 10,),
                   child: Center(
                     child: Container(
 
-                      width: MediaQuery.of(context).size.width/1.1,
+                      width: MediaQuery
+                          .of(context)
+                          .size
+                          .width / 1.15,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20.0),
                         shape: BoxShape.rectangle,
                         color: Color(0xFFF0F6FF),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.7), // Increase opacity for a darker shadow
-                            spreadRadius: 0, // Increase spread to make the shadow larger
-                            blurRadius: 2, // Increase blur radius for a more diffused shadow
-                            offset: Offset(0, 0), // Increase offset for a more pronounced shadow effect
+                            color: Colors.grey.withOpacity(0.7),
+                            // Increase opacity for a darker shadow
+                            spreadRadius: 0,
+                            // Increase spread to make the shadow larger
+                            blurRadius: 2,
+                            // Increase blur radius for a more diffused shadow
+                            offset: Offset(0,
+                                0), // Increase offset for a more pronounced shadow effect
                           ),
                         ],
                       ),
-                      child:playgroundAllData.isNotEmpty? Column(
+                      child: playgroundAllData.isNotEmpty ? Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.only(right: 12.0, left: 12, top: 11),
+                            padding: const EdgeInsets.only(
+                                right: 12.0, left: 12, top: 11),
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end, // Aligns the content to the right
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              // Aligns the content to the right
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Column(
@@ -800,9 +923,20 @@ class my_reservationState extends State<my_reservation>
                                     ),
                                     Row(
                                       children: [
-
                                         Text(
-                                          "${playgroundAllData[i].bookTypes![0].cost!}",
+                                          "ج.م ",
+
+
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            fontSize: 14.0,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF7D90AC),
+                                          ),
+                                        ),
+                                        Text(
+                                          "${playgroundAllData[i].bookTypes![0]
+                                              .cost!}",
                                           // textDirection: TextDirection.RTL,  // Ensures the text direction is RTL
 
                                           style: TextStyle(
@@ -812,9 +946,13 @@ class my_reservationState extends State<my_reservation>
                                             color: Color(0xFF7D90AC),
                                           ),
                                         ),
-                                        SizedBox( width: MediaQuery.of(context).size.width/4.2,),
+                                        SizedBox(width: MediaQuery
+                                            .of(context)
+                                            .size
+                                            .width / 4.2,),
                                         Text(
-                                          "${playgroundbook[i].phoneCommunication!}",
+                                          "${playgroundbook[i]
+                                              .phoneCommunication!}",
                                           // textDirection: TextDirection.RTL,  // Ensures the text direction is RTL
 
                                           style: TextStyle(
@@ -828,7 +966,8 @@ class my_reservationState extends State<my_reservation>
                                     ),
                                   ],
                                 ),
-                                SizedBox(width: 10), // Adds space between the text and the image
+                                SizedBox(width: 10),
+                                // Adds space between the text and the image
                                 Image.asset(
                                   "assets/images/Wadi_Logo.png",
                                   height: 30,
@@ -840,15 +979,13 @@ class my_reservationState extends State<my_reservation>
                           ),
 
                           Padding(
-                            padding: const EdgeInsets.only(right: 20.0, left: 12, top: 11),
+                            padding: const EdgeInsets.only(right: 20.0, left: 8, top: 4),
 
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-
                                     Text(
                                       "التكلفة أجمالية  ".tr,
                                       textAlign: TextAlign.center,
@@ -859,44 +996,47 @@ class my_reservationState extends State<my_reservation>
                                         color: Color(0xFF334154),
                                       ),
                                     ),
-
-                                    SizedBox(width: MediaQuery.of(context).size.width/23),
+                                    SizedBox(width: 20,),
                                     Text(
+
                                       "${playgroundbook[i].dateofBooking!}",
+                                      textAlign: TextAlign.end,
                                       style: TextStyle(
+
                                         fontFamily: 'Cairo',
-                                        fontSize: 12.0,
-                                        fontWeight: FontWeight.w400,
+                                        fontSize: 14.0,
+                                        fontWeight: FontWeight.w500,
                                         color: Color(0xFF7D90AC),
                                       ),
                                     ),
-                                    SizedBox(width: 19,),
-                                    RichText(
-                                      text: TextSpan(
-                                        style: TextStyle(
-                                          color: Color(
-                                              0xFF7C90AB),
-                                          fontSize: 12,
-                                          fontFamily: 'Cairo',
-                                          fontWeight: FontWeight
-                                              .w400,
-                                          height: 0,
-                                          letterSpacing: 0.36,
-                                        ),
-                                        children: [
+                                    SizedBox(width: 5,),
 
-                                            TextSpan(
-                                              text: getTimeRange(
-                                                  playgroundbook[i]
-                                                      .selectedTimes![i]) ,// Add formatted time range
-                                            ),
-                                        ],
-                                      ),
-                                    ),
 
                                   ],
                                 ),
+                                SizedBox(width: 10,),
+                                RichText(
+                                  text: TextSpan(
+                                    style: TextStyle(
+                                      color: Color(
+                                          0xFF7C90AB),
+                                      fontSize: 12,
+                                      fontFamily: 'Cairo',
+                                      fontWeight: FontWeight
+                                          .w400,
+                                      height: 0,
+                                      letterSpacing: 0.36,
+                                    ),
+                                    children: [
 
+                                      TextSpan(
+                                        text: getTimeRange(
+                                            playgroundbook[i]
+                                                .selectedTimes![0]), // Add formatted time range
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -906,21 +1046,30 @@ class my_reservationState extends State<my_reservation>
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Padding(
-                                padding: const EdgeInsets.only(top: 12.0,bottom: 12,left: 30),
+                                padding: const EdgeInsets.only(
+                                    top: 12.0, bottom: 7, left: 22),
                                 child: GestureDetector(
-                                  onTap: (){
-                                    print("phooonefff${playgroundbook[i].phoneCommunication!}");
-                                    updateCancelCount(playgroundbook[i].phoneCommunication!,playgroundbook[i].AdminId!,playgroundbook[i].groundID!);
-                                    deleteCancelByPhoneAndPlaygroundId(playgroundbook[i].phoneCommunication!,playgroundbook[i].groundID!,playgroundbook[i].selectedTimes!.first,playgroundbook[i].dateofBooking!);
-
+                                  onTap: () {
+                                    print("phooonefff${playgroundbook[i]
+                                        .phoneCommunication!}");
+                                    updateCancelCount(
+                                        playgroundbook[i].phoneCommunication!,
+                                        playgroundbook[i].AdminId!,
+                                        playgroundbook[i].groundID!);
+                                    deleteCancelByPhoneAndPlaygroundId(
+                                        playgroundbook[i].phoneCommunication!,
+                                        playgroundbook[i].groundID!,
+                                        playgroundbook[i].selectedTimes!.first,
+                                        playgroundbook[i].dateofBooking!);
                                   },
                                   child: Container(
                                     height: 29,
-                                    width: 110,
+                                    width: 114,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(30.0),
                                       shape: BoxShape.rectangle,
-                                      color: Color(0xFFB3261E), // Background color of the container
+                                      color: Color(
+                                          0xFFB3261E), // Background color of the container
                                       // border: Border.all(
                                       //   width: 1.0, // Border width
                                       //   color: Colors.black
@@ -931,7 +1080,7 @@ class my_reservationState extends State<my_reservation>
                                         "إلغاء الحجز".tr,
                                         style: TextStyle(
                                           fontFamily: 'Cairo',
-                                          fontSize: 16.0,
+                                          fontSize: 12.0,
                                           fontWeight: FontWeight.w500,
                                           color: Colors.white, // Text color
                                         ),
@@ -941,16 +1090,22 @@ class my_reservationState extends State<my_reservation>
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(top: 12.0,bottom: 12,right: 30),
+                                padding: const EdgeInsets.only(
+                                    top: 12.0, bottom: 7, right: 22),
                                 child: GestureDetector(
                                   onTap: () async {
-                                    print("locattttion${playgroundAllData[i].location!}");
-                                    print("convertmonthtonumber${playgroundbook[i].dateofBooking!}");
+                                    print("locattttion${playgroundAllData[i]
+                                        .location!}");
+                                    print(
+                                        "convertmonthtonumber${playgroundbook[i]
+                                            .dateofBooking!}");
 
 
                                     Navigator.push(
                                       context,
-                                      MaterialPageRoute(builder: (context) => Maps(location: playgroundAllData[i].location!)),
+                                      MaterialPageRoute(builder: (context) =>
+                                          Maps(location: playgroundAllData[i]
+                                              .location!)),
                                     );
                                   },
                                   child: Container(
@@ -959,7 +1114,8 @@ class my_reservationState extends State<my_reservation>
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(30.0),
                                       shape: BoxShape.rectangle,
-                                      color: Color(0xFF064821), // Background color of the container
+                                      color: Color(
+                                          0xFF064821), // Background color of the container
                                       // border: Border.all(
                                       //   width: 1.0, // Border width
                                       //   color: Colors.black
@@ -970,7 +1126,7 @@ class my_reservationState extends State<my_reservation>
                                         "الموقع".tr,
                                         style: TextStyle(
                                           fontFamily: 'Cairo',
-                                          fontSize: 16.0,
+                                          fontSize: 12.0,
                                           fontWeight: FontWeight.w500,
                                           color: Colors.white, // Text color
                                         ),
@@ -985,11 +1141,44 @@ class my_reservationState extends State<my_reservation>
                           SizedBox(height: 5),
 
                         ],
-                      ):Container(),
+                      ) : Container(),
+                    ),
+                  ),
+                ): Center(
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height/2,
+                    child: Stack(
+                      children: [
+                        Center(
+                          child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+
+                                  Image.asset(
+                                    "assets/images/amico.png",
+                                    width: 200,
+                                    height: 200,
+                                  ),
+                                  Text(
+                                    'لا يوجد حجوزات حتى الأن',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 14.62,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF181A20),
+                                    ),
+                                  ),
+                                ]),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              SizedBox(height: 55), // Adds space between the text and the image
+              SizedBox(height: 55),
+              // Adds space between the text and the image
             ],
           ),
         ),
