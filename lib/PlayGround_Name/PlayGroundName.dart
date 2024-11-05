@@ -956,7 +956,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                                       height: 45.82,
                                       child: Row(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                        MainAxisAlignment.center,
                                         children: [
                                           for (int i = 0; i < 5; i++)
                                             GestureDetector(
@@ -994,7 +994,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                                     onTap: () {
                                       List<bool> rating = List.generate(
                                         5,
-                                        (index) => isstared[index],
+                                            (index) => isstared[index],
                                       );
                                       sendRating(rating);
                                     },
@@ -1009,7 +1009,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                                         width: double.infinity,
                                         decoration: BoxDecoration(
                                           borderRadius:
-                                              BorderRadius.circular(30.0),
+                                          BorderRadius.circular(30.0),
                                           color: Color(0xFF064821),
                                         ),
                                         child: Center(
@@ -1041,32 +1041,49 @@ class PlaygroundNameState extends State<PlaygroundName>
                               color: Color(0xFF064821)),
                         ),
                       ),
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.end,
+                      //   children: [
+                      //     for (int i = 5; i >0; i--)
+                      //       GestureDetector(
+                      //         // onTap: () {
+                      //         //   setState(() {
+                      //         //     if (i < _selectedStars) {
+                      //         //       _selectedStars = i;
+                      //         //     } else {
+                      //         //       _selectedStars = i + 1;
+                      //         //     }
+                      //         //     List<bool> rating = List.generate(
+                      //         //         5, (index) => index < _selectedStars);
+                      //         //     sendRating(rating);
+                      //         //   });
+                      //         // },
+                      //         child: Icon(
+                      //           i < filledStars
+                      //               ? Icons.star
+                      //               : Icons.star_border_outlined,
+                      //           color: Color(0xFFFFCC00),
+                      //         ),
+                      //       )
+                      //   ],
+                      // ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          for (int i = 0; i < 5; i++)
+                          for (int i = 5; i > 0; i--)
                             GestureDetector(
-                              // onTap: () {
-                              //   setState(() {
-                              //     if (i < _selectedStars) {
-                              //       _selectedStars = i;
-                              //     } else {
-                              //       _selectedStars = i + 1;
-                              //     }
-                              //     List<bool> rating = List.generate(
-                              //         5, (index) => index < _selectedStars);
-                              //     sendRating(rating);
-                              //   });
-                              // },
+                              onTap: () {
+                                setState(() {
+                                  // Handle onTap logic here if needed
+                                });
+                              },
                               child: Icon(
-                                i < filledStars
-                                    ? Icons.star
-                                    : Icons.star_border_outlined,
-                                color: Color(0xFFFFCC00),
+                                i <= filledStars ? Icons.star : Icons.star_border_outlined,
+                                color: i <= filledStars ? Color(0xFFFFCC00) : Colors.grey,
                               ),
                             )
                         ],
-                      ),
+                      )
                     ],
                   ),
                 ),

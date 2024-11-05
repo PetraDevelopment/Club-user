@@ -468,7 +468,7 @@ class ProfilepageState extends State<Profilepage>
                             cursorColor: Color(0xFF064821),
                             textInputAction: TextInputAction.next,
                             keyboardType: TextInputType.text,
-                            textAlign: TextAlign.end,
+                            textAlign: TextAlign.start,
                             // Align text to the right
                             decoration: InputDecoration(
                               hintText: 'الأسم'.tr,

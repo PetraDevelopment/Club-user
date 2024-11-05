@@ -213,10 +213,13 @@ class AppBarandNavigationBTN extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
 
-                Image.asset(
-                "assets/images/bro.png",
-                width: 200,
-                height: 200,
+                Opacity(
+                  opacity: 0.5,
+                  child: Image.asset(
+                  "assets/images/bro.png",
+                  width: 200,
+                  height: 200,
+                  ),
                 ),
                 Text(
                 'لم يتم اضافة ملاعب بعد',

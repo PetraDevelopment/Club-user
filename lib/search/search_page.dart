@@ -307,15 +307,7 @@ class SearchpageState extends State<Searchpage> {
                   child:
                   Row(
                     children: [
-                      GestureDetector(
-                  onTap: (){
-                    serarchforplayground();
-                  },
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: Image.asset('assets/images/search.png',height: 20,width: 25,),
-                        ),
-                      ),
+
 
                       Expanded(
                         child: Padding(
@@ -323,7 +315,7 @@ class SearchpageState extends State<Searchpage> {
                           child: TextField(
                             controller: Searchcontrol,
                             // readOnly: true,
-
+textDirection: TextDirection.rtl,
                             textInputAction: TextInputAction.next,
                             keyboardType: TextInputType.text,
                             textAlign: TextAlign.right,
@@ -351,6 +343,15 @@ class SearchpageState extends State<Searchpage> {
                               serarchforplayground(); // Call the search function when the user submits the text field
                             },
                           ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: (){
+                          serarchforplayground();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: Image.asset('assets/images/search.png',height: 20,width: 25,),
                         ),
                       ),
                     ],
@@ -465,10 +466,13 @@ class SearchpageState extends State<Searchpage> {
                           height: 142.51,
                           width: 142.51,
 
-                          child:  Image.asset(
-                            "assets/images/searchzero.png",
+                          child:  Opacity(
+                            opacity: 0.5,
+                            child: Image.asset(
+                              "assets/images/searchzero.png",
 
-                            // Adjust size as needed
+                              // Adjust size as needed
+                            ),
                           ),
                         ),
                       ),

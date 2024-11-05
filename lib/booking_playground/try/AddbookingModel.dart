@@ -3,6 +3,7 @@ class AddbookingModel {
   String? phoneCommunication;
   String? dateofBooking ;
   String?Day_of_booking;
+  String? Adminid;
   List<String>? timeofBooking = [];
   bool? rentTheBall;
   List<String>? availableTime = [];
@@ -11,6 +12,7 @@ class AddbookingModel {
   List<String>? notavailable; // Ensure this matches your expected field name
   AddbookingModel({
     this.Name,
+    this.Adminid,
     this.phoneCommunication,
     this.dateofBooking,
     this.timeofBooking,
@@ -26,6 +28,7 @@ class AddbookingModel {
   factory AddbookingModel.fromMap(Map<String, dynamic> map) {
     return AddbookingModel(
       Name: map['Name'],
+      Adminid: map['AdminId'],
       phoneCommunication: map['phoneCommunication'],
       dateofBooking: map['dateofBooking'],
       timeofBooking: (map['timeofBooking'] as List<dynamic>?)
@@ -53,6 +56,7 @@ class AddbookingModel {
   Map<String, dynamic> toMap() {
     return {
       'Name': Name,
+      'AdminId':Adminid,
       'Day_of_booking':Day_of_booking,
       'phoneCommunication': phoneCommunication,
       'dateofBooking': dateofBooking,

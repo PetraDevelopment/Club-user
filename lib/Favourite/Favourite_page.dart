@@ -43,14 +43,19 @@ class FavouritePageState extends State<FavouritePage> {
           print("user${user?.phoneNumber}");
           if (favourite.user_phone?.replaceAll(RegExp(r'\D'), '') == user?.phoneNumber?.replaceAll(RegExp(r'\D'), '') ||
               favourite.user_phone?.replaceAll(RegExp(r'\D'), '') == Phone011.replaceAll(RegExp(r'\D'), '')) {
-            favlist.add(favourite);
-            print("Fav Id : ${document.id}"); // Print the playground ID
-            print('Fav list: $favlist');
-            print("allplaygrounds[i] : ${favourite}"); // Print the playground
-            // Store the document ID in the AddPlayGroundModel object
-            favourite.id = document.id;
-            print("favouriteid${favourite.id}");
-            print("favourite${favourite.playground_id}");
+           if(favlist.contains(playgroundid)){
+             print("this id already added to favourite list"); // Print the playground
+           }else{
+             favlist.add(favourite);
+             print("Fav Id : ${document.id}"); // Print the playground ID
+             print('Fav list: $favlist');
+             print("allplaygrounds[i] : ${favourite}"); // Print the playground
+             // Store the document ID in the AddPlayGroundModel object
+             favourite.id = document.id;
+             print("favouriteid${favourite.id}");
+             print("favourite${favourite.playground_id}");
+           }
+
           } else {
             print("this user not have favourite playground");
           }
@@ -88,10 +93,12 @@ class FavouritePageState extends State<FavouritePage> {
           print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
 
           // Store the document ID in the AddPlayGroundModel object
-          idddddd = document.id;
-          for(int x=0;x<allplaygrounds.length;x++){
-            getfavdata(allplaygrounds[x].id!);
-          }
+          user.id = document.id;
+          getfavdata(user.id!);
+
+          // for(int x=0;x<allplaygrounds.length;x++){
+          //   // print("objectfavvvvvvvvvv${allplaygrounds[x].id!}");
+          // }
         }
       }
     } catch (e) {
@@ -143,7 +150,7 @@ class FavouritePageState extends State<FavouritePage> {
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 18.0),
-                child: Image.asset('assets/images/notification.png', height: 28, width: 28,),
+                child: Image.asset('assets/images/notification.png', height: 24, width: 24,),
 
               ),
             ],
@@ -207,6 +214,7 @@ class FavouritePageState extends State<FavouritePage> {
         child: Center(
           child:favlist.isNotEmpty? Column(
             children: [
+              SizedBox(height: 10,),
               for (var i = 0; i < favlist.length; i++)
                 GestureDetector(
                   onTap: (){
@@ -219,14 +227,14 @@ class FavouritePageState extends State<FavouritePage> {
                     );
                   },
                   child: Padding(
-                    padding: const EdgeInsets.only(right: 8.0,left: 8),
+                    padding: const EdgeInsets.only(right: 23,left: 23,top: 8),
                     child: Center(
                       child: Card(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20.0),
                         ),
                         elevation: 4, // Adjust elevation to control the shadow
-                        margin: EdgeInsets.all(8), // Adjust margin as needed
+                        // margin: EdgeInsets.all(8), // Adjust margin as needed
                         child: Stack(
                           children: [
                             Container(
@@ -277,7 +285,7 @@ class FavouritePageState extends State<FavouritePage> {
                                 favlist[i].playground_name!,
                                 style: TextStyle(
                                   fontFamily: 'Cairo',
-                                  fontSize: 16,
+                                  fontSize: 13.83,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white,
                                 ),
@@ -303,10 +311,13 @@ class FavouritePageState extends State<FavouritePage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
 
-                            Image.asset(
-                              "assets/images/bro.png",
-                              width: 200,
-                              height: 200,
+                            Opacity(
+                              opacity: 0.5,
+                              child: Image.asset(
+                                "assets/images/bro.png",
+                                width: 200,
+                                height: 200,
+                              ),
                             ),
                             Text(
                               'لم يتم اضافة ملاعب بعد',

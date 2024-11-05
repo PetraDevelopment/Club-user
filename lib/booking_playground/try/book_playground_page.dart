@@ -41,6 +41,9 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
   bool isLoading = false;
   late List<AddPlayGroundModel> playgroundAllData = [];
   List<String> dayss = [];
+  String date='';
+  String date2='';
+
   List<DateTime> datees = [];
   int _currentIndex = 0; // Add this state variable to track the current page
 
@@ -48,7 +51,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
   late List<AddbookingModel> userplaygroundbook = [];
   List<AddbookingModel> matchedPlaygrounds = [];
   late List<AddPlayGroundModel> matchedplaygroundAllData = [];
-  Future<String> convertmonthtonumber(String date) async{
+  Future<String> convertmonthtonumber(date,int index) async{
     List<String>months=[ 'January',
       'February',
       'March',
@@ -64,14 +67,79 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
     for(int k=0;k<months.length;k++){
       if(date.contains(months[k])){
         date=  date.replaceAll(months[k] ,'-${k+1}-');
-
         print("updated done with ${date}");
+        playgroundbook[index].dateofBooking=date;
+
       }
     }
+//loop in date to convert every en number to ar
+
+    date = date.replaceAllMapped(RegExp(r'\d'), (match) { const englishToArabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+
+    playgroundbook[index].dateofBooking=englishToArabicNumbers[int.parse(match.group(0)!)];
+    return englishToArabicNumbers[int.parse(match.group(0)!)];
+
+    });
+
+    print(" date in Arabic : $date");
+    playgroundbook[index].dateofBooking = date;
+
     return date;
 
   }
+  Future<String> convertmonthtonumberforlastwidget(date2,int index) async{
+    List<String>months=[ 'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',];
+    for(int k=0;k<months.length;k++){
+      if(date2.contains(months[k])){
+        date2=  date2.replaceAll(months[k] ,'-${k+1}-');
+        print("updated matchedPlaygrounds done with ${date2}");
+        matchedPlaygrounds[index].dateofBooking=date2;
+print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[index].dateofBooking!}");
+      }
+    }
+//loop in date to convert every en number to ar
 
+    date2 = date2.replaceAllMapped(RegExp(r'\d'), (match) { const englishToArabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+
+    matchedPlaygrounds[index].dateofBooking=englishToArabicNumbers[int.parse(match.group(0)!)];
+    return englishToArabicNumbers[int.parse(match.group(0)!)];
+
+    });
+
+    print(" date in Arabic : $date2");
+    matchedPlaygrounds[index].dateofBooking = date2;
+
+    return date2;
+
+  }
+  String toArabicNumerals(num number, int i) {
+    const englishToArabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+
+    // Convert the number to a string for processing
+    String numberString = number.toString();
+
+    // Replace each digit in the number string with its Arabic equivalent
+    String convertedNumber = numberString.replaceAllMapped(RegExp(r'\d'), (match) {
+      return englishToArabicNumbers[int.parse(match.group(0)!)];
+    });
+    print("kkkkkkknum$convertedNumber");
+    // If you want to assign the converted number back to the cost
+    // playgroundAllData[i].bookTypes![0].cost = convertedNumber; // Assuming cost is a String
+
+    print("number equal $convertedNumber");
+    return convertedNumber; // Return the converted number
+  }
   // String cost = "";
   late DateTime Day1;
   late DateTime Day2;
@@ -197,12 +265,15 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
 
 
         for (int i = 0; i < playgroundbook.length; i++) {
-          if (playgroundbook[i].phoneCommunication == normalizedPhoneNumber) {
+          if (playgroundbook[i]
+              .AllUserData![i].UserPhone! == normalizedPhoneNumber) {
             setState(() {
               matchedPlaygrounds.add(playgroundbook[i]);
-              getmaatchedPlaygroundbyname(playgroundbook[i].groundID!);
+              getmaatchedPlaygroundbyname(playgroundbook[i]
+                  .NeededGroundData![i].GroundId!);
               print("shimaaaa${matchedPlaygrounds.length}");
               print("shimaaaa dataaaaaa${playgroundbook[i]}");
+              convertmonthtonumberforlastwidget( matchedPlaygrounds[0].dateofBooking!,i);
 
             });
 
@@ -258,7 +329,8 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
               print("Start Time: $startTime");
               print("End Time: $endTime");
               String adminId =playgroundAllData[0].adminId! ; // Fetch AdminId directly from userData
-
+              groundPhoneee=playgroundAllData[0].phoneCommunication!;
+              groundNamee=playgroundAllData[0].playgroundName!;
               // You can use these times to update the UI or for other logic
               timeSlots.add(startTime); // Add start time to the list
               timeSlots.add(endTime);   // Add end time to the list
@@ -399,15 +471,18 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
 
   }
 
+  String? groundNamee ;
+  String? groundPhoneee;
 
 //Send booking data to Firestore
   Future<void> _sendData(BuildContext context) async {
     final name =user1[0].name!;
     final phooneNumber =user1[0].phoneNumber!;
 
+    print("Checking phone number: $phooneNumber");
+
     // Check for empty fields
     if (name.isNotEmpty && phooneNumber.isNotEmpty && selectedTimes.isNotEmpty) {
-
       print("Selected date: $storeDate");
 
       // Check for existing bookings in Firestore
@@ -415,7 +490,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
           .collection('booking')
           .where('dateofBooking', isEqualTo: storeDate) // Check date
           .where('Day_of_booking', isEqualTo: selectedDayName) // Check day of booking
-          .where('PhooneCommunication', isEqualTo: phooneNumber) // Check Phoone number
+          .where('PhooneCommunication', isEqualTo: phooneNumber) // Check phone number
           .where('selectedTimes', arrayContainsAny: selectedTimes.toList()) // Check time overlap
           .get();
 
@@ -430,57 +505,71 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
             backgroundColor: Colors.red.shade800,
           ),
         );
-        selectedTimes.clear();
-        _isCheckedList[0] = false;
-        String r=widget.IdData;
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => book_playground_page(r)),
-        // );
         return; // Exit function to prevent duplicate booking
       }
-  else if(existingBooking.docs.isEmpty){
-        convertmonthtonumber(selectedDates.toString());
-        print("shimaa shoooka$selectedDates");
 
-        // Create a booking model and add it to Firestore if no duplicates found
-        final bookingModel = AddbookingModel(
-            Name: name,
-            phoneCommunication: phooneNumber,
-            rentTheBall: _isCheckedList[0],
-            selectedTimes: selectedTimes.toList(),
-            dateofBooking: storeDate,
-            Day_of_booking: selectedDayName,
-            AdminId: playgroundAllData[0].adminId!,
-            groundID: widget.IdData
-        );
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String phoooone = prefs.getString('phone') ?? '';
 
-        // Add booking to Firestore
-        await FirebaseFirestore.instance.collection('booking').add(bookingModel.toMap());
+      // Fetch the document ID of the player using the phone number
+      CollectionReference playerchat = FirebaseFirestore.instance.collection('PlayersChat');
+      QuerySnapshot playerQuerySnapshot = await playerchat.where('phone', isEqualTo: phoooone).get();
 
-        // Fetch updated data and clear inputs after successful booking
-        await _fetchData();
-        selectedTimes.clear();
-        _isCheckedList[0] = false;
-        String rx=widget.IdData;
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => book_playground_page(rx)),
-        // );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'تم تسجيل البيانات بنجاح', // "Data registered successfully"
-              textAlign: TextAlign.center,
-            ),
-            backgroundColor: Color(0xFF1F8C4B),
-          ),
-        );
+      String docId = '';
+      if (playerQuerySnapshot.docs.isNotEmpty) {
+        var playerDoc = playerQuerySnapshot.docs.first;
+        docId = playerDoc.id; // Get the docId of the matching phone number
+        print("Document ID for the phone number: $docId");
+      } else {
+        print("No matching document found for the phone number.");
+        return; // Handle case where phone number doesn't exist
       }
-      // Show success message
 
-    }
-    else {
+      // Create a new UserData entry
+      UserData newUserData = UserData(
+        UserName: name,
+        UserPhone: phooneNumber,
+        UserImg: user1[0].img!, // Ensure userImage is set from the previous fetch
+      );
+      PlayGroundData GroundData = PlayGroundData(
+        GroundName: groundNamee,
+        GroundId: groundIiid,
+        GroundPhone: groundPhoneee, // Ensure userImage is set from the previous fetch
+      );
+
+      // Prepare the booking model
+      final bookingModel = AddbookingModel(
+        Name: name,
+        dateofBooking: storeDate,
+        Day_of_booking: selectedDayName,
+        rentTheBall: _isCheckedList[0],
+        selectedTimes: selectedTimes.toList(),
+        AdminId: docId,
+        AllUserData: [newUserData], // Add the user data directly to the model,
+        NeededGroundData: [GroundData],
+        acceptorcancle: false,
+      );
+
+      // Add booking to Firestore
+      await FirebaseFirestore.instance.collection('booking').add(bookingModel.toMap());
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'تم تسجيل البيانات بنجاح', // "Data registered successfully"
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Color(0xFF1F8C4B),
+        ),
+      );
+
+      // Clear inputs after successful booking
+      selectedTimes.clear();
+
+      _isCheckedList[0] = false;
+
+    } else {
       // Show message if required fields are empty
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -493,9 +582,104 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
       );
     }
   }
+//   Future<void> _sendData(BuildContext context) async {
+//     final name =user1[0].name!;
+//     final phooneNumber =user1[0].phoneNumber!;
+//
+//     // Check for empty fields
+//     if (name.isNotEmpty && phooneNumber.isNotEmpty && selectedTimes.isNotEmpty) {
+//
+//       print("Selected date: $storeDate");
+//
+//       // Check for existing bookings in Firestore
+//       final existingBooking = await FirebaseFirestore.instance
+//           .collection('booking')
+//           .where('dateofBooking', isEqualTo: storeDate) // Check date
+//           .where('Day_of_booking', isEqualTo: selectedDayName) // Check day of booking
+//           .where('PhooneCommunication', isEqualTo: phooneNumber) // Check Phoone number
+//           .where('selectedTimes', arrayContainsAny: selectedTimes.toList()) // Check time overlap
+//           .get();
+//
+//       if (existingBooking.docs.isNotEmpty) {
+//         // Show message if a duplicate booking is found
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(
+//             content: Text(
+//               'هذا الحجز موجود بالفعل', // "This booking already exists"
+//               textAlign: TextAlign.center,
+//             ),
+//             backgroundColor: Colors.red.shade800,
+//           ),
+//         );
+//         selectedTimes.clear();
+//         _isCheckedList[0] = false;
+//         String r=widget.IdData;
+//         Navigator.pushReplacement(
+//           context,
+//           MaterialPageRoute(builder: (context) => book_playground_page(r)),
+//         );
+//         return; // Exit function to prevent duplicate booking
+//       }
+//   else if(existingBooking.docs.isEmpty){
+//         convertmonthtonumber(selectedDates.toString(),0);
+//         print("shimaa shoooka$selectedDates");
+//
+//         // Create a booking model and add it to Firestore if no duplicates found
+//         final bookingModel = AddbookingModel(
+//             Name: name,
+//             phoneCommunication: phooneNumber,
+//             rentTheBall: _isCheckedList[0],
+//             selectedTimes: selectedTimes.toList(),
+//             dateofBooking: storeDate,
+//             Day_of_booking: selectedDayName,
+//             AdminId: playgroundAllData[0].adminId!,
+//             groundID: widget.IdData
+//         );
+//
+//         // Add booking to Firestore
+//         await FirebaseFirestore.instance.collection('booking').add(bookingModel.toMap());
+//
+//         // Fetch updated data and clear inputs after successful booking
+//         await _fetchData();
+//         selectedTimes.clear();
+//         _isCheckedList[0] = false;
+//         String rx=widget.IdData;
+//         // Navigator.pushReplacement(
+//         //   context,
+//         //   MaterialPageRoute(builder: (context) => book_playground_page(rx)),
+//         // );
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(
+//             content: Text(
+//               'تم تسجيل البيانات بنجاح', // "Data registered successfully"
+//               textAlign: TextAlign.center,
+//             ),
+//             backgroundColor: Color(0xFF1F8C4B),
+//           ),
+//         );
+//       }
+//       // Show success message
+//
+//     }
+//     else {
+//       // Show message if required fields are empty
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(
+//           content: Text(
+//             'يرجى ملء جميع البيانات', // "Please fill in all fields"
+//             textAlign: TextAlign.center,
+//           ),
+//           backgroundColor: Colors.red.shade800,
+//         ),
+//       );
+//     }
+//   }
   bool isAlreadySelected = false;
 
-
+  String formatDate(String dateString) {
+    DateTime dateTime = DateFormat('dd MMMM yyyy').parse(dateString);
+    return DateFormat('dd-MM-yyyy','ar').format(dateTime);
+  }
   late List<User1> user1 = [];
   User? user = FirebaseAuth.instance.currentUser;
   void _loadUserData() async {
@@ -1014,7 +1198,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                         children: List.generate(matchedPlaygrounds.length, (index) {
                           final user = matchedPlaygrounds[index];
                           return Dismissible(
-                            key: Key('${user.phoneCommunication}_${index}'), // Ensure the key is unique
+                            key: Key('${user.AllUserData?[index].UserPhone}_${index}'), // Ensure the key is unique
                             direction: DismissDirection.horizontal,
                             onDismissed: (direction) async {
                               // Perform the deletion only if confirmed
@@ -1049,6 +1233,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                               );
                             },
                             background: Container(
+                              height: 72,
                               color: Colors.red.shade800, // Background color when swiped
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
@@ -1059,7 +1244,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                                       image: AssetImage("assets/images/trush-square.png"),
                                       color: Colors.white,
                                       width: 40.0,
-                                      height: 40.0,
+                                      height: 30.0,
                                     ),
                                   ),
                                   Expanded(child: Container()), // Fill space
@@ -1067,6 +1252,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                               ),
                             ),
                             secondaryBackground: Container(
+                              height: 72,
                               color: Colors.red.shade800, // Background color when swiped
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
@@ -1078,15 +1264,16 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                                       image: AssetImage("assets/images/trush-square.png"),
                                       color: Colors.white,
                                       width: 40.0,
-                                      height: 40.0,
+                                      height: 30.0,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.only(right: 22.0, left: 22, bottom: 22),
+                              padding: const EdgeInsets.only(right: 17.0, left: 17, bottom: 9,top: 9),
                               child: Container(
+                                height: 80,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20.0),
                                   color: Color(0xFFF0F6FF),
@@ -1099,49 +1286,54 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                                     ),
                                   ],
                                 ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(10.0),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
-                                                Text(
-                                                  'ج م',
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    color: Color(0xFF7C90AB),
-                                                    fontSize: 21.55,
-                                                    fontFamily: 'Cairo',
-                                                    fontWeight: FontWeight.w700,
-                                                    height: 0,
-                                                    letterSpacing: -0.43,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  '${matchedplaygroundAllData[0].bookTypes![0].cost}',
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    color: Color(0xFF7C90AB),
-                                                    fontSize: 21.55,
-                                                    fontFamily: 'Cairo',
-                                                    fontWeight: FontWeight.w700,
-                                                    height: 0,
-                                                    letterSpacing: -0.43,
-                                                  ),
+                                                Row(
+                                                  children: [
+                                                    Text(
+                                                      'ج م   ',
+                                                      textAlign: TextAlign.center,
+                                                      style: TextStyle(
+                                                        color: Color(0xFF7C90AB),
+                                                        fontSize: 21.55,
+                                                        fontFamily: 'Cairo',
+                                                        fontWeight: FontWeight.w700,
+                                                        height: 0,
+                                                        letterSpacing: -0.43,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                     " ${toArabicNumerals(matchedplaygroundAllData[0].bookTypes![0].cost!,0)}",
+                                                      // '${matchedplaygroundAllData[0].bookTypes![0].cost} ',
+                                                      textAlign: TextAlign.center,
+                                                      style: TextStyle(
+                                                        color: Color(0xFF7C90AB),
+                                                        fontSize: 21.55,
+                                                        fontFamily: 'Cairo',
+                                                        fontWeight: FontWeight.w700,
+                                                        height: 0,
+                                                        letterSpacing: -0.43,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                                 Padding(
-                                                  padding: const EdgeInsets.only(right: 8, left: 8, top: 5),
+                                                  padding: const EdgeInsets.only(right: 8, left: 8),
                                                   child: Row(
                                                     mainAxisAlignment: MainAxisAlignment.start,
                                                     children: [
                                                       Text(
-                                                        matchedPlaygrounds[index].dateofBooking ?? " ",
-                                                        textAlign: TextAlign.center,
+                                                        matchedPlaygrounds[index].dateofBooking!??"",
+                                                         textAlign: TextAlign.center,
                                                         style: TextStyle(
                                                           color: Color(0xFF324054),
                                                           fontSize: 16,
@@ -1156,7 +1348,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                                                         matchedPlaygrounds[index].Day_of_booking ?? " ",
                                                         textAlign: TextAlign.center,
                                                         style: TextStyle(
-                                                          color: Color(0xFF324054),
+                                                          color: Color(0xFF334154),
                                                           fontSize: 16,
                                                           fontFamily: 'Cairo',
                                                           fontWeight: FontWeight.w700,
@@ -1188,7 +1380,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                                                   ),
                                                 ),
                                                 Padding(
-                                                  padding: const EdgeInsets.only(right: 14.0),
+                                                  padding: const EdgeInsets.only(right: 14.0,bottom: 10),
                                                   child: RichText(
                                                     text: TextSpan(
                                                       style: TextStyle(
@@ -1203,7 +1395,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
 
                                                         for (var i = 0; i < matchedPlaygrounds[index].selectedTimes!.length; i++)
                                                           TextSpan(
-                                                            text: getTimeRange(matchedPlaygrounds[index].selectedTimes![i]) + '\n', // Add formatted time range
+                                                            text: getTimeRange(matchedPlaygrounds[index].selectedTimes![0]) , // Add formatted time range
                                                           ),
                                                       ],
                                                     ),
@@ -1214,8 +1406,8 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
                                           ],
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),

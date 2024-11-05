@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../Controller/NavigationController.dart';
 import '../Favourite/Favourite_page.dart';
 import '../Home/HomePage.dart';
@@ -32,8 +32,16 @@ class My_groupState extends State<My_group> {
   late List<User1> user1 = [];
   List<GroupModel2> stordataofgroup = [];
   User? user = FirebaseAuth.instance.currentUser;
-
+  bool _isConnected = true; // Default to true assuming there's internet at start
   bool isLoading = true;
+  Future<void> _checkInternetConnection() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() {
+        _isConnected = false;
+      });
+    }
+  }
 
   Future<void> getUserGroup(String phoneNumber) async {
     try {
@@ -162,7 +170,10 @@ class My_groupState extends State<My_group> {
 
   @override
   void initState() {
+    _checkInternetConnection();
+
     super.initState();
+
     _loadUserData();
     // Now you can access the user1 list
     // print('User data44444: ${user1[0].name}');
@@ -232,15 +243,18 @@ class My_groupState extends State<My_group> {
         ),
       ),
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
+      body: _isConnected?SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             isLoading
                 ? Center(
-                    child: CircularProgressIndicator(
-                    color: Colors.green,
-                  ))
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(
+                      color: Colors.green,
+                                        ),
+                    ))
                 : stordataofgroup.isNotEmpty
                     ? Padding(
                         padding: const EdgeInsets.only(
@@ -343,10 +357,13 @@ class My_groupState extends State<My_group> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
 
-                                    Image.asset(
-                                      "assets/images/Group4.png",
-                                    width: 200,
-                                    height: 200,
+                                    Opacity(
+                                      opacity: 0.5,
+                                      child: Image.asset(
+                                        "assets/images/Group4.png",
+                                      width: 200,
+                                      height: 200,
+                                      ),
                                     ),
                                       Text(
                                         'لم يتم أضافتك فى مجموعة حتى الأن',
@@ -367,7 +384,7 @@ class My_groupState extends State<My_group> {
             ,
           ],
         ),
-      ),
+      ):_buildNoInternetUI(),
 
       bottomNavigationBar: CurvedNavigationBar(
         height: 60,
@@ -420,6 +437,41 @@ class My_groupState extends State<My_group> {
         },
       ),
       // ),
+    );
+  }
+  Widget _buildNoInternetUI() {
+    // Your UI design when there's no internet connection
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          SizedBox(
+            height: 200,
+          ),
+          Center(
+            child: Container(
+              height: 200,
+              child: Image.asset(
+                'assets/images/nointernetconnection.png',
+                // Adjust the height as needed
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Text(
+            "لا يوجد اتصال بالانترنت".tr,
+            style: TextStyle(
+              fontSize: 14,
+              fontFamily: 'Cairo',
+              fontWeight: FontWeight.w400,
+              color: Colors.black,
+            ),
+          ),
+
+        ],
+      ),
     );
   }
 }

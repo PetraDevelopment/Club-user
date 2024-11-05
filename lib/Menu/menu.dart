@@ -331,20 +331,26 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                         mainAxisAlignment: MainAxisAlignment.start, // Aligns the content to the right
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          user1.isNotEmpty && user1[0].img!=null &&user1[0].img!=""? ClipOval(
-                            child: Image(image:  NetworkImage(
-                              user1[0].img!,
+                          user1.isNotEmpty && user1[0].img!=null &&user1[0].img!=""? Padding(
+                            padding: const EdgeInsets.only(right: 8.0,left: 8.0),
+                            child: ClipOval(
+                              child: Image(image:  NetworkImage(
+                                user1[0].img!,
 
-                              // Adjust size as needed
-                            ),    width: 63,
-                              height: 63,
-                              fit: BoxFit.fitWidth,),
+                                // Adjust size as needed
+                              ),    width: 63,
+                                height: 63,
+                                fit: BoxFit.fitWidth,),
+                            ),
                           ):
-                          Image.asset(
-                            "assets/images/profile.png",
-                            width: 60,
-                            height: 50,
-                            // Adjust size as needed
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0,left: 8.0),
+                            child: Image.asset(
+                              "assets/images/profile.png",
+                              width: 60,
+                              height: 50,
+                              // Adjust size as needed
+                            ),
                           ),
                           SizedBox(width: 10), // Adds space between the text and the image
 

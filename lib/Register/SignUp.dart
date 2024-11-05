@@ -286,22 +286,22 @@ class SignUpPageState extends State<SignUpPage>
       });
     }
   }
-  Future<void> uploadImagesAndSaveUrls() async {
-    File? image = await pickImageFromGallery();
-    if (image == null) return;
-
-    setState(() {
-      selectedImages = image; // Update the selected image
-      // img_profile = image.path.toString(); // Update the img_profile variable
-    });
-
-    String downloadUrl = await _uploadImage(image);
-    print("downloadUrl$downloadUrl");
-    img_profile = downloadUrl;
-    setState(() {
-
-    });
-  }
+  // Future<void> uploadImagesAndSaveUrls() async {
+  //   File? image = await pickImageFromGallery();
+  //   if (image == null) return;
+  //
+  //   setState(() {
+  //     selectedImages = image; // Update the selected image
+  //     // img_profile = image.path.toString(); // Update the img_profile variable
+  //   });
+  //
+  //   String downloadUrl = await _uploadImage(image);
+  //   print("downloadUrl$downloadUrl");
+  //   img_profile = downloadUrl;
+  //   setState(() {
+  //
+  //   });
+  // }
 
   Future<File?> pickImageFromGallery() async {
     final XFile? image =
@@ -309,19 +309,50 @@ class SignUpPageState extends State<SignUpPage>
     return image != null ? File(image.path) : null;
   }
 
-  Future<String> _uploadImage(File image) async {
-    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-    Reference storageRef =
-    FirebaseStorage.instance.ref().child('Users/$fileName');
-    await storageRef.putFile(image);
-    String downloadUrl = await storageRef.getDownloadURL();
-    img_profile = downloadUrl;
-setState(() {
+//   Future<String> _uploadImage(File image) async {
+//     String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+//     Reference storageRef =
+//     FirebaseStorage.instance.ref().child('Users/$fileName');
+//     await storageRef.putFile(image);
+//     String downloadUrl = await storageRef.getDownloadURL();
+//     img_profile = downloadUrl;
+// setState(() {
+//
+// });
+//     return downloadUrl;
+//   }
+  Future<void> uploadImagesAndSaveUrls() async {
+    File? image = await pickImageFromGallery();
 
-});
-    return downloadUrl;
+    if (image == null) return; // If no image is selected, exit the function
+
+    // Show loading indicator while the image is uploading
+    setState(() {
+      selectedImages = image;
+      img_profile = ""; // Temporarily clear img_profile until the new URL is fetched
+    });
+
+    try {
+      String downloadUrl = await _uploadImage(image);
+      setState(() {
+        img_profile = downloadUrl; // Update the profile image URL after successful upload
+      });
+      print("Image uploaded successfully: $downloadUrl");
+    } catch (e) {
+      print("Failed to upload image: $e");
+      // Optionally, show an error message to the user
+    }
   }
 
+  Future<String> _uploadImage(File image) async {
+    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+    Reference storageRef = FirebaseStorage.instance.ref().child('Users/$fileName');
+
+    await storageRef.putFile(image);
+    String downloadUrl = await storageRef.getDownloadURL();
+
+    return downloadUrl;
+  }
 
   @override
   void initState() {

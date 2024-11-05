@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -39,6 +40,7 @@ class HomePageState extends State<HomePage> {
   User? user = FirebaseAuth.instance.currentUser;
   bool _isLoading = true; // flag to control shimmer effect
   String start="";
+  bool _isConnected = true; // Default to true assuming there's internet at start
   String end ="";
   Future<void> _loadData() async {
 
@@ -77,10 +79,10 @@ class HomePageState extends State<HomePage> {
       print("localitystring$locality");
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString('locationValue','$locality');
-   String? loctionval=   prefs.getString('locationValue',);
+      String? loctionval=   prefs.getString('locationValue',);
       getNearbystadiums(loctionval!);
-   print("loctionval$loctionval");
-print("country${place.country.toString()}");
+      print("loctionval$loctionval");
+      print("country${place.country.toString()}");
       return "${place.street},${place.locality},${place.country},${place.administrativeArea}";
     } catch (e) {
       return "Unknown Location";
@@ -109,8 +111,9 @@ print("country${place.country.toString()}");
   @override
   void initState() {
     super.initState();
-    requestLocationPermission();
+    _checkInternetConnection();
 
+    requestLocationPermission();
     getPlaygroundbyname();
     getfourplaygroundsbytype();
     _loadData();
@@ -146,75 +149,102 @@ print("country${place.country.toString()}");
     }
   }
   late List<AddbookingModel> playgroundbook = [];
+  Future<void> _checkInternetConnection() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() {
+        _isConnected = false;
+      });
+    }
+  }
 
   Future<void> fetchBookingData() async {
-    try {
-      CollectionReference bookingCollection = FirebaseFirestore.instance.collection("booking");
 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? phoneValue = prefs.getString('phonev');
-      print("newphoneValue${phoneValue.toString()}");
+      try {
 
-      if (phoneValue != null && phoneValue.isNotEmpty) {
-        String normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
-        QuerySnapshot querySnapshot = await bookingCollection.where('phoneCommunication', isEqualTo: normalizedPhoneNumber).get();
+        CollectionReference bookingCollection = FirebaseFirestore.instance.collection("booking");
 
-        if (querySnapshot.docs.isNotEmpty) {
-          List<AddbookingModel> bookings = querySnapshot.docs.map((doc) {
-            Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // Explicit casting
-            return AddbookingModel.fromMap(data);
-          }).toList();
-          // Update the playgroundbook list with fetched bookings
-          playgroundbook = bookings;
-          // Print and access specific fields for each booking
-          for (int g=0;g<playgroundbook.length;g++){
-            convertmonthtonumber(playgroundbook[g].dateofBooking,g);
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String? phoneValue = prefs.getString('phonev');
+        print("newphoneValue${phoneValue.toString()}");
 
-            print('AdminId: ${playgroundbook[g].AdminId}');
-            print('Day_of_booking: ${playgroundbook[g].Day_of_booking}');
-            print('Name: ${playgroundbook[g].Name}');
-            print('Rent_the_ball: ${playgroundbook[g].rentTheBall}');
-            print('phoneshoka: ${playgroundbook[g].phoneCommunication}');
+        if (phoneValue != null && phoneValue.isNotEmpty) {
+          String normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
 
+          QuerySnapshot querySnapshot = await bookingCollection.get();
+
+          playgroundbook = []; // Initialize as an empty list
+
+          for (var doc in querySnapshot.docs) {
+            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+            var userDataList = data['AlluserData']?['UserData'] as List?;
+
+            if (userDataList != null) {
+              for (var userData in userDataList) {
+                if (userData['UserPhone'] == normalizedPhoneNumber) {
+                  AddbookingModel booking = AddbookingModel.fromMap(data);
+                  playgroundbook.add(booking); // Add each booking to the list
+                  break;
+                }
+              }
+            }
           }
 
+          if (playgroundbook.isNotEmpty) {
+            // Print and access specific fields for each booking
+            for (int i = 0; i < playgroundbook.length; i++) {
+              // formatDate(playgroundbook[i].dateofBooking!);
 
-        }
-        else {
-          print('No documents found in the "booking" collection.');
-        }
-      }
-      else if (user?.phoneNumber != null) {
-        String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
-        QuerySnapshot querySnapshot = await bookingCollection.where('phoneCommunication', isEqualTo: normalizedPhoneNumber).get();
+              print('AdminId: ${playgroundbook[i].AdminId}');
+              print('Day_of_booking: ${playgroundbook[i].Day_of_booking}');
+              print('Name: ${playgroundbook[i].Name}');
+              print('Rent_the_ball: ${playgroundbook[i].rentTheBall}');
+              print('phoneshoka: ${playgroundbook[i].AllUserData![0].UserPhone!}');
+            }
+          } else {
+            print('No matching bookings found for the phone number.');
+          }
+        } else if (user?.phoneNumber != null) {
+          String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
+          QuerySnapshot querySnapshot = await bookingCollection.get();
 
-        if (querySnapshot.docs.isNotEmpty) {
-          List<AddbookingModel> bookings = querySnapshot.docs.map((doc) {
-            Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // Explicit casting
-            return AddbookingModel.fromMap(data);
-          }).toList();
-          // Update the playgroundbook list with fetched bookings
-          playgroundbook = bookings;
-          // Print and access specific fields for each booking
-          for(int r=0;r<playgroundbook.length;r++) {
-            print('AdminId: ${playgroundbook[r].AdminId}');
-            convertmonthtonumber(playgroundbook[r].dateofBooking,r);
-            print('Day_of_booking: ${playgroundbook[r].Day_of_booking}');
-            print('Name: ${playgroundbook[r].Name}');
-            print('Rent_the_ball: ${playgroundbook[r].rentTheBall}');
-            print('phoneshoka: ${playgroundbook[r].phoneCommunication}');
-            getPlaygroundbynameE(playgroundbook[r].groundID!);
-            // Access other fields as needed
+          playgroundbook = []; // Initialize as an empty list
+
+          for (var doc in querySnapshot.docs) {
+            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+            var userDataList = data['AlluserData']?['UserData'] as List?;
+
+            if (userDataList != null) {
+              for (var userData in userDataList) {
+                if (userData['UserPhone'] == normalizedPhoneNumber) {
+                  AddbookingModel booking = AddbookingModel.fromMap(data);
+                  playgroundbook.add(booking); // Add each booking to the list
+                  break;
+                }
+              }
+            }
           }
 
-        }
-        else {
-          print('No documents found in the "booking" collection.');
+          if (playgroundbook.isNotEmpty) {
+            // Print and access specific fields for each booking
+            for (int i = 0; i < playgroundbook.length; i++) {
+              print('AdminId: ${playgroundbook[i].AdminId}');
+              // formatDate(playgroundbook[i].dateofBooking!);
+              print('Day_of_booking: ${playgroundbook[i].Day_of_booking}');
+              print('Name: ${playgroundbook[i].Name}');
+              print('Rent_the_ball: ${playgroundbook[i].rentTheBall}');
+              print('phoneshoka: ${playgroundbook[i].AllUserData![0].UserPhone!}');
+              getPlaygroundbynameE(playgroundbook[i].NeededGroundData![0].GroundId!);
+            }
+          } else {
+            print('No matching bookings found for the user’s phone number.');
+          }
         }
       }
-    } catch (e) {
-      print('Error fetching booking data: $e');
-    }
+      catch (e) {
+        print('Error fetching booking data: $e');
+      }
+
   }
   late List<AddPlayGroundModel> playgroundAllData = [];
   late List<AddPlayGroundModel> basket = [];
@@ -236,7 +266,7 @@ print("country${place.country.toString()}");
       return NumberFormat('en').format(
           int.parse(match.group(0)!)); // Ensure numbers are in English
     });
-print("formattedStartTime$formattedStartTime");
+    print("formattedStartTime$formattedStartTime");
     String formattedEndTime = DateFormat('h:mm a', 'ar')
         .format(end)
         .replaceAllMapped(RegExp(r'\d+'), (match) {
@@ -340,67 +370,67 @@ print("formattedStartTime$formattedStartTime");
           Map<String, dynamic> userData =
           document.data() as Map<String, dynamic>;
           AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
-if(user.location!.isNotEmpty&&user.location!.contains(city)){
-  print("yes, there are some of playgrounds in this city");
-  Nearbystadiums.add(user);
+          if(user.location!.isNotEmpty&&user.location!.contains(city)){
+            print("yes, there are some of playgrounds in this city");
+            Nearbystadiums.add(user);
 
-  for(int i=0;i<Nearbystadiums.length;i++){
-    print("neeeeeeeear${Nearbystadiums[i].location}");
+            for(int i=0;i<Nearbystadiums.length;i++){
+              print("neeeeeeeear${Nearbystadiums[i].location}");
 
-  }
-  String?  bookType = Nearbystadiums[0].bookTypes![0].time;
-  // Assuming 'time' is the field you want to split into start and end time
-  String timeofAddedPlayground = bookType ?? '';
-  print("timeofAddedPlayground: $timeofAddedPlayground");
+            }
+            String?  bookType = Nearbystadiums[0].bookTypes![0].time;
+            // Assuming 'time' is the field you want to split into start and end time
+            String timeofAddedPlayground = bookType ?? '';
+            print("timeofAddedPlayground: $timeofAddedPlayground");
 
-  // Splitting time into startTime and endTime based on '-'
-  List<String> times = timeofAddedPlayground.split(' - ');
-  if (times.length == 2) {
-    String startTime = times[0];
-    String endTime = times[1];
-    for(int i=0;i<Nearbystadiums.length;i++){
-      print("locattttion${Nearbystadiums[i].location}");
+            // Splitting time into startTime and endTime based on '-'
+            List<String> times = timeofAddedPlayground.split(' - ');
+            if (times.length == 2) {
+              String startTime = times[0];
+              String endTime = times[1];
+              for(int i=0;i<Nearbystadiums.length;i++){
+                print("locattttion${Nearbystadiums[i].location}");
 
-    }
-    start=startTime;
-    print("Start Time: $startTime");
-    end=endTime;
-    print("End Time: $endTime");
-    String adminId = userData['AdminId'] ?? ''; // Fetch AdminId directly from userData
-    user.adminId = adminId; // Assuming your model has a property for AdminId
-    print("Admin ID: $adminId");
-    // USerID=adminId;
-    // // You can use these times to update the UI or for other logic
-    // timeSlots.add(startTime); // Add start time to the list
-    // timeSlots.add(endTime);   // Add end time to the list
+              }
+              start=startTime;
+              print("Start Time: $startTime");
+              end=endTime;
+              print("End Time: $endTime");
+              String adminId = userData['AdminId'] ?? ''; // Fetch AdminId directly from userData
+              user.adminId = adminId; // Assuming your model has a property for AdminId
+              print("Admin ID: $adminId");
+              // USerID=adminId;
+              // // You can use these times to update the UI or for other logic
+              // timeSlots.add(startTime); // Add start time to the list
+              // timeSlots.add(endTime);   // Add end time to the list
 
-    // You could directly update your UI here or save this data for later
-    // For example, show the start and end time in the UI
-    setState(() {
-      // Update any UI components with the start and end times
-      // startTimeStr = startTime; // Assuming you have a state variable to store this
-      // endTimeStr = endTime;     // Assuming you have a state variable to store this
-    });
+              // You could directly update your UI here or save this data for later
+              // For example, show the start and end time in the UI
+              setState(() {
+                // Update any UI components with the start and end times
+                // startTimeStr = startTime; // Assuming you have a state variable to store this
+                // endTimeStr = endTime;     // Assuming you have a state variable to store this
+              });
 
-    // print("Time slots: ${timeSlots}");
-  } else {
-    print("Invalid time format: $timeofAddedPlayground");
-  }
-  // }
+              // print("Time slots: ${timeSlots}");
+            } else {
+              print("Invalid time format: $timeofAddedPlayground");
+            }
+            // }
 // الوقت  هو سبب المشكله
-  print(
-      "PlayGroungboook Iiid : ${document.id}"); // Print the latest playground
-  // groundIiid = document.id;
-  // print("Docummmmmmbook$groundIiid");
-  // Normalize playType before comparing
-  String playType = user.playType!.trim();
+            print(
+                "PlayGroungboook Iiid : ${document.id}"); // Print the latest playground
+            // groundIiid = document.id;
+            // print("Docummmmmmbook$groundIiid");
+            // Normalize playType before comparing
+            String playType = user.playType!.trim();
 
 
-  // Store the document ID in the AddPlayGroundModel object
-  user.id = document.id;
-}else{
+            // Store the document ID in the AddPlayGroundModel object
+            user.id = document.id;
+          }else{
 
-}
+          }
 
 
 
@@ -412,40 +442,9 @@ if(user.location!.isNotEmpty&&user.location!.contains(city)){
   }
   String docId='';
   String date='';
-  Future<String> convertmonthtonumber(date,int index) async{
-    List<String>months=[ 'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',];
-    for(int k=0;k<months.length;k++){
-      if(date.contains(months[k])){
-        date=  date.replaceAll(months[k] ,'-${k+1}-');
-        print("updated done with ${date}");
-        playgroundbook[index].dateofBooking=date;
-      }
-    }
-//loop in date to convert every en number to ar
-
-    date = date.replaceAllMapped(RegExp(r'\d'), (match) { const englishToArabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-
-      playgroundbook[index].dateofBooking=englishToArabicNumbers[int.parse(match.group(0)!)];
-      return englishToArabicNumbers[int.parse(match.group(0)!)];
-
-    });
-
-    print(" date in Arabic : $date");
-    playgroundbook[index].dateofBooking = date;
-
-    return date;
-
+  String formatDate(String dateString) {
+    DateTime dateTime = DateFormat('dd MMMM yyyy').parse(dateString);
+    return DateFormat('dd-MM-yyyy','ar').format(dateTime);
   }
   int reversed=0;
   Future<void> getUserByPhone(String phoneNumber) async {
@@ -490,38 +489,101 @@ if(user.location!.isNotEmpty&&user.location!.contains(city)){
   List<Rate_fetched> rat_list = [];
   List<Rate_fetched> rat_list2 = [];
 
-Future<void> deleteCancelByPhoneAndPlaygroundId(String phone, String playgroundId,String selectedTime) async {
+  // Future<void> deleteCancelByPhoneAndPlaygroundId(String phone, String playgroundId,String selectedTime) async {
+  //   final firestore = FirebaseFirestore.instance;
+  //   print("phoneggggg${phone}");
+  //   try {
+  //     // Query to find the document where 'user_phone' matches the provided phone number
+  //     // and 'playgroundId' matches the provided playgroundId
+  //     final querySnapshot = await firestore
+  //         .collection('booking')
+  //         .where('phoneCommunication', isEqualTo: phone)
+  //         .where('groundID', isEqualTo: playgroundId)
+  //         .where('selectedTimes', arrayContains: selectedTime)
+  //         .get();
+  //
+  //     // Check if any documents were found
+  //     if (querySnapshot.docs.isNotEmpty) {
+  //       // Loop through the documents and delete them
+  //       for (var doc in querySnapshot.docs) {
+  //         await firestore.collection('booking').doc(doc.id).delete();
+  //         print('Document X phone $phone, playgroundId $playgroundId, and selectedTime $selectedTime deleted successfully.');
+  //         Navigator.pushReplacement(
+  //           context,
+  //           MaterialPageRoute(builder: (context) => HomePage()),
+  //         );
+  //       }
+  //     } else {
+  //       print('No document found for phone number: $phone and playgroundId: $playgroundId');
+  //     }
+  //   } catch (e) {
+  //     print('Error deleting document: $e');
+  //   }
+  // }
+  Future<void> deleteCancelByPhoneAndPlaygroundId(
+      String normalizedPhoneNumber,
+      String playgroundId,
+      String selectedTime,
+      String bookingDate,
+      )
+  async {
     final firestore = FirebaseFirestore.instance;
-    print("phoneggggg${phone}");
+    bool documentDeleted = false;
+print("phoneee$normalizedPhoneNumber");
     try {
-      // Query to find the document where 'user_phone' matches the provided phone number
-      // and 'playgroundId' matches the provided playgroundId
-      final querySnapshot = await firestore
-          .collection('booking')
-          .where('phoneCommunication', isEqualTo: phone)
-          .where('groundID', isEqualTo: playgroundId)
-          .where('selectedTimes', arrayContains: selectedTime)
-          .get();
+      // Get all documents from the booking collection
+      QuerySnapshot querySnapshot = await firestore.collection('booking').get();
 
-      // Check if any documents were found
-      if (querySnapshot.docs.isNotEmpty) {
-        // Loop through the documents and delete them
-        for (var doc in querySnapshot.docs) {
-          await firestore.collection('booking').doc(doc.id).delete();
-          print('Document X phone $phone, playgroundId $playgroundId, and selectedTime $selectedTime deleted successfully.');
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomePage()),
+      for (var doc in querySnapshot.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+        // Retrieve user data list
+        var userDataList = data['AlluserData']?['UserData'] as List?;
+        var groundDataList = data['NeededGroundData']?['GroundData'] as List?;
+
+        // Debugging output
+        print('User  Data List: $userDataList');
+        print('Ground Data List: $groundDataList');
+        print('Document dateofBooking: ${data['dateofBooking']}');
+        print('Document selectedTimes: ${data['selectedTimes']}');
+
+        // Check if userDataList is not null
+        if (userDataList != null) {
+          bool userMatch = userDataList.any((userData) =>
+          userData['UserPhone'] == normalizedPhoneNumber
           );
+
+          // Check if document-level dateofBooking and selectedTimes match
+          if (userMatch &&
+              data['dateofBooking'] == bookingDate &&
+              (data['selectedTimes'] as List).contains(selectedTime)) {
+            // All conditions are met, delete the document
+            await firestore.collection('booking').doc(doc.id).delete();
+            print(
+                'Document with phone $normalizedPhoneNumber, playgroundId $playgroundId, and selectedTime $selectedTime deleted successfully.');
+            // await firestore.collection('booking').doc(doc.id).delete();
+            print('Document with phone: $normalizedPhoneNumber, playgroundId: $playgroundId, date: $bookingDate, and selectedTime: $selectedTime deleted successfully.');
+            documentDeleted = true;
+
+            // Navigate to HomePage after successful deletion
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomePage()),
+            );
+            return; // Exit the function after deletion
+          }
         }
-      } else {
-        print('No document found for phone number: $phone and playgroundId: $playgroundId');
       }
-    } catch (e) {
+
+      if (!documentDeleted) {
+        print('No document found matching the specified phone, playgroundId, date, and selectedTime.');
+      }
+
+    }
+    catch (e) {
       print('Error deleting document: $e');
     }
   }
-
 
   Future<void> fetchRatings(String id) async {
     try {
@@ -563,14 +625,14 @@ Future<void> deleteCancelByPhoneAndPlaygroundId(String phone, String playgroundI
         rat_list2 = idToHighestRatingMap.values.toList();
         if (rat_list2.length < 5) {
           var uniqueRatings = rat_list.where((rating) => !idToHighestRatingMap.containsKey(rating.playgroundIdstars!));
-        for(int k=0;k<uniqueRatings.length;k++){
-          if(rat_list2.contains(rat_list[k].playgroundIdstars)){
+          for(int k=0;k<uniqueRatings.length;k++){
+            if(rat_list2.contains(rat_list[k].playgroundIdstars)){
 
-          }else{
-            rat_list2.addAll(uniqueRatings.take(5 -rat_list2.length ));
-            print("erooooooooooooooooooooooooooooooooooooooooooooo${rat_list2.length}");
+            }else{
+              rat_list2.addAll(uniqueRatings.take(5 -rat_list2.length ));
+              print("erooooooooooooooooooooooooooooooooooooooooooooo${rat_list2.length}");
+            }
           }
-        }
 
 
         }
@@ -594,7 +656,7 @@ Future<void> deleteCancelByPhoneAndPlaygroundId(String phone, String playgroundI
     String convertedNumber = numberString.replaceAllMapped(RegExp(r'\d'), (match) {
       return englishToArabicNumbers[int.parse(match.group(0)!)];
     });
-print("kkkkkkk$convertedNumber");
+    print("kkkkkkk$convertedNumber");
     // If you want to assign the converted number back to the cost
     // playgroundAllData[i].bookTypes![0].cost = convertedNumber; // Assuming cost is a String
 
@@ -607,13 +669,14 @@ print("kkkkkkk$convertedNumber");
   final Searchcontrol = TextEditingController();
   late List<AddPlayGroundModel> allplaygrounds = [];
   int _currentIndex = 3;
+  int countnumoffourplaygrounds = 0;
+
   final PageController _pageController = PageController();
-  Future<void>getfourplaygroundsbytype() async {
+  List<String> missingTypes = [];
+
+  Future<void> getfourplaygroundsbytype() async {
     try {
-
-      CollectionReference playerchat =
-      FirebaseFirestore.instance.collection("AddPlayground");
-
+      CollectionReference playerchat = FirebaseFirestore.instance.collection("AddPlayground");
       QuerySnapshot querySnapshot = await playerchat.get();
 
       if (querySnapshot.docs.isNotEmpty) {
@@ -622,126 +685,191 @@ print("kkkkkkk$convertedNumber");
           AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
 
           allplaygrounds.add(user);
-for(int m=0;m<allplaygrounds.length;m++) {
-  print("kkkkkkkkshok${allplaygrounds[m]}");
-  print("dddddddddddddddddddddd${allplaygrounds[m].id}");
 
+          // Add playground to appropriate category
+          if (user.playType == "كرة تنس" && teniss.isEmpty) {
+            teniss.add(user);
+          } else if (user.playType == "كرة سلة" && basket.isEmpty) {
+            basket.add(user);
+          } else if (user.playType == "كرة قدم" && footbal.isEmpty) {
+            footbal.add(user);
+          } else if (user.playType == "كرة طائرة" && volly.isEmpty) {
+            volly.add(user);
+          }
 
-
-
-
-}
-            if (user.playType == "كرة تنس"&&teniss.isEmpty) {
-              teniss.add(user);
-              print("tenisssssss$teniss");
-            }
-            else{
-              print("teniss.length${teniss.length}");
-            }
-            if (user.playType == "كرة سلة"&&basket.isEmpty) {
-              basket.add(user);
-
-
-
-              print("basket$basket");
-
-            }
-            else{
-              print("basket.length${basket.length}");
-            }
-            if (user.playType == "كرة قدم"&&footbal.isEmpty) {
-              footbal.add(user);
-              print("footbal$footbal");
-
-
-            }
-            else{
-              print("footbal.length${footbal.length}");
-
-            }
-            if (user.playType == "كرة طائرة"&&volly.isEmpty) {
-              volly.add(user);
-              print("volly$volly");
-
-
-            }else{
-              print("volly.length${volly.length}");
-
-            }
-            if(footbal.isNotEmpty&&footbal.length==1)
-              {
-
-                print("objectfootbal.first${footbal.first}");
-              }
-
-
-
-          print("PlayGroung Id : ${document.id}"); // Print the latest playground
-
-          print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
-// Store the document ID in the AddPlayGroundModel object
-          // user.id = document.id;
-          user.id = document.id;
-          print("Docummmmmm${user.id}");
-          // Store the document ID in the AddPlayGroundModel object
-          // idddddd1 = document.id;
-          // idddddd2=document.id;
-          // print("Docummmmmm$idddddd1    gggg$idddddd2");
+          user.id = document.id; // Store document ID
         }
 
         loadfourtype();
+
+        // Update missingTypes list with any empty types
+        updateMissingTypes();
       }
     } catch (e) {
       print("Error getting playground: $e");
     }
   }
-  void loadfourtype(){
 
-      fourtypes.add(teniss[0]);
-      fourtypes.add(basket[0]);
-      fourtypes.add(volly[0]);
-      fourtypes.add(footbal[0]);
+  void loadfourtype() {
+    if (teniss.isNotEmpty) fourtypes.add(teniss[0]);
+    if (basket.isNotEmpty) fourtypes.add(basket[0]);
+    if (volly.isNotEmpty) fourtypes.add(volly[0]);
+    if (footbal.isNotEmpty) fourtypes.add(footbal[0]);
 
-    print("shokaaaaaaa${fourtypes.length}");
+    print("shokaaaaaaaf${fourtypes.length}");
   }
+
+  void updateMissingTypes() {
+    missingTypes.clear();
+
+    if (teniss.isEmpty) missingTypes.add("كرة تنس");
+    if (basket.isEmpty) missingTypes.add("كرة سلة");
+    if (footbal.isEmpty) missingTypes.add("كرة قدم");
+    if (volly.isEmpty) missingTypes.add("كرة طائرة");
+
+    setState(() {}); // Update the UI to show the missing types
+  }
+
+
+
+//   Future<void>getfourplaygroundsbytype() async {
+//     try {
+//
+//       CollectionReference playerchat =
+//       FirebaseFirestore.instance.collection("AddPlayground");
+//
+//       QuerySnapshot querySnapshot = await playerchat.get();
+//
+//       if (querySnapshot.docs.isNotEmpty) {
+//         for (QueryDocumentSnapshot document in querySnapshot.docs) {
+//           Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
+//           AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
+//
+//           allplaygrounds.add(user);
+//           for(int m=0;m<allplaygrounds.length;m++) {
+//             print("kkkkkkkkshok${allplaygrounds[m]}");
+//             print("dddddddddddddddddddddd${allplaygrounds[m].id}");
+//
+//
+//
+//
+//
+//           }
+//           if (user.playType == "كرة تنس"&&teniss.isEmpty) {
+//             teniss.add(user);
+//             print("tenisssssss$teniss");
+//           }
+//           else{
+//             print("teniss.length${teniss.length}");
+//           }
+//           if (user.playType == "كرة سلة"&&basket.isEmpty) {
+//             basket.add(user);
+//
+//
+//
+//             print("basket$basket");
+//
+//           }
+//           else{
+//             print("basket.length${basket.length}");
+//           }
+//           if (user.playType == "كرة قدم"&&footbal.isEmpty) {
+//             footbal.add(user);
+//             print("footbal$footbal");
+//
+//
+//           }
+//           else{
+//             print("footbal.length${footbal.length}");
+//
+//           }
+//           if (user.playType == "كرة طائرة"&&volly.isEmpty) {
+//             volly.add(user);
+//             print("volly$volly");
+//
+//
+//           }else{
+//             print("volly.length${volly.length}");
+//
+//           }
+//           if(footbal.isNotEmpty&&footbal.length==1)
+//           {
+//
+//             print("objectfootbal.first${footbal.first}");
+//           }
+//
+//
+//
+//           print("PlayGroung Id : ${document.id}"); // Print the latest playground
+//
+//           print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
+// // Store the document ID in the AddPlayGroundModel object
+//           // user.id = document.id;
+//           user.id = document.id;
+//           print("Docummmmmm${user.id}");
+//           // Store the document ID in the AddPlayGroundModel object
+//           // idddddd1 = document.id;
+//           // idddddd2=document.id;
+//           // print("Docummmmmm$idddddd1    gggg$idddddd2");
+//         }
+//
+//         loadfourtype();
+//       }
+//     } catch (e) {
+//       print("Error getting playground: $e");
+//     }
+//   }
+//   void loadfourtype(){
+//
+//     fourtypes.add(teniss[0]);
+//     fourtypes.add(basket[0]);
+//     fourtypes.add(volly[0]);
+//     fourtypes.add(footbal[0]);
+//
+//     print("shokaaaaaaa${fourtypes.length}");
+//   }
   Future<void> getPlaygroundbyname() async {
-    try {
-      CollectionReference playerchat =
-      FirebaseFirestore.instance.collection("AddPlayground");
 
-      QuerySnapshot querySnapshot = await playerchat.get();
 
-      if (querySnapshot.docs.isNotEmpty) {
-        for (QueryDocumentSnapshot document in querySnapshot.docs) {
-          Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
-          AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
+      try {
 
-          allplaygrounds.add(user);
-          print("PlayGroung Id shoka: ${document.id}"); // Print the latest playground
+        CollectionReference playerchat =
+        FirebaseFirestore.instance.collection("AddPlayground");
 
-          print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
+        QuerySnapshot querySnapshot = await playerchat.get();
+
+        if (querySnapshot.docs.isNotEmpty) {
+          for (QueryDocumentSnapshot document in querySnapshot.docs) {
+            Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
+            AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
+
+            allplaygrounds.add(user);
+            print("PlayGroung Id shoka: ${document.id}"); // Print the latest playground
+
+            print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
 // Store the document ID in the AddPlayGroundModel object
-          // user.id = document.id;
-          user.id = document.id;
-          print("Docummmmmm${user.id}");
-          for(int m=0;m<allplaygrounds.length;m++){
-            print("kkkkkkkkshok${allplaygrounds[m]}");
-            print("shimaaaaaaaplaygroundiddddd${allplaygrounds[m].id}");
+            // user.id = document.id;
+            user.id = document.id;
+            print("Docummmmmm${user.id}");
+            for(int m=0;m<allplaygrounds.length;m++){
+              print("kkkkkkkkshok${allplaygrounds[m]}");
+              print("shimaaaaaaaplaygroundiddddd${allplaygrounds[m].id}");
 
-            fetchRatings(allplaygrounds[m].id!);
+              fetchRatings(allplaygrounds[m].id!);
 
+            }
+
+            // Store the document ID in the AddPlayGroundModel object
+            // idddddd1 = document.id;
+            // idddddd2=document.id;
+            // print("Docummmmmm$idddddd1    gggg$idddddd2");
           }
-
-          // Store the document ID in the AddPlayGroundModel object
-          // idddddd1 = document.id;
-          // idddddd2=document.id;
-          // print("Docummmmmm$idddddd1    gggg$idddddd2");
         }
+      } catch (e) {
+        print("Error getting playground: $e");
       }
-    } catch (e) {
-      print("Error getting playground: $e");
     }
-  }
+
   final NavigationController navigationController = Get.put(NavigationController());
   double opacity = 1.0;
 // Function to update the cancel count
@@ -781,7 +909,7 @@ for(int m=0;m<allplaygrounds.length;m++) {
       child: Scaffold(
         backgroundColor: Colors.white,
 
-        body: Padding(
+        body:  _isConnected? Padding(
           padding: const EdgeInsets.only(top: 66.0),
           child: SingleChildScrollView(
             child: Column(
@@ -958,14 +1086,6 @@ for(int m=0;m<allplaygrounds.length;m++) {
                       ),
                       child: Row(
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 10),
-                            child: Image.asset(
-                              'assets/images/search.png',
-                              height: 20,
-                              width: 25,
-                            ),
-                          ),
                           Expanded(
                             child: Padding(
                               padding: const EdgeInsets.only(right: 20, top: 7, bottom: 7),
@@ -988,6 +1108,15 @@ for(int m=0;m<allplaygrounds.length;m++) {
                               ),
                             ),
                           ),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 10),
+                            child: Image.asset(
+                              'assets/images/search.png',
+                              height: 20,
+                              width: 25,
+                            ),
+                          ),
+
                         ],
                       ),
                     ),
@@ -996,12 +1125,123 @@ for(int m=0;m<allplaygrounds.length;m++) {
 
                 SizedBox(height: 10,),
 
-                fourtypes.isNotEmpty?   Stack(
+                       fourtypes.isNotEmpty?
+                // Stack(
+                //   children: [
+                //     Padding(
+                //
+                //       padding: const EdgeInsets.only(right: 5,left: 5,bottom: 10),
+                //
+                //       child: CarouselSlider(
+                //         options: CarouselOptions(
+                //           height: 165.0,
+                //           aspectRatio: 16 / 9,
+                //           viewportFraction: 0.7,
+                //           initialPage: 1,
+                //           enableInfiniteScroll: false,
+                //           autoPlay: false,
+                //           enlargeCenterPage: true,
+                //           onPageChanged: (index, reason) {},
+                //           scrollDirection: Axis.horizontal,
+                //           reverse: true, // Reverses the scroll direction
+                //
+                //         ),
+                //         items: [
+                //           for (int i = 0; i < fourtypes.length; i++)
+                //             GestureDetector(
+                //               onTap: (){
+                //                 print("111114${fourtypes[i].id!}");
+                //                 Navigator.push(
+                //                   context,
+                //                   MaterialPageRoute(
+                //                     builder: (context) => PlaygroundName(fourtypes[i].id!),
+                //                   ),
+                //                 );
+                //               },
+                //               child: Padding(
+                //                 padding: EdgeInsets.symmetric(horizontal: 5.0,vertical: 5), // Add space between items
+                //                 child: Stack(
+                //                   children: [
+                //                     Material(
+                //                       elevation: 4, // Elevation of 4
+                //                       borderRadius: BorderRadius.circular(20.0),
+                //                       child: Container(
+                //                         height: 163,
+                //                         width: 274,
+                //                         decoration: BoxDecoration(
+                //                           borderRadius: BorderRadius.circular(20.0),
+                //                           shape: BoxShape.rectangle,
+                //
+                //                         ),
+                //                         child: ClipRRect(
+                //                           borderRadius: BorderRadius.circular(20.0),
+                //                           child: fourtypes[i].img!.isNotEmpty?  Image.network(
+                //                             fourtypes[i].img![0],
+                //                             height: 163,
+                //                             width: 274,
+                //                             fit: BoxFit.cover,)
+                //                               : Image.asset(
+                //                             'assets/images/newwadi.png',
+                //                             height: 163,
+                //                             width: 274,
+                //                             fit: BoxFit.cover,
+                //                           )
+                //                           ,
+                //                         ),
+                //                       ),
+                //                     ),
+                //                     Positioned(
+                //                       top: 6,
+                //                       right: 0,
+                //                       left: 0,
+                //                       bottom: 0,
+                //                       child: Container(
+                //                         decoration: BoxDecoration(
+                //                           gradient: LinearGradient(
+                //                             colors: [
+                //                               Colors.transparent,
+                //                               Color(0x1F8C4B).withOpacity(0.0),
+                //                               Color(0x1F8C4B).withOpacity(1.0),
+                //                             ],
+                //                             begin: Alignment.topCenter,
+                //                             end: Alignment.bottomCenter,
+                //                           ),
+                //                           borderRadius: BorderRadius.only(
+                //                             bottomLeft: Radius.circular(20.0),
+                //                             bottomRight: Radius.circular(20.0),
+                //                           ),
+                //                         ),
+                //                       ),
+                //                     ),
+                //                     Positioned(
+                //                       top: 113,
+                //                       right: 40,
+                //                       left: 55,
+                //                       child: Text(
+                //                         fourtypes[i].playgroundName!, // Updated English text
+                //                         style: TextStyle(
+                //                           fontFamily: 'Cairo',
+                //                           fontSize: 16,
+                //                           fontWeight: FontWeight.w700,
+                //                           color: Colors.white,
+                //                         ),
+                //                         textAlign: TextAlign.center,
+                //                       ),
+                //                     ),
+                //                   ],
+                //                 ),
+                //               ),
+                //             ),
+                //         ],
+                //       ),
+                //     ),
+                //
+                //   ],
+                // )
+                Stack(
                   children: [
                     Padding(
-
-                      padding: const EdgeInsets.only(right: 5,left: 5,bottom: 10),
-
+                      padding: const EdgeInsets.only(right: 5, left: 5, bottom: 10),
                       child: CarouselSlider(
                         options: CarouselOptions(
                           height: 165.0,
@@ -1011,16 +1251,14 @@ for(int m=0;m<allplaygrounds.length;m++) {
                           enableInfiniteScroll: false,
                           autoPlay: false,
                           enlargeCenterPage: true,
-                          onPageChanged: (index, reason) {},
                           scrollDirection: Axis.horizontal,
-                          reverse: true, // Reverses the scroll direction
-
+                          reverse: true,
                         ),
                         items: [
-                          for (int i = 0; i < 4; i++)
+                          for (int i = 0; i < fourtypes.length; i++)
                             GestureDetector(
-                              onTap: (){
-                                print("111114${fourtypes[i].id!}");
+                              onTap: () {
+                                print("Selected playground ID: ${fourtypes[i].id!}");
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -1029,11 +1267,11 @@ for(int m=0;m<allplaygrounds.length;m++) {
                                 );
                               },
                               child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 5.0,vertical: 5), // Add space between items
+                                padding: EdgeInsets.symmetric(horizontal: 5.0, vertical: 5),
                                 child: Stack(
                                   children: [
                                     Material(
-                                      elevation: 4, // Elevation of 4
+                                      elevation: 4,
                                       borderRadius: BorderRadius.circular(20.0),
                                       child: Container(
                                         height: 163,
@@ -1041,22 +1279,22 @@ for(int m=0;m<allplaygrounds.length;m++) {
                                         decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(20.0),
                                           shape: BoxShape.rectangle,
-
                                         ),
                                         child: ClipRRect(
                                           borderRadius: BorderRadius.circular(20.0),
-                                          child: fourtypes[i].img!.isNotEmpty?  Image.network(
+                                          child: fourtypes[i].img!.isNotEmpty
+                                              ? Image.network(
                                             fourtypes[i].img![0],
-                                            height: 163,
-                                            width: 274,
-                                            fit: BoxFit.cover,)
-                                         : Image.asset(
-                                            'assets/images/newwadi.png',
                                             height: 163,
                                             width: 274,
                                             fit: BoxFit.cover,
                                           )
-                                            ,
+                                              : Image.asset(
+                                            'assets/images/newwadi.png',
+                                            height: 163,
+                                            width: 274,
+                                            fit: BoxFit.cover,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -1088,7 +1326,7 @@ for(int m=0;m<allplaygrounds.length;m++) {
                                       right: 40,
                                       left: 55,
                                       child: Text(
-                                        fourtypes[i].playgroundName!, // Updated English text
+                                        fourtypes[i].playgroundName!,
                                         style: TextStyle(
                                           fontFamily: 'Cairo',
                                           fontSize: 16,
@@ -1105,10 +1343,10 @@ for(int m=0;m<allplaygrounds.length;m++) {
                         ],
                       ),
                     ),
-
                   ],
-                ):
-                Center(
+                )
+                    :
+                       allplaygrounds.isEmpty&&fourtypes.isEmpty&&rat_list2.isEmpty &&playgroundbook.isEmpty?   Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -1117,10 +1355,13 @@ for(int m=0;m<allplaygrounds.length;m++) {
                           height: 142.51,
                           width: 142.51,
 
-                          child:  Image.asset(
-                            "assets/images/amico.png",
+                          child:  Opacity(
+                            opacity: 0.5,
+                            child: Image.asset(
+                              "assets/images/amico.png",
 
-                            // Adjust size as needed
+                              // Adjust size as needed
+                            ),
                           ),
                         ),
                       ),
@@ -1136,7 +1377,7 @@ for(int m=0;m<allplaygrounds.length;m++) {
                       ),
                     ],
                   ),
-                ),
+                ):Container(),
                 SizedBox(height: 10,),
                 Padding(
                   padding: const EdgeInsets.only(right: 25,left: 26,top: 10,bottom: 10,),
@@ -1225,7 +1466,7 @@ for(int m=0;m<allplaygrounds.length;m++) {
                                           children: [
                                             Text(
 
-                                              "${playgroundbook[i].dateofBooking!}",
+                                              "${formatDate(playgroundbook[i].dateofBooking!)}",
                                               textAlign: TextAlign.end,
                                               style: TextStyle(
 
@@ -1284,9 +1525,9 @@ for(int m=0;m<allplaygrounds.length;m++) {
                                           ),
                                         ),
                                         Text(
-                                         // " ${playgroundAllData[i].bookTypes![0].cost!}",
+                                          // " ${playgroundAllData[i].bookTypes![0].cost!}",
 
-                                         toArabicNumerals(playgroundAllData[i].bookTypes![0].cost!,i),
+                                          toArabicNumerals(playgroundAllData[i].bookTypes![0].cost!,i),
                                           style: TextStyle(
                                             fontFamily: 'Cairo',
                                             fontSize: 14.0,
@@ -1313,9 +1554,13 @@ for(int m=0;m<allplaygrounds.length;m++) {
                                     children: [
                                       GestureDetector(
                                         onTap: (){
-                                          print("phooonefff${playgroundbook[i].phoneCommunication!}");
-                                          updateCancelCount(playgroundbook[i].phoneCommunication!);
-                                          deleteCancelByPhoneAndPlaygroundId(playgroundbook[i].phoneCommunication!,playgroundbook[i].groundID!,playgroundbook[i].selectedTimes!.first);
+                                          print("phooonefff${playgroundbook[i]
+                                              .AllUserData![0].UserPhone!}");
+                                          updateCancelCount(playgroundbook[i]
+                                              .AllUserData![0].UserPhone!);
+                                          deleteCancelByPhoneAndPlaygroundId(playgroundbook[i]
+                                              .AllUserData![0].UserPhone!,playgroundbook[i]
+                                              .NeededGroundData![0].GroundId!,playgroundbook[i].selectedTimes!.first,playgroundbook[i].dateofBooking!);
 
                                         },
                                         child: Padding(
@@ -1402,13 +1647,16 @@ for(int m=0;m<allplaygrounds.length;m++) {
                   child: Column(
                     children: [
                       Container(
-                  height: 142.51,
+                        height: 142.51,
                         width: 142.51,
 
-                        child:  Image.asset(
-                          "assets/images/amico.png",
+                        child:  Opacity(
+                          opacity: 0.5,
+                          child: Image.asset(
+                            "assets/images/Folder.png",
 
-                          // Adjust size as needed
+                            // Adjust size as needed
+                          ),
                         ),
                       ),
                       SizedBox(height: 2,),
@@ -1437,24 +1685,118 @@ for(int m=0;m<allplaygrounds.length;m++) {
                   ),
                 ),
                 Nearbystadiums.isNotEmpty? SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  reverse: true, // Reverses the scroll direction
+                    scrollDirection: Axis.horizontal,
+                    reverse: true, // Reverses the scroll direction
 
-                  child:Nearbystadiums.isNotEmpty?
-                  Padding(
-                    padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),
+                    child:Nearbystadiums.isNotEmpty?
+                    Padding(
+                      padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),
 
-                    child: Row(
+                      child: Row(
+
+                        children: [
+                          for (var i = 0; i < Nearbystadiums.length; i++)
+                            GestureDetector(
+                              onTap: (){
+                                print("111114${Nearbystadiums[i].id!}");
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PlaygroundName(Nearbystadiums[i].id!),
+                                  ),
+                                );
+                              },
+                              child: Card(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20.0),
+                                ),
+                                elevation: 4, // Adjust elevation to control the shadow
+                                margin: EdgeInsets.all(8), // Adjust margin as needed
+                                child: Stack(
+                                  children: [
+                                    Container(
+                                      height: 163,
+                                      width: 274,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20.0),
+                                        shape: BoxShape.rectangle,
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
+                                        child: Nearbystadiums[i].img!.isNotEmpty?Image.network(
+                                          // Check if img is a list and has at least one image, otherwise use it as a string
+
+                                          Nearbystadiums[i].img![0], // Use the first image in the list (or the only image if it's a single string turned into a list)
+                                          // Fallback to an empty string if no image is available
+                                          height: 163,
+                                          width: 274,
+                                          fit: BoxFit.fill, // Ensure the image covers the container
+                                        ):Image(
+                                          image: AssetImage("assets/images/newground.png"),
+                                          color: Colors.white,
+                                          height: 163,
+                                          width: 274,
+                                          fit: BoxFit.fill,
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 6, // Match the top position of the text
+                                      right: 0,
+                                      left: 0,
+                                      bottom: 0,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Colors.transparent, // Start with transparent
+                                              Color(0x1F8C4B).withOpacity(0.0), // Start with #1F8C4B at 0% opacity (fully transparent)
+                                              Color(0x1F8C4B).withOpacity(1.0), // End with #1F8C4B at 100% opacity (fully opaque)
+                                            ],
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                          ),
+                                          borderRadius: BorderRadius.only(
+                                            bottomLeft: Radius.circular(20.0),
+                                            bottomRight: Radius.circular(20.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 113, // Adjust the top position
+                                      right: 40,
+                                      left: 55,
+                                      child: Text(
+                                        Nearbystadiums[i].playgroundName!,
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                        textAlign: TextAlign.center, // Center text alignment
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    )
+                        :Nearbystadiums.isEmpty&&playgroundAllData.isNotEmpty&&playgroundAllData.length>3?
+                    Row(
 
                       children: [
-                        for (var i = 0; i < Nearbystadiums.length; i++)
+                        for (var i = 0; i < 3; i++)
                           GestureDetector(
                             onTap: (){
-                              print("111114${Nearbystadiums[i].id!}");
+                              print("111114${playgroundAllData[i].id!}");
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => PlaygroundName(Nearbystadiums[i].id!),
+                                  builder: (context) => PlaygroundName(playgroundAllData[i].id!),
                                 ),
                               );
                             },
@@ -1474,22 +1816,22 @@ for(int m=0;m<allplaygrounds.length;m++) {
                                       shape: BoxShape.rectangle,
                                     ),
                                     child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
-                                        child: Nearbystadiums[i].img!.isNotEmpty?Image.network(
-                                          // Check if img is a list and has at least one image, otherwise use it as a string
+                                      borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
+                                      child: playgroundAllData[i].img!.isNotEmpty?Image.network(
+                                        // Check if img is a list and has at least one image, otherwise use it as a string
 
-                                          Nearbystadiums[i].img![0], // Use the first image in the list (or the only image if it's a single string turned into a list)
-                                            // Fallback to an empty string if no image is available
-                                          height: 163,
-                                          width: 274,
-                                          fit: BoxFit.fill, // Ensure the image covers the container
-                                        ):Image(
-                                          image: AssetImage("assets/images/newground.png"),
-                                          color: Colors.white,
-                                          height: 163,
-                                          width: 274,
-                                          fit: BoxFit.fill,
-                                        ),
+                                        playgroundAllData[i].img![0], // Use the first image in the list (or the only image if it's a single string turned into a list)
+                                        // Fallback to an empty string if no image is available
+                                        height: 163,
+                                        width: 274,
+                                        fit: BoxFit.fill, // Ensure the image covers the container
+                                      ):Image(
+                                        image: AssetImage("assets/images/newground.png"),
+                                        color: Colors.white,
+                                        height: 163,
+                                        width: 274,
+                                        fit: BoxFit.fill,
+                                      ),
                                     ),
                                   ),
                                   Positioned(
@@ -1520,7 +1862,7 @@ for(int m=0;m<allplaygrounds.length;m++) {
                                     right: 40,
                                     left: 55,
                                     child: Text(
-                                      Nearbystadiums[i].playgroundName!,
+                                      playgroundAllData[i].playgroundName!,
                                       style: TextStyle(
                                         fontFamily: 'Cairo',
                                         fontSize: 16,
@@ -1535,130 +1877,36 @@ for(int m=0;m<allplaygrounds.length;m++) {
                             ),
                           ),
                       ],
-                    ),
-                  )
-                      :Nearbystadiums.isEmpty&&playgroundAllData.isNotEmpty&&playgroundAllData.length>3?
-                  Row(
+                    ):
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Center(
+                            child: Container(
+                              height: 142.51,
+                              width: 142.51,
 
-                    children: [
-                      for (var i = 0; i < 3; i++)
-                        GestureDetector(
-                          onTap: (){
-                            print("111114${playgroundAllData[i].id!}");
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PlaygroundName(playgroundAllData[i].id!),
+                              child:  Image.asset(
+                                "assets/images/amico.png",
+
+                                // Adjust size as needed
                               ),
-                            );
-                          },
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                            ),
-                            elevation: 4, // Adjust elevation to control the shadow
-                            margin: EdgeInsets.all(8), // Adjust margin as needed
-                            child: Stack(
-                              children: [
-                                Container(
-                                  height: 163,
-                                  width: 274,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20.0),
-                                    shape: BoxShape.rectangle,
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
-                                    child: playgroundAllData[i].img!.isNotEmpty?Image.network(
-                                      // Check if img is a list and has at least one image, otherwise use it as a string
-
-                                      playgroundAllData[i].img![0], // Use the first image in the list (or the only image if it's a single string turned into a list)
-                                      // Fallback to an empty string if no image is available
-                                      height: 163,
-                                      width: 274,
-                                      fit: BoxFit.fill, // Ensure the image covers the container
-                                    ):Image(
-                                      image: AssetImage("assets/images/newground.png"),
-                                      color: Colors.white,
-                                      height: 163,
-                                      width: 274,
-                                      fit: BoxFit.fill,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 6, // Match the top position of the text
-                                  right: 0,
-                                  left: 0,
-                                  bottom: 0,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Colors.transparent, // Start with transparent
-                                          Color(0x1F8C4B).withOpacity(0.0), // Start with #1F8C4B at 0% opacity (fully transparent)
-                                          Color(0x1F8C4B).withOpacity(1.0), // End with #1F8C4B at 100% opacity (fully opaque)
-                                        ],
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                      ),
-                                      borderRadius: BorderRadius.only(
-                                        bottomLeft: Radius.circular(20.0),
-                                        bottomRight: Radius.circular(20.0),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 113, // Adjust the top position
-                                  right: 40,
-                                  left: 55,
-                                  child: Text(
-                                    playgroundAllData[i].playgroundName!,
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
-                                    textAlign: TextAlign.center, // Center text alignment
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
-                        ),
-                    ],
-                  ):
-                  Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Center(
-                          child: Container(
-                            height: 142.51,
-                            width: 142.51,
-
-                            child:  Image.asset(
-                              "assets/images/amico.png",
-
-                              // Adjust size as needed
+                          SizedBox(height: 2,),
+                          Text(
+                            'لم يتم اضافة بيانات يمكن عرضها بعد',
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 14.62,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF181A20),
                             ),
                           ),
-                        ),
-                        SizedBox(height: 2,),
-                        Text(
-                          'لم يتم اضافة بيانات يمكن عرضها بعد',
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 14.62,
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF181A20),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
+                        ],
+                      ),
+                    )
                 ): Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -1668,10 +1916,13 @@ for(int m=0;m<allplaygrounds.length;m++) {
                           height: 142.51,
                           width: 142.51,
 
-                          child:  Image.asset(
-                            "assets/images/amico.png",
+                          child:  Opacity(
+                            opacity: 0.5,
+                            child: Image.asset(
+                              "assets/images/amico.png",
 
-                            // Adjust size as needed
+                              // Adjust size as needed
+                            ),
                           ),
                         ),
                       ),
@@ -1709,7 +1960,7 @@ for(int m=0;m<allplaygrounds.length;m++) {
                     padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),
 
                     child: Row(
-                                            children: [
+                      children: [
                         for (var i = 0; i < rat_list2.length; i++)
                           GestureDetector(
                             onTap: () {
@@ -1796,9 +2047,9 @@ for(int m=0;m<allplaygrounds.length;m++) {
                               ),
                             ),
                           ),
-                                            ],
-                                          ),
-                      ) : Center(
+                      ],
+                    ),
+                  ) : Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -1836,10 +2087,13 @@ for(int m=0;m<allplaygrounds.length;m++) {
                           height: 142.51,
                           width: 142.51,
 
-                          child:  Image.asset(
-                            "assets/images/amico.png",
+                          child:  Opacity(
+                            opacity: 0.5,
+                            child: Image.asset(
+                              "assets/images/amico.png",
 
-                            // Adjust size as needed
+                              // Adjust size as needed
+                            ),
                           ),
                         ),
                       ),
@@ -1860,7 +2114,7 @@ for(int m=0;m<allplaygrounds.length;m++) {
               ],
             ),
           ),
-        ),
+        ):_buildNoInternetUI(),
 
         bottomNavigationBar: CurvedNavigationBar(
           height: 60,
@@ -1927,6 +2181,41 @@ for(int m=0;m<allplaygrounds.length;m++) {
           },
         ),
         // ),
+      ),
+    );
+  }
+  Widget _buildNoInternetUI() {
+    // Your UI design when there's no internet connection
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          SizedBox(
+            height: 200,
+          ),
+          Center(
+            child: Container(
+              height: 200,
+              child: Image.asset(
+                'assets/images/nointernetconnection.png',
+                // Adjust the height as needed
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Text(
+            "لا يوجد اتصال بالانترنت".tr,
+            style: TextStyle(
+              fontSize: 14,
+              fontFamily: 'Cairo',
+              fontWeight: FontWeight.w400,
+              color: Colors.black,
+            ),
+          ),
+
+        ],
       ),
     );
   }
