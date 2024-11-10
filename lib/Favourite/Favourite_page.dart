@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../Controller/NavigationController.dart';
 import '../Favourite_model/AddPlaygroundModel.dart';
 import '../Menu/menu.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../PlayGround_Name/PlayGroundName.dart';
 import 'package:get/get.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -25,7 +26,27 @@ class FavouritePageState extends State<FavouritePage> {
   bool _isLoading = true;
   List<Favouritemodel>favlist=[];
   User? user = FirebaseAuth.instance.currentUser;
+  bool isConnected=true;
+  Future<void> checkInternetConnection() async {
 
+    print("bvbbvbvbb$isConnected");
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    print("connectivityResult$connectivityResult");
+    print("connectivityResult${ConnectivityResult.none}");
+
+    if (connectivityResult[0] == ConnectivityResult.none) {
+      setState(() {
+        isConnected = false;
+        print("bvbbvbvbb$isConnected");
+      });
+    }else{
+      isConnected = true;
+
+    }
+    print("bvbbvbvbb$isConnected");
+
+  }
   Future<void> getfavdata(String playgroundid) async {
     try {
       CollectionReference fav =
@@ -73,6 +94,7 @@ class FavouritePageState extends State<FavouritePage> {
   @override
   void initState() {
     super.initState();
+    checkInternetConnection();
     getPlaygroundbyname();
   }
   Future<void> getPlaygroundbyname() async {
@@ -208,7 +230,7 @@ class FavouritePageState extends State<FavouritePage> {
         },
       ),
 
-      body: _isLoading
+      body:isConnected? _isLoading
           ? Center(child: CircularProgressIndicator(color: Color(0xFF4AD080),))
           : SingleChildScrollView(
         child: Center(
@@ -336,9 +358,46 @@ class FavouritePageState extends State<FavouritePage> {
             ),
           ),
         ),
-      )
+      ):                        _buildNoInternetUI()
 
 
+
+    );
+  }
+  Widget _buildNoInternetUI() {
+    // Your UI design when there's no internet connection
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height/5,
+
+          ),
+          Center(
+            child: Container(
+              height: 200,
+              child: Image.asset(
+                'assets/images/wifirr.png',
+                // Adjust the height as needed
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Text(
+            "لا يوجد اتصال بالانترنت".tr,
+            style: TextStyle(
+              fontSize: 14,
+              fontFamily: 'Cairo',
+              fontWeight: FontWeight.w400,
+              color: Colors.black,
+            ),
+          ),
+
+        ],
+      ),
     );
   }
 }

@@ -46,7 +46,23 @@ class my_reservationState extends State<my_reservation>
       });
     }
   }
+  String toArabicNumerals(num number, int i) {
+    const englishToArabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
 
+    // Convert the number to a string for processing
+    String numberString = number.toString();
+
+    // Replace each digit in the number string with its Arabic equivalent
+    String convertedNumber = numberString.replaceAllMapped(RegExp(r'\d'), (match) {
+      return englishToArabicNumbers[int.parse(match.group(0)!)];
+    });
+    print("kkkkkkk$convertedNumber");
+    // If you want to assign the converted number back to the cost
+    // playgroundAllData[i].bookTypes![0].cost = convertedNumber; // Assuming cost is a String
+
+    print("number equal $convertedNumber");
+    return convertedNumber; // Return the converted number
+  }
   late List<User1> user1 = [];
 
 
@@ -148,7 +164,6 @@ class my_reservationState extends State<my_reservation>
   late List<AddbookingModel> playgroundbook = [];
   int numbercanceled = 0;
   int numberaccepted = 0;
-
   Future<void> getcancel_bookDataByPhone(String userPhone) async {
     final firestore = FirebaseFirestore.instance;
 
@@ -553,7 +568,8 @@ class my_reservationState extends State<my_reservation>
   //   }
   // }
   Future<void> updateCancelCount(String userPhone, String idAdmin,
-      String idGround) async {
+      String idGround)
+  async {
     final firestore = FirebaseFirestore.instance;
     final query = await firestore
         .collection('cancel_book')
@@ -1042,8 +1058,7 @@ class my_reservationState extends State<my_reservation>
                                           ),
                                         ),
                                         Text(
-                                          "${playgroundAllData[i].bookTypes![0]
-                                              .cost!}",
+                                          "${playgroundbook[i].totalcost!}",
                                           // textDirection: TextDirection.RTL,  // Ensures the text direction is RTL
 
                                           style: TextStyle(

@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:connectivity/connectivity.dart';
 import '../Controller/NavigationController.dart';
 import '../Favourite/Favourite_page.dart';
 import '../Home/HomePage.dart';
@@ -32,14 +32,21 @@ class My_groupState extends State<My_group> {
   late List<User1> user1 = [];
   List<GroupModel2> stordataofgroup = [];
   User? user = FirebaseAuth.instance.currentUser;
-  bool _isConnected = true; // Default to true assuming there's internet at start
+  bool isConnected = true; // Default to true assuming there's internet at start
   bool isLoading = true;
-  Future<void> _checkInternetConnection() async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.none) {
-      setState(() {
-        _isConnected = false;
-      });
+  Future<bool> checkInternetConnection() async {
+    // Get the connectivity status
+    ConnectivityResult connectivityResult = await Connectivity().checkConnectivity();
+
+    // If the device is connected to mobile or wifi network
+    if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+      isConnected = true;
+      print("isConnected: $isConnected");
+      return true; // Internet is available
+    } else {
+      isConnected = false;
+      print("isConnected: $isConnected");
+      return false; // No internet connection
     }
   }
 
@@ -170,7 +177,7 @@ class My_groupState extends State<My_group> {
 
   @override
   void initState() {
-    _checkInternetConnection();
+    checkInternetConnection();
 
     super.initState();
 
@@ -243,7 +250,7 @@ class My_groupState extends State<My_group> {
         ),
       ),
       backgroundColor: Colors.white,
-      body: _isConnected?SingleChildScrollView(
+      body: isConnected?SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [

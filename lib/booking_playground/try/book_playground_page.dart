@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:popover/popover.dart';
-
+import 'package:connectivity/connectivity.dart';
 import '../../Controller/NavigationController.dart';
 import '../../Home/HomePage.dart';
 import '../../Home/Userclass.dart';
@@ -48,7 +48,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
   int _currentIndex = 0; // Add this state variable to track the current page
 
   late List<AddbookingModel> playgroundbook = [];
-  late List<AddbookingModel> userplaygroundbook = [];
+  // late List<AddbookingModel> userplaygroundbook = [];
   List<AddbookingModel> matchedPlaygrounds = [];
   late List<AddPlayGroundModel> matchedplaygroundAllData = [];
   Future<String> convertmonthtonumber(date,int index) async{
@@ -104,7 +104,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
       if(date2.contains(months[k])){
         date2=  date2.replaceAll(months[k] ,'-${k+1}-');
         print("updated matchedPlaygrounds done with ${date2}");
-        matchedPlaygrounds[index].dateofBooking=date2;
+        // matchedPlaygrounds[index].dateofBooking=date2;
 print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[index].dateofBooking!}");
       }
     }
@@ -112,13 +112,13 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
 
     date2 = date2.replaceAllMapped(RegExp(r'\d'), (match) { const englishToArabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
 
-    matchedPlaygrounds[index].dateofBooking=englishToArabicNumbers[int.parse(match.group(0)!)];
+   englishToArabicNumbers[int.parse(match.group(0)!)];
     return englishToArabicNumbers[int.parse(match.group(0)!)];
 
     });
 
     print(" date in Arabic : $date2");
-    matchedPlaygrounds[index].dateofBooking = date2;
+    // matchedPlaygrounds[index].dateofBooking = date2;
 
     return date2;
 
@@ -226,57 +226,64 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
     ];
     return daysOfWeek[date.weekday % 7];
   }
-
-  //funnnnnnnnnnnnnnnnnnnnnnnnnnnn
-//Fetch all playground bookings which exist under حجز الموعد
   Future<void> getAllPlaygrounds() async {
     try {
-      // Reference to the Firestore collection with the appropriate query
+      // Reference to the Firestore collection
       CollectionReference playerchat = FirebaseFirestore.instance.collection("booking");
 
-      // Fetch documents where 'groundID' matches the widget.IdData
-      QuerySnapshot querySnapshot = await playerchat.where('groundID', isEqualTo: widget.IdData).get();
+      // Fetch all documents in the 'booking' collection
+      QuerySnapshot querySnapshot = await playerchat.get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        // Process each document
-        List<AddbookingModel> playgrounds = querySnapshot.docs.map((doc) {
+        List<AddbookingModel> playgrounds = [];
+
+        for (var doc in querySnapshot.docs) {
           Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
-          return AddbookingModel.fromMap(userData);
-        }).toList();
+
+          // Check if 'NeededGroundData' and 'GroundData' exist
+          var groundDataList = userData['NeededGroundData']?['GroundData'] as List?;
+          var userList = userData['AlluserData']?['UserData'] as List?;
+
+          if (groundDataList != null&&userList!=null) {
+            // Filter by 'GroundId' within 'GroundData' array
+            for (var groundData in groundDataList) {
+              if (groundData['GroundId'] == widget.IdData) {
+                // If groundID matches, add the document to the list
+                playgrounds.add(AddbookingModel.fromMap(userData));
+                break; // Stop checking this document if a match is found
+              }
+            }
+          }
+        }
 
         // Update the list and UI inside setState
         setState(() {
-          playgroundbook = playgrounds; // Replacing the list with all documents
+          playgroundbook = playgrounds; // Replace list with matched documents
         });
 
         // Print playground data
         playgroundbook.forEach((playground) {
-
           print("Playground Name: ${playground.Name}");
         });
+
+        // Fetch and print phone number from SharedPreferences
         SharedPreferences prefs = await SharedPreferences.getInstance();
         String? phoneValue = prefs.getString('phonev');
         print("newphoneValue: ${phoneValue.toString()}");
 
-
-        print("phoneValue$phoneValue");
-        print("phoneuser${user?.phoneNumber !}");
+        // Normalize phone number
         String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
 
-
         for (int i = 0; i < playgroundbook.length; i++) {
-          if (playgroundbook[i]
-              .AllUserData![i].UserPhone! == normalizedPhoneNumber) {
+          // Check if the current user's phone number matches any user in AllUserData
+          if (playgroundbook[i].AllUserData![0].UserPhone == normalizedPhoneNumber) {
             setState(() {
               matchedPlaygrounds.add(playgroundbook[i]);
-              getmaatchedPlaygroundbyname(playgroundbook[i]
-                  .NeededGroundData![i].GroundId!);
+              getmaatchedPlaygroundbyname(playgroundbook[i].NeededGroundData![0].GroundId!);
               print("shimaaaa${matchedPlaygrounds.length}");
               print("shimaaaa dataaaaaa${playgroundbook[i]}");
-              convertmonthtonumberforlastwidget( matchedPlaygrounds[0].dateofBooking!,i);
-
+              convertmonthtonumberforlastwidget(matchedPlaygrounds[0].dateofBooking!, i);
             });
-
           }
         }
 
@@ -293,6 +300,73 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
       print("Error fetching playgrounds: $e");
     }
   }
+
+  //funnnnnnnnnnnnnnnnnnnnnnnnnnnn
+//Fetch all playground bookings which exist under حجز الموعد
+//   Future<void> getAllPlaygrounds() async {
+//     try {
+//       // Reference to the Firestore collection with the appropriate query
+//       CollectionReference playerchat = FirebaseFirestore.instance.collection("booking");
+//
+//       // Fetch documents where 'groundID' matches the widget.IdData
+//       QuerySnapshot querySnapshot = await playerchat.where('groundID', isEqualTo: widget.IdData).get();
+//
+//       if (querySnapshot.docs.isNotEmpty) {
+//         // Process each document
+//         List<AddbookingModel> playgrounds = querySnapshot.docs.map((doc) {
+//           Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
+//           return AddbookingModel.fromMap(userData);
+//         }).toList();
+//
+//         // Update the list and UI inside setState
+//         setState(() {
+//           playgroundbook = playgrounds; // Replacing the list with all documents
+//         });
+//
+//         // Print playground data
+//         playgroundbook.forEach((playground) {
+//
+//           print("Playground Name: ${playground.Name}");
+//         });
+//         SharedPreferences prefs = await SharedPreferences.getInstance();
+//         String? phoneValue = prefs.getString('phonev');
+//         print("newphoneValue: ${phoneValue.toString()}");
+//
+//
+//         print("phoneValue$phoneValue");
+//         print("phoneuser${user?.phoneNumber !}");
+//         String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
+//
+//
+//         for (int i = 0; i < playgroundbook.length; i++) {
+//           if (playgroundbook[i]
+//               .AllUserData![i].UserPhone! == normalizedPhoneNumber) {
+//             setState(() {
+//               matchedPlaygrounds.add(playgroundbook[i]);
+//               getmaatchedPlaygroundbyname(playgroundbook[i]
+//                   .NeededGroundData![i].GroundId!);
+//               print("shimaaaa${matchedPlaygrounds.length}");
+//               print("shimaaaa dataaaaaa${playgroundbook[i]}");
+//               convertmonthtonumberforlastwidget( matchedPlaygrounds[0].dateofBooking!,i);
+//
+//             });
+//
+//           }
+//         }
+//
+//         if (timeSlots.isNotEmpty) {
+//           startendtime(timeSlots.first, timeSlots.last);
+//           print("time for start: ${timeSlots.first} + ${timeSlots.last}");
+//         } else {
+//           print("timeSlots is empty.");
+//         }
+//       } else {
+//         print("No playgrounds found.");
+//       }
+//     } catch (e) {
+//       print("Error fetching playgrounds: $e");
+//     }
+//   }
 
   String?USerID;
   String? timeofAddedPlayground;
@@ -316,6 +390,11 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
           if (document.id == widget.IdData) {
             playgroundAllData.add(user);
             String?  bookType = playgroundAllData[0].bookTypes![0].time;
+
+            // for(int i=0;i<playgroundAllData[0].bookTypes!.length;i++){
+            //   print("costPerHourkkkk${user.bookTypes?[i].costPerHour}   cost${user.bookTypes?[i].cost}");
+            //
+            // }
             // Assuming 'time' is the field you want to split into start and end time
             String timeofAddedPlayground = bookType ?? '';
             print("timeofAddedPlayground: $timeofAddedPlayground");
@@ -334,6 +413,90 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
               // You can use these times to update the UI or for other logic
               timeSlots.add(startTime); // Add start time to the list
               timeSlots.add(endTime);   // Add end time to the list
+
+              // You could directly update your UI here or save this data for later
+              // For example, show the start and end time in the UI
+              setState(() {
+                // Update any UI components with the start and end times
+                startTimeStr = startTime; // Assuming you have a state variable to store this
+                endTimeStr = endTime;     // Assuming you have a state variable to store this
+              });
+
+              print("Time slots: ${timeSlots}");
+            } else {
+              print("Invalid time format: $timeofAddedPlayground");
+            }
+            // }
+// الوقت  هو سبب المشكله
+            print(
+                "PlayGroungboook Iiid : ${document.id}"); // Print the latest playground
+            groundIiid = document.id;
+            print("Docummmmmmbook$groundIiid");
+            // Normalize playType before comparing
+            String playType = user.playType!.trim();
+          }
+
+          // Store the document ID in the AddPlayGroundModel object
+          user.id = document.id;
+        }
+      }
+    } catch (e) {
+      print("Error getting playground: $e");
+    }
+  }
+  Future<void> calculatetotalcost(String iiid) async {
+    try {
+      CollectionReference playerchat =
+      FirebaseFirestore.instance.collection("AddPlayground");
+
+      QuerySnapshot querySnapshot = await playerchat.get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (QueryDocumentSnapshot document in querySnapshot.docs) {
+          Map<String, dynamic> userData =
+          document.data() as Map<String, dynamic>;
+          AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
+          if (document.id == widget.IdData) {
+            playgroundAllData.add(user);
+            String?  bookType = playgroundAllData[0].bookTypes![0].time;
+
+            // for(int i=0;i<playgroundAllData[0].bookTypes!.length;i++){
+            //   print("costPerHourkkkk${user.bookTypes?[i].costPerHour}   cost${user.bookTypes?[i].cost}");
+            //
+            // }
+            // Assuming 'time' is the field you want to split into start and end time
+            String timeofAddedPlayground = bookType ?? '';
+            print("timeofAddedPlayground: $timeofAddedPlayground");
+
+            // Splitting time into startTime and endTime based on '-'
+            List<String> times = timeofAddedPlayground.split(' - ');
+            if (times.length == 2) {
+              String startTime = times[0];
+              String endTime = times[1];
+
+              print("Start Time: $startTime");
+              print("End Time: $endTime");
+              String adminId =playgroundAllData[0].adminId! ; // Fetch AdminId directly from userData
+              groundPhoneee=playgroundAllData[0].phoneCommunication!;
+              groundNamee=playgroundAllData[0].playgroundName!;
+              // You can use these times to update the UI or for other logic
+              timeSlots.add(startTime); // Add start time to the list
+              timeSlots.add(endTime);   // Add end time to the list
+              // Find the correct bookType based on the selected time slot
+              for (var bookType in user.bookTypes!) {
+                // Compare the times, and get the cost for the selected time
+                if (bookType.time == timeofAddedPlayground) {
+                  print("Selected BookType: ${bookType.bookType}");
+                  print("Cost: ${bookType.cost}");
+
+                  // Now you can use bookType.cost or bookType.costperhour as needed
+                  setState(() {
+                    var totalCost = bookType.cost ?? 0; // Assuming you have a totalCost variable
+                    print("uuuttttttttttotl$totalCost");
+                  });
+                  break;
+                }
+              }
 
               // You could directly update your UI here or save this data for later
               // For example, show the start and end time in the UI
@@ -437,7 +600,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
 //Fetch booking data and manage the selected times for each day
   Future<void> _fetchData() async {
 
-    final playgrounddata = await FirebaseFirestore.instance.collection('AddPlayground')
+    final playgrounddata = await FirebaseFirestore.instance.collection('booking')
         .get();
 
     List<AddbookingModel> bookings = playgrounddata.docs.map((doc) {
@@ -478,24 +641,25 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
   Future<void> _sendData(BuildContext context) async {
     final name =user1[0].name!;
     final phooneNumber =user1[0].phoneNumber!;
-
+     num cooooooooooost=playgroundAllData[0].bookTypes![0].cost!;
+    num cooooooooooostperhour=playgroundAllData[0].bookTypes![0].costPerHour!;
+    int tooooootl=cooooooooooostperhour.toInt()+cooooooooooost.toInt();
     print("Checking phone number: $phooneNumber");
+    print("tooooootlcooooooooost: $tooooootl");
 
     // Check for empty fields
     if (name.isNotEmpty && phooneNumber.isNotEmpty && selectedTimes.isNotEmpty) {
       print("Selected date: $storeDate");
-
-      // Check for existing bookings in Firestore
-      final existingBooking = await FirebaseFirestore.instance
+      // Query the 'booking' collection for documents that match date, day, and any overlapping times
+      final bookingQuery = await FirebaseFirestore.instance
           .collection('booking')
-          .where('dateofBooking', isEqualTo: storeDate) // Check date
-          .where('Day_of_booking', isEqualTo: selectedDayName) // Check day of booking
-          .where('PhooneCommunication', isEqualTo: phooneNumber) // Check phone number
-          .where('selectedTimes', arrayContainsAny: selectedTimes.toList()) // Check time overlap
+          .where('dateofBooking', isEqualTo: storeDate)          // Check date
+          .where('Day_of_booking', isEqualTo: selectedDayName)   // Check day
+          .where('selectedTimes', arrayContainsAny: selectedTimes)
+      .where('NeededGroundData.GroundData.GroundId', isEqualTo: groundIiid) // Check GroundId wit// Check any overlapping time
           .get();
 
-      if (existingBooking.docs.isNotEmpty) {
-        // Show message if a duplicate booking is found
+      if(bookingQuery.docs.isNotEmpty){
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -505,70 +669,73 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
             backgroundColor: Colors.red.shade800,
           ),
         );
-        return; // Exit function to prevent duplicate booking
       }
 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String phoooone = prefs.getString('phone') ?? '';
+     else{
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String phoooone = prefs.getString('phone') ?? '';
 
-      // Fetch the document ID of the player using the phone number
-      CollectionReference playerchat = FirebaseFirestore.instance.collection('PlayersChat');
-      QuerySnapshot playerQuerySnapshot = await playerchat.where('phone', isEqualTo: phoooone).get();
+        // Fetch the document ID of the player using the phone number
+        CollectionReference playerchat = FirebaseFirestore.instance.collection('PlayersChat');
+        QuerySnapshot playerQuerySnapshot = await playerchat.where('phone', isEqualTo: phoooone).get();
 
-      String docId = '';
-      if (playerQuerySnapshot.docs.isNotEmpty) {
-        var playerDoc = playerQuerySnapshot.docs.first;
-        docId = playerDoc.id; // Get the docId of the matching phone number
-        print("Document ID for the phone number: $docId");
-      } else {
-        print("No matching document found for the phone number.");
-        return; // Handle case where phone number doesn't exist
-      }
+        String docId = '';
+        if (playerQuerySnapshot.docs.isNotEmpty) {
+          var playerDoc = playerQuerySnapshot.docs.first;
+          docId = playerDoc.id; // Get the docId of the matching phone number
+          print("Document ID for the phone number: $docId");
+        }
+        else {
+          print("No matching document found for the phone number.");
+          return; // Handle case where phone number doesn't exist
+        }
 
-      // Create a new UserData entry
-      UserData newUserData = UserData(
-        UserName: name,
-        UserPhone: phooneNumber,
-        UserImg: user1[0].img!, // Ensure userImage is set from the previous fetch
-      );
-      PlayGroundData GroundData = PlayGroundData(
-        GroundName: groundNamee,
-        GroundId: groundIiid,
-        GroundPhone: groundPhoneee, // Ensure userImage is set from the previous fetch
-      );
+        // Create a new UserData entry
+        UserData newUserData = UserData(
+          UserName: name,
+          UserPhone: phooneNumber,
+          UserImg: user1[0].img!, // Ensure userImage is set from the previous fetch
+        );
+        PlayGroundData GroundData = PlayGroundData(
+          GroundName: groundNamee,
+          GroundId: groundIiid,
+          GroundPhone: groundPhoneee, // Ensure userImage is set from the previous fetch
+        );
 
-      // Prepare the booking model
-      final bookingModel = AddbookingModel(
-        Name: name,
-        dateofBooking: storeDate,
-        Day_of_booking: selectedDayName,
-        rentTheBall: _isCheckedList[0],
-        selectedTimes: selectedTimes.toList(),
-        AdminId: docId,
-        AllUserData: [newUserData], // Add the user data directly to the model,
-        NeededGroundData: [GroundData],
-        acceptorcancle: false,
-      );
+        // Prepare the booking model
+        final bookingModel = AddbookingModel(
+          Name: name,
+          totalcost:tooooootl ,
+          dateofBooking: storeDate,
+          Day_of_booking: selectedDayName,
+          rentTheBall: _isCheckedList[0],
+          selectedTimes: selectedTimes.toList(),
+          AdminId: docId,
+          AllUserData: [newUserData], // Add the user data directly to the model,
+          NeededGroundData: [GroundData],
+          acceptorcancle: false,
+        );
 
-      // Add booking to Firestore
-      await FirebaseFirestore.instance.collection('booking').add(bookingModel.toMap());
+        // Add booking to Firestore
+        await FirebaseFirestore.instance.collection('booking').add(bookingModel.toMap());
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'تم تسجيل البيانات بنجاح', // "Data registered successfully"
-            textAlign: TextAlign.center,
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'تم تسجيل البيانات بنجاح', // "Data registered successfully"
+              textAlign: TextAlign.center,
+            ),
+            backgroundColor: Color(0xFF1F8C4B),
           ),
-          backgroundColor: Color(0xFF1F8C4B),
-        ),
-      );
+        );
 
-      // Clear inputs after successful booking
-      selectedTimes.clear();
+        // Clear inputs after successful booking
+        selectedTimes.clear();
 
-      _isCheckedList[0] = false;
-
+        _isCheckedList[0] = false;
+        getAllPlaygrounds();
+      }
     } else {
       // Show message if required fields are empty
       ScaffoldMessenger.of(context).showSnackBar(
@@ -781,8 +948,24 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
 
     return timeSlots;
   }
+  bool isConnected=true;
+  Future<bool> checkInternetConnection() async {
+    // Get the connectivity status
+    ConnectivityResult connectivityResult = await Connectivity().checkConnectivity();
 
+    // If the device is connected to mobile or wifi network
+    if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+      isConnected = true;
+      print("isConnected: $isConnected");
+      return true; // Internet is available
+    } else {
+      isConnected = false;
+      print("isConnected: $isConnected");
+      return false; // No internet connection
+    }
+  }
   void initState() {
+    checkInternetConnection();
     // super.initState();
     _loadUserData();
     //   // _fetchBookingData();
@@ -905,7 +1088,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
           ),
         ),
       ),
-      body: Stack(
+      body:isConnected? Stack(
         children: [
           SingleChildScrollView(
             child: Padding(
@@ -944,10 +1127,14 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
                                 enlargeCenterPage: true, // Ensure the center item is enlarged
                                 onPageChanged: (index, reason) {
                                   setState(() {
-                                    print("cooooooooost${playgroundAllData[0].bookTypes![0].cost}");
+                                    for(int x=0;x<playgroundAllData[0].bookTypes!.length;x++){
+                                      print("cooooooooostplaygroundAllData${playgroundAllData[0].bookTypes![x].cost}");
+
+                                    }
                                     _currentIndex = index; // Update the current index on page change
                                     selectedDayName = daysOfWeek[index]['dayName']!; // Update the selected day name
                                     storeDate = daysOfWeek[index]['dayDate']; // Store the date
+
                                   });
                                 },
                                 scrollDirection: Axis.horizontal,
@@ -1069,7 +1256,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
                     future: _generateRows(selectedTimes, selectedDayName),
                     builder: (context, snapshot) {
                       if ( snapshot.connectionState == true) {
-                        return Center(child: Container(child: CircularProgressIndicator(color: Colors.green.shade700,),)); // Show a loading indicator while waiting
+                        return Center(child: Container(height: 100,child: CircularProgressIndicator(color: Colors.green.shade700,),)); // Show a loading indicator while waiting
                       }
                       if (snapshot.hasError) {
                         return Center(child: Text("Error: ${snapshot.error}")); // Handle errors
@@ -1085,7 +1272,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
                   )
                       : Container(
                     height: 99,
-                    child: Center(child: Text("No reserve available for this day")),
+                    child: Center(child: Text("لا يوجد حجز متاح لهذا اليوم")),
                   ),
                   playgroundAllData.isNotEmpty && playgroundAllData.any((data) => data.bookTypes!.any((bt) => bt.day == selectedDayName))
                       ? Row(
@@ -1155,7 +1342,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
 
                         // Fetch data after successfully sending
                         await _fetchData();
-
+                        // await getAllPlaygrounds();
                         print("Data sent successfully");
 
 
@@ -1198,17 +1385,22 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
                         children: List.generate(matchedPlaygrounds.length, (index) {
                           final user = matchedPlaygrounds[index];
                           return Dismissible(
-                            key: Key('${user.AllUserData?[index].UserPhone}_${index}'), // Ensure the key is unique
+                            key: Key('${user.AllUserData?[0].UserPhone}_${index}'), // Ensure the key is unique
                             direction: DismissDirection.horizontal,
                             onDismissed: (direction) async {
-                              // Perform the deletion only if confirmed
-                              deleteItemAndRelatedDocs(context, index);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => HomePage()),
+                              await deleteCancelByPhoneAndPlaygroundId(
+                                user.AllUserData![0].UserPhone!,
+                                user.NeededGroundData![0].GroundId!,
+                                user.selectedTimes!.first,
+                                user.dateofBooking!,
                               );
-                              // Call the updated delete function
+                              setState(() {
+                                matchedPlaygrounds.removeAt(index); // Use removeAt to remove by index
+                              });
+                              // deleteCancelByPhoneAndPlaygroundId(user.AllUserData![0].UserPhone!,user.NeededGroundData![0].GroundId!,user.selectedTimes!.first,user.dateofBooking!);
+                              //
+                              // matchedPlaygrounds.remove(index);
+                              //
                             },
                             confirmDismiss: (direction) async {
                               // Show a confirmation dialog before dismissing
@@ -1312,7 +1504,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
                                                       ),
                                                     ),
                                                     Text(
-                                                     " ${toArabicNumerals(matchedplaygroundAllData[0].bookTypes![0].cost!,0)}",
+                                                     " ${toArabicNumerals(matchedPlaygrounds[index].totalcost!,0)}",
                                                       // '${matchedplaygroundAllData[0].bookTypes![0].cost} ',
                                                       textAlign: TextAlign.center,
                                                       style: TextStyle(
@@ -1331,8 +1523,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
                                                   child: Row(
                                                     mainAxisAlignment: MainAxisAlignment.start,
                                                     children: [
-                                                      Text(
-                                                        matchedPlaygrounds[index].dateofBooking!??"",
+                                                      Text(formatDate(matchedPlaygrounds[index].dateofBooking!),
                                                          textAlign: TextAlign.center,
                                                         style: TextStyle(
                                                           color: Color(0xFF324054),
@@ -1430,7 +1621,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
               ? const Positioned(top: 0, child: Loading())
               : Container(),
         ],
-      ),
+      ):                        _buildNoInternetUI(),
       bottomNavigationBar: CurvedNavigationBar(
         height: 60,
         index: 2,
@@ -1499,6 +1690,10 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
   }
 //color based on time is selected before or not
   // Function to generate hours between two time slots
+
+
+  ////oooooooooooooooooooo/////
+  // Function to generate hours between two time slots
   List<String> _getHoursBetween(String timeRange) {
     DateFormat formatter = DateFormat.jm();
 
@@ -1515,7 +1710,8 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
         DateTime end = start.add(Duration(hours: 1));
 
         List<String> hours = [];
-        for (DateTime time = start; time.isBefore(end); time = time.add(Duration(hours: 1))) {
+        for (DateTime time = start; time.isBefore(end);
+        time = time.add(Duration(hours: 1))) {
           hours.add(formatter.format(time));
         }
         return hours;
@@ -1534,7 +1730,8 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
       List<String> hours = [];
 
       // Generate hours between start and end times
-      for (DateTime time = start; time.isBefore(end) || time == end; time = time.add(Duration(hours: 1))) {
+      for (DateTime time = start; time.isBefore(end) || time == end;
+      time = time.add(Duration(hours: 1))) {
         hours.add(formatter.format(time));
       }
 
@@ -1545,55 +1742,229 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
       return [];
     }
   }
+  Future<void> _handleSlotTap(String slot) async {
+    setState(() {
+      isLoading = true; // Start loading
+    });
+
+    // Simulate a delay for processing the selection
+    await Future.delayed(Duration(seconds: 2));
+
+    // Here you can perform your reservation logic
+    setState(() {
+      isLoading = false; // Stop loading
+    });
+  }
+
+  Future<void> deleteCancelByPhoneAndPlaygroundId(
+      String normalizedPhoneNumber,
+      String playgroundId,
+      String selectedTime,
+      String bookingDate,
+      )
+  async {
+    final firestore = FirebaseFirestore.instance;
+    bool documentDeleted = false;
+
+    print("phoneee$normalizedPhoneNumber");
+    try {
+      // Get all documents from the booking collection
+      QuerySnapshot querySnapshot = await firestore.collection('booking').get();
+
+      for (var doc in querySnapshot.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+        // Retrieve user data list
+        var userDataList = data['AlluserData']?['UserData'] as List?;
+        var groundDataList = data['NeededGroundData']?['GroundData'] as List?;
+
+        // Debugging output
+        print('User  Data List: $userDataList');
+        print('Ground Data List: $groundDataList');
+        print('Document dateofBooking: ${data['dateofBooking']}');
+        print('Document selectedTimes: ${data['selectedTimes']}');
+
+        // Check if userDataList is not null
+        if (userDataList != null) {
+          bool userMatch = userDataList.any((userData) =>
+          userData['UserPhone'] == normalizedPhoneNumber
+          );
+
+          // Check if document-level dateofBooking and selectedTimes match
+          if (userMatch &&
+              data['dateofBooking'] == bookingDate &&
+              (data['selectedTimes'] as List).contains(selectedTime)) {
+            // All conditions are met, delete the document
+            await firestore.collection('booking').doc(doc.id).delete();
+            print(
+                'Document with phone $normalizedPhoneNumber, playgroundId $playgroundId, and selectedTime $selectedTime deleted successfully.');
+            // await firestore.collection('booking').doc(doc.id).delete();
+            print('Document with phone: $normalizedPhoneNumber, playgroundId: $playgroundId, date: $bookingDate, and selectedTime: $selectedTime deleted successfully.');
+            documentDeleted = true;
+
+          String x=  widget.IdData;
+            // Navigate to HomePage after successful deletion
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => book_playground_page(x)),
+            );
+            await getAllPlaygrounds();
+            return; // Exit the function after deletion
+          }
+        }
+      }
+
+      if (!documentDeleted) {
+        print('No document found matching the specified phone, playgroundId, date, and selectedTime.');
+      }
+
+    }
+    catch (e) {
+      print('Error deleting document: $e');
+    }
+  }
   Future<Widget> _generateTimeSlotWidget(
       String slot,
       bool isSelected,
-      bool isAlreadySelected // Change Set<String> to bool
-      ) async
-  {
-    // Check if a document with the same Day_of_booking and selectedTimes already exists
-    final existingBookingQuery = FirebaseFirestore.instance
+      bool isAlreadySelected,
+      )
+  async {
+    final firestore = FirebaseFirestore.instance;
+
+    // Query documents based on top-level fields `dateofBooking` and `selectedTimes`
+    final existingBookingQuery = firestore
         .collection('booking')
-        .where('Day_of_booking', isEqualTo: selectedDayName)
-        .where('dateofBooking',isEqualTo: storeDate)
-        .where('groundID', isEqualTo: widget.IdData)
+        .where('dateofBooking', isEqualTo: storeDate)
         .where('selectedTimes', arrayContainsAny: [slot]);
 
     final existingBookings = await existingBookingQuery.get();
-    bool isTimeSlotBooked = existingBookings.docs.isNotEmpty;
-    print("isTimeSlotBooked$isTimeSlotBooked");
-    // isAlreadySelected =isTimeSlotBooked;
-    return Padding(
-      padding: const EdgeInsets.all(6.0),
-      child: Container(
-        width: MediaQuery.of(context).size.width / 4,
-        decoration: BoxDecoration(
-          color: selectedTimes.contains(slot)
-              ? Color(0xFFC3FFDC)
-              : isTimeSlotBooked
-              ? Color(0xFFFFBEC5)
-              : Color(0xFFEFF6FF), // Background color based on the condition
-          borderRadius: BorderRadius.circular(10.0), // Radius of the corners
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(6.0),
-          child: Text(
-            slot.characters.length == 7 ? "$slot   " : slot,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              fontFamily: 'Cairo',
-              color: isSelected ? Colors.black87 : Color(0xFF495A71),
-              fontWeight: FontWeight.w500,
+    bool isTimeSlotBooked = false;
+
+    // Loop through each document to check the nested `groundID` inside `GroundData`
+    for (var doc in existingBookings.docs) {
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+      // Access `GroundData` array within `NeededGroundData`
+      var groundDataList = data['NeededGroundData']?['GroundData'] as List?;
+
+      if (groundDataList != null) {
+        for (var groundData in groundDataList) {
+          // Check if `groundID` matches
+          if (groundData['GroundId'] == widget.IdData) {
+            isTimeSlotBooked = true;
+            break;
+          }
+        }
+      }
+
+      // Break the outer loop if a match is found
+      if (isTimeSlotBooked) break;
+    }
+
+    // Determine the color based on booking status
+    bool _isAlreadySelected = isTimeSlotBooked;
+    // Disable interaction if the time slot is booked
+    bool isClickable = !_isAlreadySelected;
+    if (mounted) {
+      return Padding(
+        padding: const EdgeInsets.all(6.0),
+        child: Opacity(
+          opacity:isClickable? 1.0 : 0.5,
+          child: GestureDetector(
+            onTap: () {
+              if (isClickable) {
+                setState(() {
+
+                    selectedTimes.clear();
+                    selectedTimes.add(slot);
+
+                });
+              }
+            },
+            child: Container(
+              width: MediaQuery.of(context).size.width / 4,
+              decoration: BoxDecoration(
+                color: selectedTimes.contains(slot)
+                    ? Color(0xFFC3FFDC)
+                    : _isAlreadySelected
+                    ? Color(0xFFFFBEC5)
+                    : Color(0xFFEFF6FF),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(6.0),
+                child: Text(
+                  slot.characters.length == 7 ? "$slot   " : slot,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontFamily: 'Cairo',
+                    color: isSelected ? Colors.black87 : Color(0xFF495A71),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    } else {
+      return SizedBox.shrink();
+    }
   }
-  Future<List<Widget>> _generateRows(Set<String> selectedTimes,
-      String selectedDay)
-  async {
+
+  // Future<Widget> _generateTimeSlotWidget(String slot, bool isSelected, bool isAlreadySelected)
+  // async {
+  //   // Check if a document with the same Day_of_booking and selectedTimes already exists
+  //
+  //   final existingBookingQuery = FirebaseFirestore.instance
+  //       .collection('booking')
+  //       .where('Day_of_booking', isEqualTo: selectedDayName)
+  //       .where('dateofBooking', isEqualTo: storeDate)
+  //       .where('groundID', isEqualTo: widget.IdData)
+  //       .where('selectedTimes', arrayContainsAny: [slot]);
+  //
+  //   final existingBookings = await existingBookingQuery.get();
+  //   bool isTimeSlotBooked = existingBookings.docs.isNotEmpty;
+  //   print("isTimeSlotBooked: $isTimeSlotBooked");
+  //   bool _isAlreadySelected = isTimeSlotBooked;
+  //
+  //   // Ensure the widget is still mounted before returning the widget
+  //   if (mounted) {
+  //     return Padding(
+  //       padding: const EdgeInsets.all(6.0),
+  //       child: Container(
+  //         width: MediaQuery.of(context).size.width / 4,
+  //         decoration: BoxDecoration(
+  //           color: selectedTimes.contains(slot)
+  //               ? Color(0xFFC3FFDC)
+  //               : _isAlreadySelected
+  //               ? Color(0xFFFFBEC5)
+  //               : Color(0xFFEFF6FF), // Background color based on the condition
+  //           borderRadius: BorderRadius.circular(10.0), // Radius of the corners
+  //         ),
+  //         child: Padding(
+  //           padding: const EdgeInsets.all(6.0),
+  //           child: Text(
+  //             slot.characters.length == 7 ? "$slot   " : slot,
+  //             textAlign: TextAlign.center,
+  //             style: TextStyle(
+  //               fontSize: 16,
+  //               fontFamily: 'Cairo',
+  //               color: isSelected ? Colors.black87 : Color(0xFF495A71),
+  //               fontWeight: FontWeight.w500,
+  //             ),
+  //           ),
+  //         ),
+  //       ),
+  //     );
+  //   } else {
+  //     return SizedBox.shrink(); // Return an empty widget if unmounted
+  //   }
+  // }
+
+  Future<List<Widget>> _generateRows(Set<String> selectedTimes, String selectedDay) async {
     List<Widget> rows = [];
     int index = 0;
 
@@ -1621,51 +1992,42 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
               .collection('booking')
               .where('Day_of_booking', isEqualTo: selectedDayName)
               .where('dateofBooking', isEqualTo: storeDate)
-              .where('groundID', isEqualTo: widget.IdData)
+              .where('NeededGroundData.GroundData.GroundId', isEqualTo: widget.IdData) // Check GroundId wit// Check any overlapping time
+
               .where('selectedTimes', arrayContainsAny: [slot]);
 
           final existingBookings = await existingBookingQuery.get();
-          bool isTimeSlotBooked = existingBookings.docs
-              .isNotEmpty; // Check if time slot is already booked
+          bool isTimeSlotBooked = existingBookings.docs.isNotEmpty; // Check if time slot is already booked
 
           // GestureDetector for each time slot
           currentRowChildren.add(
             GestureDetector(
               onTap: () {
                 if (isTimeSlotBooked) {
-                  print("isTimeSlotBooked$isTimeSlotBooked");
+                  print("isTimeSlotBooked: $isTimeSlotBooked");
                   // Show the popover if the time slot is already booked
-                  print("isAlreadySelected$isAlreadySelected");
-                  // showPopover(
-                  //   context: context,
-                  //   bodyBuilder: (context) => ListItems(),
-                  //   onPop: () => print('Popover was popped!'),
-                  //   direction: PopoverDirection.top,
-                  //   width: MediaQuery.of(context).size.width / 1.3,
-                  //   height: 322,
-                  //   arrowHeight: 15,
-                  //   arrowWidth: 30,
-                  //   radius: 18,
-                  // );
-
-                }
-                else {
-                  // Otherwise, allow selection or deselection of the slot
+                  showPopover(
+                    context: context,
+                    bodyBuilder: (context) => ListItems(),
+                    onPop: () => print('Popover was popped!'),
+                    direction: PopoverDirection.top,
+                    width: MediaQuery.of(context).size.width / 1.3,
+                    height: 322,
+                    arrowHeight: 15,
+                    arrowWidth: 30,
+                    radius: 18,
+                  );
+                } else {
+                  // Limit to only one selection
                   setState(() {
-                    if (isSelected) {
-                      reservation(); // Call reservation logic
-                      selectedTimes.remove(slot); // Deselect time slot
-                    } else {
-                      reservation(); // Call reservation logic
-                      selectedTimes.add(slot); // Select time slot
-                    }
+                    selectedTimes.clear(); // Clear previous selections
+                    selectedTimes.add(slot); // Select the new time slot
+                    reservation(); // Call reservation logic
                   });
                 }
               },
               child: FutureBuilder<Widget>(
-                future: _generateTimeSlotWidget(
-                    slot, isSelected, isTimeSlotBooked),
-                // Pass isTimeSlotBooked as well
+                future: _generateTimeSlotWidget(slot, isSelected, isTimeSlotBooked),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     return snapshot.data!;
@@ -1724,6 +2086,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
 
     return rows;
   }
+
 // Function to filter time slots based on the selected day
   List<String> _getTimeSlotsForSelectedDay(String selectedDay) {
     List<String> filteredTimeSlots = [];
@@ -1744,6 +2107,261 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
 
     return filteredTimeSlots;
   }
+
+
+
+
+
+
+
+
+
+////////////////***************/////
+//   List<String> _getHoursBetween(String timeRange) {
+//     DateFormat formatter = DateFormat.jm();
+//
+//     try {
+//       // Ensure the input has the correct format
+//       List<String> times = timeRange.split(' - ');
+//
+//       if (times.length == 1) {
+//         print("timesssssssss$times");
+//         // If only a single time is provided, return that hour as both start and end
+//         String singleTime = times[0].trim();
+//         DateTime start = formatter.parse(singleTime);
+//         // Add one hour to create an end time
+//         DateTime end = start.add(Duration(hours: 1));
+//
+//         List<String> hours = [];
+//         for (DateTime time = start; time.isBefore(end); time = time.add(Duration(hours: 1))) {
+//           hours.add(formatter.format(time));
+//         }
+//         return hours;
+//       } else if (times.length != 2) {
+//         throw FormatException('Invalid time range format: $timeRange');
+//       }
+//
+//       // Trim spaces
+//       String startTime = times[0].trim();
+//       String endTime = times[1].trim();
+//
+//       // Parse times
+//       DateTime start = formatter.parse(startTime);
+//       DateTime end = formatter.parse(endTime);
+//
+//       List<String> hours = [];
+//
+//       // Generate hours between start and end times
+//       for (DateTime time = start; time.isBefore(end) || time == end; time = time.add(Duration(hours: 1))) {
+//         hours.add(formatter.format(time));
+//       }
+//
+//       return hours;
+//     } catch (e) {
+//       // Log the exception and return an empty list or handle as needed
+//       print('Error parsing time range: $e');
+//       return [];
+//     }
+//   }
+//   Future<Widget> _generateTimeSlotWidget(
+//       String slot,
+//       bool isSelected,
+//       bool isAlreadySelected // Change Set<String> to bool
+//       ) async
+//   {
+//     // Check if a document with the same Day_of_booking and selectedTimes already exists
+//     final existingBookingQuery = FirebaseFirestore.instance
+//         .collection('booking')
+//         .where('Day_of_booking', isEqualTo: selectedDayName)
+//         .where('dateofBooking',isEqualTo: storeDate)
+//         .where('groundID', isEqualTo: widget.IdData)
+//         .where('selectedTimes', arrayContainsAny: [slot]);
+//
+//     final existingBookings = await existingBookingQuery.get();
+//     bool isTimeSlotBooked = existingBookings.docs.isNotEmpty;
+//     print("isTimeSlotBooked$isTimeSlotBooked");
+//     // isAlreadySelected =isTimeSlotBooked;
+//     return Padding(
+//       padding: const EdgeInsets.all(6.0),
+//       child: Container(
+//         width: MediaQuery.of(context).size.width / 4,
+//         decoration: BoxDecoration(
+//           color: selectedTimes.contains(slot)
+//               ? Color(0xFFC3FFDC)
+//               : isTimeSlotBooked
+//               ? Color(0xFFFFBEC5)
+//               : Color(0xFFEFF6FF), // Background color based on the condition
+//           borderRadius: BorderRadius.circular(10.0), // Radius of the corners
+//         ),
+//         child: Padding(
+//           padding: const EdgeInsets.all(6.0),
+//           child: Text(
+//             slot.characters.length == 7 ? "$slot   " : slot,
+//             textAlign: TextAlign.center,
+//             style: TextStyle(
+//               fontSize: 16,
+//               fontFamily: 'Cairo',
+//               color: isSelected ? Colors.black87 : Color(0xFF495A71),
+//               fontWeight: FontWeight.w500,
+//             ),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+//   Future<List<Widget>> _generateRows(Set<String> selectedTimes,
+//       String selectedDay)
+//   async {
+//     List<Widget> rows = [];
+//     int index = 0;
+//
+//     // Filter the time slots for the selected day
+//     List<String> dayTimeSlots = _getTimeSlotsForSelectedDay(selectedDay);
+//     print("Time Slots for $selectedDay: $dayTimeSlots");
+//
+//     // Create a temporary list for the current row
+//     List<Widget> currentRowChildren = [];
+//
+//     while (index < dayTimeSlots.length) {
+//       String startTime = dayTimeSlots[index];
+//
+//       // Check if there's a next time slot
+//       if (index + 1 < dayTimeSlots.length) {
+//         String endTime = dayTimeSlots[index + 1];
+//         List<String> hoursBetween = _getHoursBetween('$startTime - $endTime');
+//
+//         for (String slot in hoursBetween) {
+//           // Check if the slot is selected
+//           bool isSelected = selectedTimes.contains(slot);
+//
+//           // Check if a document with the same Day_of_booking and selectedTimes already exists
+//           final existingBookingQuery = FirebaseFirestore.instance
+//               .collection('booking')
+//               .where('Day_of_booking', isEqualTo: selectedDayName)
+//               .where('dateofBooking', isEqualTo: storeDate)
+//               .where('groundID', isEqualTo: widget.IdData)
+//               .where('selectedTimes', arrayContainsAny: [slot]);
+//
+//           final existingBookings = await existingBookingQuery.get();
+//           bool isTimeSlotBooked = existingBookings.docs
+//               .isNotEmpty; // Check if time slot is already booked
+//
+//           // GestureDetector for each time slot
+//           currentRowChildren.add(
+//             GestureDetector(
+//               onTap: () {
+//                 if (isTimeSlotBooked) {
+//                   print("isTimeSlotBooked$isTimeSlotBooked");
+//                   // Show the popover if the time slot is already booked
+//                   print("isAlreadySelected$isAlreadySelected");
+//                   // showPopover(
+//                   //   context: context,
+//                   //   bodyBuilder: (context) => ListItems(),
+//                   //   onPop: () => print('Popover was popped!'),
+//                   //   direction: PopoverDirection.top,
+//                   //   width: MediaQuery.of(context).size.width / 1.3,
+//                   //   height: 322,
+//                   //   arrowHeight: 15,
+//                   //   arrowWidth: 30,
+//                   //   radius: 18,
+//                   // );
+//
+//                 }
+//                 else {
+//                   // Otherwise, allow selection or deselection of the slot
+//                   setState(() {
+//                     if (isSelected) {
+//                       reservation(); // Call reservation logic
+//                       selectedTimes.remove(slot); // Deselect time slot
+//                     } else {
+//                       reservation(); // Call reservation logic
+//                       selectedTimes.add(slot); // Select time slot
+//                     }
+//                   });
+//                 }
+//               },
+//               child: FutureBuilder<Widget>(
+//                 future: _generateTimeSlotWidget(
+//                     slot, isSelected, isTimeSlotBooked),
+//                 // Pass isTimeSlotBooked as well
+//                 builder: (context, snapshot) {
+//                   if (snapshot.hasData) {
+//                     return snapshot.data!;
+//                   } else {
+//                     return Container(); // or some other loading indicator
+//                   }
+//                 },
+//               ),
+//             ),
+//           );
+//
+//           // Increment index for the next slot
+//           index++;
+//
+//           // Check if we have reached the maximum number of slots in the current row
+//           if (currentRowChildren.length >= 3) {
+//             // Add the current row to rows and reset for the next row
+//             rows.add(
+//               Row(
+//                 mainAxisAlignment: MainAxisAlignment.start,
+//                 children: currentRowChildren,
+//               ),
+//             );
+//             currentRowChildren = []; // Reset for the next row
+//           }
+//         }
+//       } else {
+//         // Handle the last time slot if there is no pair
+//         currentRowChildren.add(
+//           FutureBuilder<Widget>(
+//             future: _generateTimeSlotWidget(startTime, true, true),
+//             builder: (context, snapshot) {
+//               if (snapshot.connectionState == ConnectionState.waiting) {
+//                 return Container(); // Loading indicator
+//               } else if (snapshot.hasData) {
+//                 return snapshot.data!;
+//               } else {
+//                 return Container(); // Handle error or no data case
+//               }
+//             },
+//           ),
+//         );
+//         index++; // Move to the next time slot
+//       }
+//     }
+//
+//     // Add any remaining children as the last row if they exist
+//     if (currentRowChildren.isNotEmpty) {
+//       rows.add(
+//         Row(
+//           mainAxisAlignment: MainAxisAlignment.start,
+//           children: currentRowChildren,
+//         ),
+//       );
+//     }
+//
+//     return rows;
+//   }
+// // Function to filter time slots based on the selected day
+//   List<String> _getTimeSlotsForSelectedDay(String selectedDay) {
+//     List<String> filteredTimeSlots = [];
+//
+//     // Iterate over all time slots and filter by selected day
+//     for (var bookTypeEntry in playgroundAllData[0].bookTypes!) {
+//       if (bookTypeEntry.day == selectedDay) {
+//         String? time = bookTypeEntry.time;
+//         if (time != null) {
+//           List<String> times = time.split(' - ');
+//           if (times.length == 2) {
+//             filteredTimeSlots.add(times[0]); // Add start time
+//             filteredTimeSlots.add(times[1]); // Add end time
+//           }
+//         }
+//       }
+//     }
+//
+//     return filteredTimeSlots;
+//   }
 
   Future<void> getAllBookingDocuments() async {
     setState(() {
@@ -1785,79 +2403,113 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
   }
 
   void deleteItemAndRelatedDocs(BuildContext context, int index) async {
-    // Ensure that the index is valid before proceeding
+    bool documentDeleted = false;
+
+    // Ensure the index is valid
     if (index < 0 || index >= playgroundbook.length) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Invalid item to delete")),
       );
-      return; // Exit if the index is not valid
-    }
-
-    final user = playgroundbook[index]; // Access the item to delete
-
-    // Reference to the collection or documents related to this item
-    QuerySnapshot snapshot = await FirebaseFirestore.instance
-        .collection("booking")
-        .where("dateofBooking", isEqualTo: user.dateofBooking)
-        .where("selectedTimes", isEqualTo: user.selectedTimes)
-        .get();
-
-    if (snapshot.docs.isEmpty) {
-      // Show "Document does not exist" if no documents were found
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Document does not exist")),
-      );
       return;
     }
 
-    bool documentDeleted = false;
-    List<Map<String, dynamic>> deletedDocumentsData = []; // Store data of deleted documents for undo
+    final user = matchedPlaygrounds[index];
+    final firestore = FirebaseFirestore.instance;
+    QuerySnapshot querySnapshot = await firestore.collection('booking').get();
 
-    for (DocumentSnapshot doc in snapshot.docs) {
-      if (doc.exists) {
-        // If document exists, delete it
-        deletedDocumentsData.add(doc.data() as Map<String, dynamic>); // Store data for undo
-        await doc.reference.delete();
-        documentDeleted = true;
+    for (var doc in querySnapshot.docs) {
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+      // Access nested User and Ground Data
+      var userDataList = data['AlluserData']?['UserData'] as List?;
+      var groundDataList = data['NeededGroundData']?['GroundData'] as List?;
+
+      print('User Data List for deleting: $userDataList');
+      print('Ground Data List: $groundDataList');
+      print('Document dateofBooking: ${data['dateofBooking']}');
+      print('Document selectedTimes: ${data['selectedTimes']}');
+
+      if (userDataList != null && groundDataList != null) {
+        print("matchedPlaygrounds[index].AllUserData![0].UserPhone${matchedPlaygrounds[index].AllUserData![0].UserPhone}");
+        print("NeededGroundData[index].NeededGroundData![0].NeededGroundData${matchedPlaygrounds[index].NeededGroundData![0].GroundId}");
+        print("dateofBooking[index].dateofBooking![0].dateofBooking${matchedPlaygrounds[index].dateofBooking}");
+        print("selectedTimes[index].selectedTimes![0].selectedTimes${matchedPlaygrounds[index].selectedTimes}");
+        if(matchedPlaygrounds[index].AllUserData![0].UserPhone!=null&&matchedPlaygrounds[index].NeededGroundData![0].GroundId!=null&&matchedPlaygrounds[index].dateofBooking!=null&&matchedPlaygrounds[index].selectedTimes!=null)
+       {
+         await firestore.collection('booking').doc(doc.id).delete();
+       }
+        print("userDataListuserDataList${userDataList}");
+        print("groundDataListgroundDataList$groundDataList");
+//         bool userMatch = userDataList.any((userData) =>
+//         userData['UserPhone'] == user.AllUserData![0].UserPhone);
+// print("shoka userMatch$userMatch");
+//         bool groundMatch = groundDataList.any((groundData) =>
+//         groundData['GroundId'] == user.NeededGroundData![0].GroundId);
+
+        // Check if all conditions match for deletion
+        // if (userMatch &&
+        //     groundMatch &&
+        //     data['dateofBooking'] == user.dateofBooking && // Ensure exact date match
+        //     (data['selectedTimes'] as List).contains(user.selectedTimes!.first)) { // Check if selected time exists in the list
+        //
+        //   // Delete the document
+        //   await firestore.collection('booking').doc(doc.id).delete();
+        //   print(
+        //       'Document with phone ${user.AllUserData![0].UserPhone}, playgroundId ${user.NeededGroundData![0].GroundId!}, date ${user.dateofBooking}, and selectedTime ${user.selectedTimes} deleted successfully.');
+
+          // documentDeleted = true;
+
+          // Navigate back after successful deletion
+          // Navigator.pushReplacement(
+          //   context,
+          //   MaterialPageRoute(builder: (context) => my_reservation()),
+          // );
+          return;
+        }
       }
     }
+  Widget _buildNoInternetUI() {
+    // Your UI design when there's no internet connection
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height/3,
 
-    if (documentDeleted) {
-      // Check if the index is still valid before removing
-      if (index >= 0 && index < playgroundbook.length) {
-        final deletedItem = playgroundbook[index]; // Store item for undo
-        playgroundbook.removeAt(index); // Safely remove the item
-
-        // Show confirmation message with undo action
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Doc deleted successfully",textAlign: TextAlign.center,),
-            backgroundColor: Colors.green.shade700,
-            // action: SnackBarAction(
-            //   label: 'Undo',
-            //   onPressed: () {
-            //     // Re-add the deleted item back to the list
-            //     setState(() {
-            //       playgroundbook.insert(index, deletedItem); // Re-add the deleted item
-            //     });
-            //
-            //     // Restore deleted documents in Firestore
-            //     for (var docData in deletedDocumentsData) {
-            //       restoreDocument(docData); // Restore data
-            //     }
-            //
-            //     // Show Snackbar for undo success
-            //     ScaffoldMessenger.of(context).showSnackBar(
-            //       SnackBar(content: Text("Data Restored ",textAlign: TextAlign.center,),backgroundColor: Colors.green.shade700,),
-            //     );
-            //     Navigator.of(context).pop(false);
-            //   },
-            // ),
           ),
-        );
-      }
-    }
+          Center(
+            child: Container(
+              height: 200,
+              child: Image.asset(
+                'assets/images/wifirr.png',
+                // Adjust the height as needed
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Text(
+            "لا يوجد اتصال بالانترنت".tr,
+            style: TextStyle(
+              fontSize: 14,
+              fontFamily: 'Cairo',
+              fontWeight: FontWeight.w400,
+              color: Colors.black,
+            ),
+          ),
+
+        ],
+      ),
+    );
   }
+    // If no document was deleted, show a message in the log
+    // if (!documentDeleted) {
+    //   print('No document found matching the specified phone, playgroundId, date, and selectedTime.');
+    // }
+  }
+
 
   Future<void> restoreDocument(Map<String, dynamic> docData) async {
     // Assuming you have a way to determine the collection and generate a new document ID
@@ -1865,7 +2517,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
     await FirebaseFirestore.instance.collection('booking').add(docData);
   }
 
-}
+
 
 class ListItems extends StatelessWidget {
   // const ListItems({Key? key}) : super(key: key);

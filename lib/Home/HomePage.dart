@@ -38,9 +38,9 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   late List<User1> user1 = [];
   User? user = FirebaseAuth.instance.currentUser;
-  bool _isLoading = true; // flag to control shimmer effect
+  bool _isLoading = true;
   String start="";
-  bool _isConnected = true; // Default to true assuming there's internet at start
+
   String end ="";
   Future<void> _loadData() async {
 
@@ -111,7 +111,8 @@ class HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _checkInternetConnection();
+    _initialize();
+
 
     requestLocationPermission();
     getPlaygroundbyname();
@@ -149,101 +150,120 @@ class HomePageState extends State<HomePage> {
     }
   }
   late List<AddbookingModel> playgroundbook = [];
-  Future<void> _checkInternetConnection() async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.none) {
-      setState(() {
-        _isConnected = false;
-      });
-    }
+  void _initialize() async {
+    await checkInternetConnection();
+    print("ggggg");
+    setState(() {});
+    // Other initialization tasks
   }
+
+  Future<void> checkInternetConnection() async {
+
+    print("bvbbvbvbb$isConnected");
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    print("connectivityResult$connectivityResult");
+    print("connectivityResult${ConnectivityResult.none}");
+
+    if (connectivityResult[0] == ConnectivityResult.none) {
+      setState(() {
+        isConnected = false;
+        print("bvbbvbvbb$isConnected");
+      });
+    }else{
+      isConnected = true;
+
+    }
+    print("bvbbvbvbb$isConnected");
+
+    }
 
   Future<void> fetchBookingData() async {
 
-      try {
+    try {
 
-        CollectionReference bookingCollection = FirebaseFirestore.instance.collection("booking");
+      CollectionReference bookingCollection = FirebaseFirestore.instance.collection("booking");
 
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        String? phoneValue = prefs.getString('phonev');
-        print("newphoneValue${phoneValue.toString()}");
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? phoneValue = prefs.getString('phonev');
+      print("newphoneValue${phoneValue.toString()}");
 
-        if (phoneValue != null && phoneValue.isNotEmpty) {
-          String normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
+      if (phoneValue != null && phoneValue.isNotEmpty) {
+        String normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
 
-          QuerySnapshot querySnapshot = await bookingCollection.get();
+        QuerySnapshot querySnapshot = await bookingCollection.get();
 
-          playgroundbook = []; // Initialize as an empty list
+        playgroundbook = []; // Initialize as an empty list
 
-          for (var doc in querySnapshot.docs) {
-            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-            var userDataList = data['AlluserData']?['UserData'] as List?;
+        for (var doc in querySnapshot.docs) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          var userDataList = data['AlluserData']?['UserData'] as List?;
 
-            if (userDataList != null) {
-              for (var userData in userDataList) {
-                if (userData['UserPhone'] == normalizedPhoneNumber) {
-                  AddbookingModel booking = AddbookingModel.fromMap(data);
-                  playgroundbook.add(booking); // Add each booking to the list
-                  break;
-                }
+          if (userDataList != null) {
+            for (var userData in userDataList) {
+              if (userData['UserPhone'] == normalizedPhoneNumber) {
+                AddbookingModel booking = AddbookingModel.fromMap(data);
+                playgroundbook.add(booking); // Add each booking to the list
+                break;
               }
             }
-          }
-
-          if (playgroundbook.isNotEmpty) {
-            // Print and access specific fields for each booking
-            for (int i = 0; i < playgroundbook.length; i++) {
-              // formatDate(playgroundbook[i].dateofBooking!);
-
-              print('AdminId: ${playgroundbook[i].AdminId}');
-              print('Day_of_booking: ${playgroundbook[i].Day_of_booking}');
-              print('Name: ${playgroundbook[i].Name}');
-              print('Rent_the_ball: ${playgroundbook[i].rentTheBall}');
-              print('phoneshoka: ${playgroundbook[i].AllUserData![0].UserPhone!}');
-            }
-          } else {
-            print('No matching bookings found for the phone number.');
-          }
-        } else if (user?.phoneNumber != null) {
-          String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
-          QuerySnapshot querySnapshot = await bookingCollection.get();
-
-          playgroundbook = []; // Initialize as an empty list
-
-          for (var doc in querySnapshot.docs) {
-            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-            var userDataList = data['AlluserData']?['UserData'] as List?;
-
-            if (userDataList != null) {
-              for (var userData in userDataList) {
-                if (userData['UserPhone'] == normalizedPhoneNumber) {
-                  AddbookingModel booking = AddbookingModel.fromMap(data);
-                  playgroundbook.add(booking); // Add each booking to the list
-                  break;
-                }
-              }
-            }
-          }
-
-          if (playgroundbook.isNotEmpty) {
-            // Print and access specific fields for each booking
-            for (int i = 0; i < playgroundbook.length; i++) {
-              print('AdminId: ${playgroundbook[i].AdminId}');
-              // formatDate(playgroundbook[i].dateofBooking!);
-              print('Day_of_booking: ${playgroundbook[i].Day_of_booking}');
-              print('Name: ${playgroundbook[i].Name}');
-              print('Rent_the_ball: ${playgroundbook[i].rentTheBall}');
-              print('phoneshoka: ${playgroundbook[i].AllUserData![0].UserPhone!}');
-              getPlaygroundbynameE(playgroundbook[i].NeededGroundData![0].GroundId!);
-            }
-          } else {
-            print('No matching bookings found for the user’s phone number.');
           }
         }
+
+        if (playgroundbook.isNotEmpty) {
+          // Print and access specific fields for each booking
+          for (int i = 0; i < playgroundbook.length; i++) {
+            // formatDate(playgroundbook[i].dateofBooking!);
+
+            print('AdminId: ${playgroundbook[i].AdminId}');
+            print('Day_of_booking: ${playgroundbook[i].Day_of_booking}');
+            print('Name: ${playgroundbook[i].Name}');
+            print('Rent_the_ball: ${playgroundbook[i].rentTheBall}');
+            print('phoneshoka: ${playgroundbook[i].AllUserData![0].UserPhone!}');
+          }
+        } else {
+          print('No matching bookings found for the phone number.');
+        }
+      } else if (user?.phoneNumber != null) {
+        String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
+        QuerySnapshot querySnapshot = await bookingCollection.get();
+
+        playgroundbook = []; // Initialize as an empty list
+
+        for (var doc in querySnapshot.docs) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          var userDataList = data['AlluserData']?['UserData'] as List?;
+
+          if (userDataList != null) {
+            for (var userData in userDataList) {
+              if (userData['UserPhone'] == normalizedPhoneNumber) {
+                AddbookingModel booking = AddbookingModel.fromMap(data);
+                playgroundbook.add(booking); // Add each booking to the list
+                break;
+              }
+            }
+          }
+        }
+
+        if (playgroundbook.isNotEmpty) {
+          // Print and access specific fields for each booking
+          for (int i = 0; i < playgroundbook.length; i++) {
+            print('AdminId: ${playgroundbook[i].AdminId}');
+            // formatDate(playgroundbook[i].dateofBooking!);
+            print('Day_of_booking: ${playgroundbook[i].Day_of_booking}');
+            print('Name: ${playgroundbook[i].Name}');
+            print('Rent_the_ball: ${playgroundbook[i].rentTheBall}');
+            print('phoneshoka: ${playgroundbook[i].AllUserData![0].UserPhone!}');
+            getPlaygroundbynameE(playgroundbook[i].NeededGroundData![0].GroundId!);
+          }
+        } else {
+          print('No matching bookings found for the user’s phone number.');
+        }
       }
-      catch (e) {
-        print('Error fetching booking data: $e');
-      }
+    }
+    catch (e) {
+      print('Error fetching booking data: $e');
+    }
 
   }
   late List<AddPlayGroundModel> playgroundAllData = [];
@@ -488,6 +508,8 @@ class HomePageState extends State<HomePage> {
   }
   List<Rate_fetched> rat_list = [];
   List<Rate_fetched> rat_list2 = [];
+  bool isConnected=false;
+
 
   // Future<void> deleteCancelByPhoneAndPlaygroundId(String phone, String playgroundId,String selectedTime) async {
   //   final firestore = FirebaseFirestore.instance;
@@ -529,7 +551,7 @@ class HomePageState extends State<HomePage> {
   async {
     final firestore = FirebaseFirestore.instance;
     bool documentDeleted = false;
-print("phoneee$normalizedPhoneNumber");
+    print("phoneee$normalizedPhoneNumber");
     try {
       // Get all documents from the booking collection
       QuerySnapshot querySnapshot = await firestore.collection('booking').get();
@@ -676,6 +698,7 @@ print("phoneee$normalizedPhoneNumber");
 
   Future<void> getfourplaygroundsbytype() async {
     try {
+
       CollectionReference playerchat = FirebaseFirestore.instance.collection("AddPlayground");
       QuerySnapshot querySnapshot = await playerchat.get();
 
@@ -831,44 +854,44 @@ print("phoneee$normalizedPhoneNumber");
   Future<void> getPlaygroundbyname() async {
 
 
-      try {
+    try {
 
-        CollectionReference playerchat =
-        FirebaseFirestore.instance.collection("AddPlayground");
+      CollectionReference playerchat =
+      FirebaseFirestore.instance.collection("AddPlayground");
 
-        QuerySnapshot querySnapshot = await playerchat.get();
+      QuerySnapshot querySnapshot = await playerchat.get();
 
-        if (querySnapshot.docs.isNotEmpty) {
-          for (QueryDocumentSnapshot document in querySnapshot.docs) {
-            Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
-            AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
+      if (querySnapshot.docs.isNotEmpty) {
+        for (QueryDocumentSnapshot document in querySnapshot.docs) {
+          Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
+          AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
 
-            allplaygrounds.add(user);
-            print("PlayGroung Id shoka: ${document.id}"); // Print the latest playground
+          allplaygrounds.add(user);
+          print("PlayGroung Id shoka: ${document.id}"); // Print the latest playground
 
-            print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
+          print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
 // Store the document ID in the AddPlayGroundModel object
-            // user.id = document.id;
-            user.id = document.id;
-            print("Docummmmmm${user.id}");
-            for(int m=0;m<allplaygrounds.length;m++){
-              print("kkkkkkkkshok${allplaygrounds[m]}");
-              print("shimaaaaaaaplaygroundiddddd${allplaygrounds[m].id}");
+          // user.id = document.id;
+          user.id = document.id;
+          print("Docummmmmm${user.id}");
+          for(int m=0;m<allplaygrounds.length;m++){
+            print("kkkkkkkkshok${allplaygrounds[m]}");
+            print("shimaaaaaaaplaygroundiddddd${allplaygrounds[m].id}");
 
-              fetchRatings(allplaygrounds[m].id!);
+            fetchRatings(allplaygrounds[m].id!);
 
-            }
-
-            // Store the document ID in the AddPlayGroundModel object
-            // idddddd1 = document.id;
-            // idddddd2=document.id;
-            // print("Docummmmmm$idddddd1    gggg$idddddd2");
           }
+
+          // Store the document ID in the AddPlayGroundModel object
+          // idddddd1 = document.id;
+          // idddddd2=document.id;
+          // print("Docummmmmm$idddddd1    gggg$idddddd2");
         }
-      } catch (e) {
-        print("Error getting playground: $e");
       }
+    } catch (e) {
+      print("Error getting playground: $e");
     }
+  }
 
   final NavigationController navigationController = Get.put(NavigationController());
   double opacity = 1.0;
@@ -909,7 +932,8 @@ print("phoneee$normalizedPhoneNumber");
       child: Scaffold(
         backgroundColor: Colors.white,
 
-        body:  _isConnected? Padding(
+        body:  isConnected
+      ? Padding(
           padding: const EdgeInsets.only(top: 66.0),
           child: SingleChildScrollView(
             child: Column(
@@ -1125,7 +1149,7 @@ print("phoneee$normalizedPhoneNumber");
 
                 SizedBox(height: 10,),
 
-                       fourtypes.isNotEmpty?
+                fourtypes.isNotEmpty?
                 // Stack(
                 //   children: [
                 //     Padding(
@@ -1346,7 +1370,7 @@ print("phoneee$normalizedPhoneNumber");
                   ],
                 )
                     :
-                       allplaygrounds.isEmpty&&fourtypes.isEmpty&&rat_list2.isEmpty &&playgroundbook.isEmpty?   Center(
+                allplaygrounds.isEmpty&&fourtypes.isEmpty&&rat_list2.isEmpty &&playgroundbook.isEmpty?   Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -2185,38 +2209,41 @@ print("phoneee$normalizedPhoneNumber");
     );
   }
   Widget _buildNoInternetUI() {
-    // Your UI design when there's no internet connection
-    return Container(
-      color: Colors.white,
-      child: Column(
-        children: [
-          SizedBox(
-            height: 200,
-          ),
-          Center(
-            child: Container(
-              height: 200,
-              child: Image.asset(
-                'assets/images/nointernetconnection.png',
-                // Adjust the height as needed
+
+      return Container(
+        color: Colors.white,
+        child: Column(
+          children: [
+            SizedBox(
+              height: MediaQuery.of(context).size.height/3,
+
+            ),
+            Center(
+              child: Container(
+                height: 200,
+                child: Image.asset(
+                  'assets/images/wifirr.png',
+                  // Adjust the height as needed
+                ),
               ),
             ),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          Text(
-            "لا يوجد اتصال بالانترنت".tr,
-            style: TextStyle(
-              fontSize: 14,
-              fontFamily: 'Cairo',
-              fontWeight: FontWeight.w400,
-              color: Colors.black,
+            SizedBox(
+              height: 20,
             ),
-          ),
+            Text(
+              "لا يوجد اتصال بالانترنت".tr,
+              style: TextStyle(
+                fontSize: 14,
+                fontFamily: 'Cairo',
+                fontWeight: FontWeight.w400,
+                color: Colors.black,
+              ),
+            ),
 
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    }
+    // Your UI design when there's no internet connection
+
   }
-}

@@ -15,7 +15,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../Register/SignInPage.dart';
 import '../../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:connectivity/connectivity.dart';
 import '../Favourite/Favourite_page.dart';
 import '../Home/Userclass.dart';
 import '../Splach/LoadingScreen.dart';
@@ -36,7 +36,7 @@ class ProfilepageState extends State<Profilepage>
   final TextEditingController _phoneNumberController = TextEditingController();
 
   final NavigationController navigationController =
-      Get.put(NavigationController());
+  Get.put(NavigationController());
 
   bool _isLoading = true; // flag to control shimmer effect
   Future<void> _loadData() async {
@@ -51,15 +51,33 @@ class ProfilepageState extends State<Profilepage>
   bool _isUploading = false;
   String img_profile = '';
   File? selectedImages;
-
+  String previousName = '';
+  String previousPhoneNumber = '';
+  bool isConnected=true;
   Future<void> takePhoto() async {
     final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.camera);
+    await ImagePicker().pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       setState(() {
         selectedImages = File(pickedFile.path); // Update the selected image
         // img_profile = pickedFile.path; // Update the img_profile variable
       });
+    }
+  }
+
+  Future<bool> checkInternetConnection() async {
+    // Get the connectivity status
+    ConnectivityResult connectivityResult = await Connectivity().checkConnectivity();
+
+    // If the device is connected to mobile or wifi network
+    if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+      isConnected = true;
+      print("isConnected: $isConnected");
+      return true; // Internet is available
+    } else {
+      isConnected = false;
+      print("isConnected: $isConnected");
+      return false; // No internet connection
     }
   }
 
@@ -79,14 +97,17 @@ class ProfilepageState extends State<Profilepage>
 
   Future<File?> pickImageFromGallery() async {
     final XFile? image =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    await ImagePicker().pickImage(source: ImageSource.gallery);
     return image != null ? File(image.path) : null;
   }
 
   Future<String> _uploadImage(File image) async {
-    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+    String fileName = DateTime
+        .now()
+        .millisecondsSinceEpoch
+        .toString();
     Reference storageRef =
-        FirebaseStorage.instance.ref().child('Users/$fileName');
+    FirebaseStorage.instance.ref().child('Users/$fileName');
     await storageRef.putFile(image);
     String downloadUrl = await storageRef.getDownloadURL();
     img_profile = downloadUrl;
@@ -94,16 +115,16 @@ class ProfilepageState extends State<Profilepage>
     return downloadUrl;
   }
 
-  Future<void> _storeImageUrls(
-      String name, String phone, String profileImageUrl) async
+  Future<void> _storeImageUrls(String name, String phone,
+      String profileImageUrl) async
   {
     CollectionReference usersRef =
-        FirebaseFirestore.instance.collection('Users');
+    FirebaseFirestore.instance.collection('Users');
 
     try {
       // Query the Firestore database to find the user's document based on their phone number
       QuerySnapshot querySnapshot =
-          await usersRef.where('phone', isEqualTo: phone).get();
+      await usersRef.where('phone', isEqualTo: phone).get();
 
       if (querySnapshot.docs.isNotEmpty) {
         // Update the user's document with the new image URL
@@ -136,6 +157,7 @@ class ProfilepageState extends State<Profilepage>
       print('Error updating user data: $e');
     }
   }
+
   Future<void> _updateName(String name) async {
     CollectionReference usersRef =
     FirebaseFirestore.instance.collection('Users');
@@ -145,13 +167,14 @@ class ProfilepageState extends State<Profilepage>
     try {
       // Query the Firestore database to find the user's document based on their phone number
       QuerySnapshot querySnapshot =
-      await usersRef.where('phone', isEqualTo: _phoneNumberController.text).get();
+      await usersRef.where('phone', isEqualTo: _phoneNumberController.text)
+          .get();
       String existingName = user1[0].name!;
       if (name == existingName) {
         print("Name is already up to date");
       }
 
-      else{
+      else {
         if (querySnapshot.docs.isNotEmpty) {
           // Update the user's document with the new image URL
           DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
@@ -190,6 +213,7 @@ class ProfilepageState extends State<Profilepage>
       print('Error updating user data: $e');
     }
   }
+
   void _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? phoneValue = prefs.getString('phonev');
@@ -208,7 +232,7 @@ class ProfilepageState extends State<Profilepage>
     try {
       String normalizedPhoneNumber = phoneNumber.replaceFirst('+20', '0');
       CollectionReference playerchat =
-          FirebaseFirestore.instance.collection('Users');
+      FirebaseFirestore.instance.collection('Users');
 
       QuerySnapshot querySnapshot = await playerchat
           .where('phone', isEqualTo: normalizedPhoneNumber)
@@ -216,16 +240,17 @@ class ProfilepageState extends State<Profilepage>
 
       if (querySnapshot.docs.isNotEmpty) {
         Map<String, dynamic> userData =
-            querySnapshot.docs.first.data() as Map<String, dynamic>;
+        querySnapshot.docs.first.data() as Map<String, dynamic>;
         User1 user = User1.fromMap(userData);
 
         // Update the list and UI inside setState
         setState(() {
           user1.add(user);
           if (user1.isNotEmpty) {
-            // Check if user1 is not empty
             _phoneNumberController.text = user1[0].phoneNumber!;
             _nameController.text = user1[0].name!;
+            previousName = _nameController.text;
+            previousPhoneNumber = _phoneNumberController.text;
             img_profile = user1[0].img!;
           }
         });
@@ -239,7 +264,7 @@ class ProfilepageState extends State<Profilepage>
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => SigninPage()),
-          (Route<dynamic> route) => false,
+              (Route<dynamic> route) => false,
         );
       }
     } catch (e) {
@@ -250,6 +275,7 @@ class ProfilepageState extends State<Profilepage>
   @override
   void initState() {
     super.initState();
+    checkInternetConnection();
     _loadUserData();
     _loadData();
     // Now you can access the user1 list
@@ -281,7 +307,8 @@ class ProfilepageState extends State<Profilepage>
             // Center the title horizontally
             leading: IconButton(
               onPressed: () {
-                Map<dynamic, dynamic>? arguments = ModalRoute.of(context)
+                Map<dynamic, dynamic>? arguments = ModalRoute
+                    .of(context)
                     ?.settings
                     .arguments as Map<dynamic, dynamic>?; // Explicit casting
                 if (arguments != null && arguments['from'] == 'menu_page') {
@@ -321,15 +348,15 @@ class ProfilepageState extends State<Profilepage>
           ),
         ),
       ),
-      body: Directionality(
-          textDirection: TextDirection.rtl,
-          child: Stack(
-            children:[ SingleChildScrollView(
+      body:isConnected? Directionality(
+        textDirection: TextDirection.rtl,
+        child: Stack(
+            children: [ SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.only(
                     top: 15.0, bottom: 15, right: 22, left: 22),
                 child:
-                    Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                   Stack(
                     children: [
                       Padding(
@@ -338,30 +365,30 @@ class ProfilepageState extends State<Profilepage>
                             alignment: Alignment.topCenter,
                             child: selectedImages == null
                                 ? img_profile == ''
-                                    ? Container(
-                                        width: 164,
-                                        height: 164,
-                                        child: Image.asset(
-                                          "assets/images/profile.png",
-                                        ),
-                                      )
-                                    : ClipOval(
-                                        child: Image(
-                                          image: NetworkImage(img_profile),
-                                          width: 164,
-                                          height: 164,
-                                          fit: BoxFit.fitWidth,
-                                        ),
-                                      )
+                                ? Container(
+                              width: 164,
+                              height: 164,
+                              child: Image.asset(
+                                "assets/images/profile.png",
+                              ),
+                            )
                                 : ClipOval(
-                                    child: Image.file(
-                                    selectedImages!,
-                                    height: 164,
-                                    width: 164,
-                                    fit: BoxFit.cover,
-                                  )) // Display selected image
+                              child: Image(
+                                image: NetworkImage(img_profile),
+                                width: 164,
+                                height: 164,
+                                fit: BoxFit.fitWidth,
+                              ),
+                            )
+                                : ClipOval(
+                                child: Image.file(
+                                  selectedImages!,
+                                  height: 164,
+                                  width: 164,
+                                  fit: BoxFit.cover,
+                                )) // Display selected image
 
-                            ),
+                        ),
                       ),
                       Positioned(
                         top: 129,
@@ -601,34 +628,62 @@ class ProfilepageState extends State<Profilepage>
                     height: 100,
                   ),
 
-                  //btttttttttttttttttn
+
                   GestureDetector(
                     onTap: () async {
-                    await  _updateName(_nameController.text);
-                      if (selectedImages != null) {
-                        setState(() {
-                          _isLoading = true;
-                        });
-                        // Upload the image to Firebase Storage
-                        String downloadUrl = await _uploadImage(selectedImages!);
 
-                        await _storeImageUrls(_nameController.text,
-                            _phoneNumberController.text, downloadUrl);
-                        setState(() {
-                          img_profile=downloadUrl;
-                        });
-                        await getUserByPhone(_phoneNumberController.text);
-                        setState(() {
-                          _isLoading = false;
-                        });
-                      } else {
-                        print('No image selected');
-                      }
+
+                        bool hasChanges = false;
+
+                        if (_nameController.text != previousName ||
+                            _phoneNumberController.text !=
+                                previousPhoneNumber ||
+                            selectedImages != null) {
+                          hasChanges = true;
+                        }
+
+                        if (hasChanges) {
+                          setState(() {
+                            _isLoading = true;
+                          });
+
+                          // Update user name
+                          await _updateName(_nameController.text);
+
+                          if (selectedImages != null) {
+                            String downloadUrl = await _uploadImage(
+                                selectedImages!);
+                            await _storeImageUrls(_nameController.text,
+                                _phoneNumberController.text, downloadUrl);
+
+                            setState(() {
+                              img_profile = downloadUrl;
+                            });
+                          }
+
+
+                          await getUserByPhone(_phoneNumberController.text);
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        }
+                        else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'لا يوجد بيانات لحفظها',
+                                textAlign: TextAlign.center,
+                              ),
+                              backgroundColor: Color(0xFF1F8C4B),
+                            ),
+                          );
+                          print('No changes made');
+                        }
 
                     },
                     child: Padding(
-                      padding:
-                          const EdgeInsets.only(top: 50.0, right: 20, left: 20),
+                      padding: const EdgeInsets.only(
+                          top: 50.0, right: 20, left: 20),
                       child: Container(
                         height: 50,
                         width: 320,
@@ -658,10 +713,11 @@ class ProfilepageState extends State<Profilepage>
                 ]),
               ),
             ),
-              ( _isLoading == true)
-    ? const Positioned(top: 0, child: Loading())
-        : Container(),]
-          ),),
+              (_isLoading == true)
+                  ? const Positioned(top: 0, child: Loading())
+                  : Container(),
+            ]
+        ),):  _buildNoInternetUI(),
       bottomNavigationBar: CurvedNavigationBar(
         height: 60,
         index: 0,
@@ -686,10 +742,10 @@ class ProfilepageState extends State<Profilepage>
           // Handle navigation based on index
           switch (index) {
             case 0:
-              // Get.to(() => menupage())?.then((_) {
-              //   navigationController
-              //       .updateIndex(0); // Update index when navigating back
-              // });
+            // Get.to(() => menupage())?.then((_) {
+            //   navigationController
+            //       .updateIndex(0); // Update index when navigating back
+            // });
               break;
             case 1:
               Get.to(() => my_reservation())?.then((_) {
@@ -734,7 +790,8 @@ class ProfilepageState extends State<Profilepage>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('اختر مصدر الصورة',textAlign: TextAlign.center, style: TextStyle(
+          title: Text(
+            'اختر مصدر الصورة', textAlign: TextAlign.center, style: TextStyle(
             fontFamily: 'Cairo',
             fontSize: 20.0,
             fontWeight: FontWeight.w500,
@@ -744,24 +801,63 @@ class ProfilepageState extends State<Profilepage>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-              TextButton(
-                child: Icon(Icons.camera_alt_outlined,color: Color(0xFF064821),),
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
-                  takePhoto(); // Call method to take a photo
-                },
-              ),
-              TextButton(
-                child:  Icon(Icons.photo_library_outlined,color:Color(0xFF064821)),
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
-                  uploadImagesAndSaveUrls(); // Call method to pick images from gallery
-                },
-              ),
-            ],)
+                TextButton(
+                  child: Icon(
+                    Icons.camera_alt_outlined, color: Color(0xFF064821),),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                    takePhoto(); // Call method to take a photo
+                  },
+                ),
+                TextButton(
+                  child: Icon(
+                      Icons.photo_library_outlined, color: Color(0xFF064821)),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                    uploadImagesAndSaveUrls(); // Call method to pick images from gallery
+                  },
+                ),
+              ],)
           ],
         );
       },
+    );
+  }
+
+  Widget _buildNoInternetUI() {
+    // Your UI design when there's no internet connection
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height/5,
+
+          ),
+          Center(
+            child: Container(
+              height: 200,
+              child: Image.asset(
+                'assets/images/wifirr.png',
+                // Adjust the height as needed
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Text(
+            "لا يوجد اتصال بالانترنت".tr,
+            style: TextStyle(
+              fontSize: 14,
+              fontFamily: 'Cairo',
+              fontWeight: FontWeight.w400,
+              color: Colors.black,
+            ),
+          ),
+
+        ],
+      ),
     );
   }
 }

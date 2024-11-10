@@ -1,5 +1,6 @@
 class AddbookingModel {
   String? iid;
+  int?totalcost;
   String? Name;
   bool?acceptorcancle;
   // String? phoneCommunication;
@@ -21,6 +22,7 @@ class AddbookingModel {
     this.Name,
     // this.phoneCommunication,
     this.dateofBooking,
+    this.totalcost,
     // this.timeofBooking,
     this.rentTheBall,
     this.acceptorcancle,
@@ -43,6 +45,7 @@ class AddbookingModel {
   factory AddbookingModel.fromMap(Map<String, dynamic> map) {
     return AddbookingModel(
       iid: '',
+      totalcost: map['totalcost'],
       acceptorcancle:map['acceptorcancle']??'',
       AdminId: map['AdminId'] ?? '',  // Get AdminId directly from the map
       // groundID:map['groundID'],
@@ -83,6 +86,7 @@ class AddbookingModel {
   // Method to convert the instance to a map
   Map<String, dynamic> toMap() {
     return {
+      'totalcost':totalcost,
       'AdminId': AdminId,  // Add AdminId to the map
       // 'groundID':groundID,
       'Name': Name,

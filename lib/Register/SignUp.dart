@@ -323,24 +323,21 @@ class SignUpPageState extends State<SignUpPage>
 //   }
   Future<void> uploadImagesAndSaveUrls() async {
     File? image = await pickImageFromGallery();
-
-    if (image == null) return; // If no image is selected, exit the function
-
-    // Show loading indicator while the image is uploading
+    if (image == null) return;
     setState(() {
       selectedImages = image;
-      img_profile = ""; // Temporarily clear img_profile until the new URL is fetched
+      img_profile = "";
     });
 
     try {
       String downloadUrl = await _uploadImage(image);
       setState(() {
-        img_profile = downloadUrl; // Update the profile image URL after successful upload
+        img_profile = downloadUrl;
       });
       print("Image uploaded successfully: $downloadUrl");
     } catch (e) {
       print("Failed to upload image: $e");
-      // Optionally, show an error message to the user
+
     }
   }
 
