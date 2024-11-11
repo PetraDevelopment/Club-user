@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import '../../Controller/NavigationController.dart';
-import '../../Favourite/Favourite_page.dart';
 import '../../Home/HomePage.dart';
 import '../../my_reservation/my_reservation.dart';
 import 'GetxController.dart';
@@ -14,6 +13,8 @@ class AppBarandNavigationBTN extends StatelessWidget {
     final SportsController controller = Get.put(SportsController());
     final size = MediaQuery.of(context).size;
     final NavigationController navigationController = Get.put(NavigationController());
+
+
 //to make back btn of android not working
 
     return WillPopScope(
@@ -68,7 +69,7 @@ class AppBarandNavigationBTN extends StatelessWidget {
             ),
           ),
         ),
-        body: Column(
+        body:controller.isConnected.value==true ?  Column(
           children: [
             Obx(() => Padding(
               padding: const EdgeInsets.only(right: 22.0,left: 8,top: 22,bottom: 12),
@@ -238,17 +239,17 @@ class AppBarandNavigationBTN extends StatelessWidget {
                 ),
                 );
                 }
-                return ListView.builder(
+                return controller.isConnected.value==true ?ListView.builder(
 
                   itemCount: controller.sportData.length,
                   itemBuilder: (BuildContext context, int index) {
                     return controller.sportData[index]; // Use the widgets stored in sportData
                   },
-                );
+                ):_buildNoInternetUI();
               }),
             ),
           ],
-        ),
+        ):_buildNoInternetUI(),
 
         bottomNavigationBar: CurvedNavigationBar(
           height: 60,
@@ -305,6 +306,41 @@ class AppBarandNavigationBTN extends StatelessWidget {
       ),
     );
 
+  }
+  Widget _buildNoInternetUI() {
+    // Your UI design when there's no internet connection
+    return Container(
+      color: Colors.white,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+
+          Center(
+            child: Container(
+              height: 200,
+              child: Image.asset(
+                'assets/images/wifirr.png',
+                // Adjust the height as needed
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Text(
+            "لا يوجد اتصال بالانترنت".tr,
+            style: TextStyle(
+              fontSize: 14,
+              fontFamily: 'Cairo',
+              fontWeight: FontWeight.w400,
+              color: Colors.black,
+            ),
+          ),
+
+        ],
+      ),
+    );
   }
   // Function to handle back navigation logic
   Future<bool> handleBackNavigation() async {

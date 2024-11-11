@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../Controller/NavigationController.dart';
 import '../Favourite/Favourite_page.dart';
 import '../Home/HomePage.dart';
@@ -31,7 +31,27 @@ class SearchpageState extends State<Searchpage> {
   late List<User1> user1 = [];
   User? user = FirebaseAuth.instance.currentUser;
   bool _isLoading = true; // flag to control shimmer effect
+  bool isConnected=true;
+  Future<void> checkInternetConnection() async {
 
+    print("bvbbvbvbb$isConnected");
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    print("connectivityResult$connectivityResult");
+    print("connectivityResult${ConnectivityResult.none}");
+
+    if (connectivityResult[0] == ConnectivityResult.none) {
+      setState(() {
+        isConnected = false;
+        print("bvbbvbvbb$isConnected");
+      });
+    }else{
+      isConnected = true;
+
+    }
+    print("bvbbvbvbb$isConnected");
+
+  }
   Future<void> _loadData() async {
     // load data here
     await Future.delayed(Duration(seconds: 2)); // simulate data loading
@@ -42,6 +62,7 @@ class SearchpageState extends State<Searchpage> {
   @override
   void initState() {
     super.initState();
+    checkInternetConnection();
     _loadData();
     getPlaygroundbyname();
     _loadUserData();
@@ -244,7 +265,7 @@ class SearchpageState extends State<Searchpage> {
               backgroundColor: Colors.white,
               surfaceTintColor: Colors.transparent,
               title: Text(
-                "المــلاعب".tr,
+                "البحــــــث".tr,
                 style: TextStyle(
                   fontSize: 16,
                   fontFamily: 'Cairo',
@@ -280,7 +301,7 @@ class SearchpageState extends State<Searchpage> {
             ),
           ),
         ),
-        body: SingleChildScrollView(
+        body:isConnected? SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -493,7 +514,7 @@ textDirection: TextDirection.rtl,
               SizedBox(height: 20,),
             ],
           ),
-        ),
+        ):_buildNoInternetUI(),
 
         bottomNavigationBar: CurvedNavigationBar(
           height: 60,
@@ -560,6 +581,42 @@ textDirection: TextDirection.rtl,
           },
         ),
         // ),
+      ),
+    );
+  }
+  Widget _buildNoInternetUI() {
+
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height/5,
+
+          ),
+          Center(
+            child: Container(
+              height: 200,
+              child: Image.asset(
+                'assets/images/wifirr.png',
+                // Adjust the height as needed
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Text(
+            "لا يوجد اتصال بالانترنت".tr,
+            style: TextStyle(
+              fontSize: 14,
+              fontFamily: 'Cairo',
+              fontWeight: FontWeight.w400,
+              color: Colors.black,
+            ),
+          ),
+
+        ],
       ),
     );
   }

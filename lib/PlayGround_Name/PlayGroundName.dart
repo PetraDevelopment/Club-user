@@ -54,7 +54,27 @@ class PlaygroundNameState extends State<PlaygroundName>
       _isLoading = false; // set flag to false when data is loaded
     });
   }
+  bool isConnected=true;
+  Future<void> checkInternetConnection() async {
 
+    print("bvbbvbvbb$isConnected");
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    print("connectivityResult$connectivityResult");
+    print("connectivityResult${ConnectivityResult.none}");
+
+    if (connectivityResult[0] == ConnectivityResult.none) {
+      setState(() {
+        isConnected = false;
+        print("bvbbvbvbb$isConnected");
+      });
+    }else{
+      isConnected = true;
+
+    }
+    print("bvbbvbvbb$isConnected");
+
+  }
   int count = 0;
 
   List<Favouritemodel> favlist = [];
@@ -379,6 +399,7 @@ class PlaygroundNameState extends State<PlaygroundName>
   @override
   void initState() {
     super.initState();
+    checkInternetConnection();
     _loadgetfavdataData();
     fetchRatings();
     getPlaygroundbyid();
@@ -654,7 +675,7 @@ class PlaygroundNameState extends State<PlaygroundName>
 
     return Scaffold(
       // backgroundColor: Colors.white,
-      body: Stack(
+      body: isConnected?Stack(
         children: [
           SingleChildScrollView(
             child: Column(
@@ -1646,7 +1667,7 @@ class PlaygroundNameState extends State<PlaygroundName>
             ),
           ),
         ],
-      ),
+      ):_buildNoInternetUI(),
       bottomNavigationBar: CurvedNavigationBar(
         height: 60,
         index: 2,
@@ -1699,6 +1720,42 @@ class PlaygroundNameState extends State<PlaygroundName>
               break;
           }
         },
+      ),
+    );
+  }
+  Widget _buildNoInternetUI() {
+
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height/3,
+
+          ),
+          Center(
+            child: Container(
+              height: 200,
+              child: Image.asset(
+                'assets/images/wifirr.png',
+                // Adjust the height as needed
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Text(
+            "لا يوجد اتصال بالانترنت".tr,
+            style: TextStyle(
+              fontSize: 14,
+              fontFamily: 'Cairo',
+              fontWeight: FontWeight.w400,
+              color: Colors.black,
+            ),
+          ),
+
+        ],
       ),
     );
   }

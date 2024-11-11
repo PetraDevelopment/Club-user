@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:connectivity/connectivity.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../Controller/NavigationController.dart';
 import '../Favourite/Favourite_page.dart';
 import '../Home/HomePage.dart';
@@ -34,20 +34,25 @@ class My_groupState extends State<My_group> {
   User? user = FirebaseAuth.instance.currentUser;
   bool isConnected = true; // Default to true assuming there's internet at start
   bool isLoading = true;
-  Future<bool> checkInternetConnection() async {
-    // Get the connectivity status
-    ConnectivityResult connectivityResult = await Connectivity().checkConnectivity();
+  Future<void> checkInternetConnection() async {
 
-    // If the device is connected to mobile or wifi network
-    if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+    print("bvbbvbvbb$isConnected");
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    print("connectivityResult$connectivityResult");
+    print("connectivityResult${ConnectivityResult.none}");
+
+    if (connectivityResult[0] == ConnectivityResult.none) {
+      setState(() {
+        isConnected = false;
+        print("bvbbvbvbb$isConnected");
+      });
+    }else{
       isConnected = true;
-      print("isConnected: $isConnected");
-      return true; // Internet is available
-    } else {
-      isConnected = false;
-      print("isConnected: $isConnected");
-      return false; // No internet connection
+
     }
+    print("bvbbvbvbb$isConnected");
+
   }
 
   Future<void> getUserGroup(String phoneNumber) async {
@@ -453,7 +458,7 @@ class My_groupState extends State<My_group> {
       child: Column(
         children: [
           SizedBox(
-            height: 200,
+            height: MediaQuery.of(context).size.height/5,
           ),
           Center(
             child: Container(

@@ -15,7 +15,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../Register/SignInPage.dart';
 import '../../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:connectivity/connectivity.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../Favourite/Favourite_page.dart';
 import '../Home/Userclass.dart';
 import '../Splach/LoadingScreen.dart';
@@ -53,7 +53,7 @@ class ProfilepageState extends State<Profilepage>
   File? selectedImages;
   String previousName = '';
   String previousPhoneNumber = '';
-  bool isConnected=true;
+
   Future<void> takePhoto() async {
     final pickedFile =
     await ImagePicker().pickImage(source: ImageSource.camera);
@@ -65,20 +65,26 @@ class ProfilepageState extends State<Profilepage>
     }
   }
 
-  Future<bool> checkInternetConnection() async {
-    // Get the connectivity status
-    ConnectivityResult connectivityResult = await Connectivity().checkConnectivity();
+  bool isConnected=true;
+  Future<void> checkInternetConnection() async {
 
-    // If the device is connected to mobile or wifi network
-    if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+    print("bvbbvbvbb$isConnected");
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    print("connectivityResult$connectivityResult");
+    print("connectivityResult${ConnectivityResult.none}");
+
+    if (connectivityResult[0] == ConnectivityResult.none) {
+      setState(() {
+        isConnected = false;
+        print("bvbbvbvbb$isConnected");
+      });
+    }else{
       isConnected = true;
-      print("isConnected: $isConnected");
-      return true; // Internet is available
-    } else {
-      isConnected = false;
-      print("isConnected: $isConnected");
-      return false; // No internet connection
+
     }
+    print("bvbbvbvbb$isConnected");
+
   }
 
   Future<void> uploadImagesAndSaveUrls() async {

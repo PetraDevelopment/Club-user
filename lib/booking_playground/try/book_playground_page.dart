@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:popover/popover.dart';
-import 'package:connectivity/connectivity.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../Controller/NavigationController.dart';
 import '../../Home/HomePage.dart';
 import '../../Home/Userclass.dart';
@@ -410,6 +410,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
               String adminId =playgroundAllData[0].adminId! ; // Fetch AdminId directly from userData
               groundPhoneee=playgroundAllData[0].phoneCommunication!;
               groundNamee=playgroundAllData[0].playgroundName!;
+
               // You can use these times to update the UI or for other logic
               timeSlots.add(startTime); // Add start time to the list
               timeSlots.add(endTime);   // Add end time to the list
@@ -705,6 +706,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
         // Prepare the booking model
         final bookingModel = AddbookingModel(
           Name: name,
+          groundImage: playgroundAllData[0].img![0],
           totalcost:tooooootl ,
           dateofBooking: storeDate,
           Day_of_booking: selectedDayName,
@@ -949,20 +951,25 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
     return timeSlots;
   }
   bool isConnected=true;
-  Future<bool> checkInternetConnection() async {
-    // Get the connectivity status
-    ConnectivityResult connectivityResult = await Connectivity().checkConnectivity();
+  Future<void> checkInternetConnection() async {
 
-    // If the device is connected to mobile or wifi network
-    if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+    print("bvbbvbvbb$isConnected");
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    print("connectivityResult$connectivityResult");
+    print("connectivityResult${ConnectivityResult.none}");
+
+    if (connectivityResult[0] == ConnectivityResult.none) {
+      setState(() {
+        isConnected = false;
+        print("bvbbvbvbb$isConnected");
+      });
+    }else{
       isConnected = true;
-      print("isConnected: $isConnected");
-      return true; // Internet is available
-    } else {
-      isConnected = false;
-      print("isConnected: $isConnected");
-      return false; // No internet connection
+
     }
+    print("bvbbvbvbb$isConnected");
+
   }
   void initState() {
     checkInternetConnection();
@@ -2475,7 +2482,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
       child: Column(
         children: [
           SizedBox(
-            height: MediaQuery.of(context).size.height/3,
+            height: MediaQuery.of(context).size.height/5,
 
           ),
           Center(

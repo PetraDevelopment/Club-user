@@ -155,7 +155,27 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
     });
   }
   late List<User1> user1 = [];
+  bool isConnected=true;
+  Future<void> checkInternetConnection() async {
 
+    print("bvbbvbvbb$isConnected");
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    print("connectivityResult$connectivityResult");
+    print("connectivityResult${ConnectivityResult.none}");
+
+    if (connectivityResult[0] == ConnectivityResult.none) {
+      setState(() {
+        isConnected = false;
+        print("bvbbvbvbb$isConnected");
+      });
+    }else{
+      isConnected = true;
+
+    }
+    print("bvbbvbvbb$isConnected");
+
+  }
   void _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? phoneValue = prefs.getString('phonev');
@@ -206,6 +226,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
   void  initState()  {
     super.initState();
     _loadUserData();
+    checkInternetConnection();
     _loadData();
     // Now you can access the user1 list
     // print('User data44444: ${user1[0].name}');
@@ -273,7 +294,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
 
                     SizedBox(width: 8,),
 
-                    Padding(
+                    isConnected?    Padding(
                       padding: const EdgeInsets.only(left: 12,top: 11),
                       child:_isLoading?Shimmer.fromColors(
                         baseColor: Colors.grey[300]!,
@@ -390,6 +411,14 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                             ),
                           ),
                         ],
+                      ),
+                    ): Padding(
+                      padding: const EdgeInsets.only(right: 8.0,left: 8.0),
+                      child: Image.asset(
+                        "assets/images/profile.png",
+                        width: 60,
+                        height: 50,
+                        // Adjust size as needed
                       ),
                     ),
                   ],
@@ -1110,5 +1139,40 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
       return false; // Prevent default pop behavior
     }
   }
+  Widget _buildNoInternetUI() {
 
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height/5,
+
+          ),
+          Center(
+            child: Container(
+              height: 200,
+              child: Image.asset(
+                'assets/images/wifirr.png',
+                // Adjust the height as needed
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Text(
+            "لا يوجد اتصال بالانترنت".tr,
+            style: TextStyle(
+              fontSize: 14,
+              fontFamily: 'Cairo',
+              fontWeight: FontWeight.w400,
+              color: Colors.black,
+            ),
+          ),
+
+        ],
+      ),
+    );
+  }
 }

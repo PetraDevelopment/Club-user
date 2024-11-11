@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../PlayGround_Name/PlayGroundName.dart';
@@ -9,7 +9,21 @@ import '../../playground_model/AddPlaygroundModel.dart';
 class SportsController extends GetxController {
   // Observable variable for the current selected category
   RxString selectedCategory = "كرة قدم".obs; // Initialize with "كرة قدم"
+  RxBool isConnected = true.obs;
 
+  // Method to check internet connectivity
+  Future<void> checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    print("connectivityResult: $connectivityResult");
+
+    if (connectivityResult[0] == ConnectivityResult.none) {
+      isConnected.value = false;
+    } else {
+      isConnected.value = true;
+    }
+
+    print("Internet connection status: ${isConnected.value}");
+  }
   var sportData = <Widget>[].obs; // List of widgets
   late List<AddPlayGroundModel> allplaygrounds = [];
   late List<AddPlayGroundModel> volybool = [];
@@ -26,6 +40,7 @@ class SportsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    checkInternetConnection();
     _loadData();
     selectedCategory.value = "كرة قدم"; // Set the initial category
     fetchSportData("كرة قدم"); // Fetch data for the initial category
@@ -36,6 +51,7 @@ class SportsController extends GetxController {
   // Function to update the selected category and fetch data
   void selectCategory(String category) {
     selectedCategory.value = category;
+    checkInternetConnection();
     fetchSportData(category);
   }
 
@@ -78,37 +94,38 @@ class SportsController extends GetxController {
   // }
   Future<void> getPlaygroundbyname() async {
     try {
+      checkInternetConnection();
       CollectionReference playerchat =
       FirebaseFirestore.instance.collection("AddPlayground");
+  QuerySnapshot querySnapshot = await playerchat.get();
 
-      QuerySnapshot querySnapshot = await playerchat.get();
+if (querySnapshot.docs.isNotEmpty) {
+  for (QueryDocumentSnapshot document in querySnapshot.docs) {
+    Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
+    AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
 
-      if (querySnapshot.docs.isNotEmpty) {
-        for (QueryDocumentSnapshot document in querySnapshot.docs) {
-          Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
-          AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
+    allplaygrounds.add(user);
+    print("PlayGroung Id : ${document.id}"); // Print the latest playground
 
-          allplaygrounds.add(user);
-          print("PlayGroung Id : ${document.id}"); // Print the latest playground
+    print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
+    fetchSportData("كرة قدم"); // Set initial category
+    // Normalize playType before comparing
+    String playType = user.playType!.trim();
 
-          print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
-          fetchSportData("كرة قدم"); // Set initial category
-          // Normalize playType before comparing
-          String playType = user.playType!.trim();
+    if (playType == "كرة طائرة") {
+      volybool.add(user);
+    } else if (playType == "كرة قدم") {
+      football.add(user);
+    } else if (playType == "كرة تنس") {
+      tennis.add(user);
+    } else if (playType == "كرة سلة") {
+      basketball.add(user);
+    }
 
-          if (playType == "كرة طائرة") {
-            volybool.add(user);
-          } else if (playType == "كرة قدم") {
-            football.add(user);
-          } else if (playType == "كرة تنس") {
-            tennis.add(user);
-          } else if (playType == "كرة سلة") {
-            basketball.add(user);
-          }
+    // Store the document ID in the AddPlayGroundModel object
+    user.id = document.id;
+  }
 
-          // Store the document ID in the AddPlayGroundModel object
-          user.id = document.id;
-        }
       }
     } catch (e) {
       print("Error getting playground: $e");

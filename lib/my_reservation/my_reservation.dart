@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -151,6 +151,7 @@ class my_reservationState extends State<my_reservation>
   @override
   void initState() {
     super.initState();
+    checkInternetConnection();
     _loadUserData();
     _load_cancel_book();
     _load_Accepted_book();
@@ -164,6 +165,27 @@ class my_reservationState extends State<my_reservation>
   late List<AddbookingModel> playgroundbook = [];
   int numbercanceled = 0;
   int numberaccepted = 0;
+  bool isConnected=true;
+  Future<void> checkInternetConnection() async {
+
+    print("bvbbvbvbb$isConnected");
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    print("connectivityResult$connectivityResult");
+    print("connectivityResult${ConnectivityResult.none}");
+
+    if (connectivityResult[0] == ConnectivityResult.none) {
+      setState(() {
+        isConnected = false;
+        print("bvbbvbvbb$isConnected");
+      });
+    }else{
+      isConnected = true;
+
+    }
+    print("bvbbvbvbb$isConnected");
+
+  }
   Future<void> getcancel_bookDataByPhone(String userPhone) async {
     final firestore = FirebaseFirestore.instance;
 
@@ -746,7 +768,7 @@ class my_reservationState extends State<my_reservation>
           ),
         ),
         backgroundColor: Colors.white,
-        body: SingleChildScrollView(
+        body:isConnected? SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -1306,7 +1328,7 @@ class my_reservationState extends State<my_reservation>
               // Adds space between the text and the image
             ],
           ),
-        ),
+        ):_buildNoInternetUI(),
         bottomNavigationBar: CurvedNavigationBar(
           height: 60,
           index: 1,
@@ -1359,6 +1381,42 @@ class my_reservationState extends State<my_reservation>
           },
         ),
 
+      ),
+    );
+  }
+  Widget _buildNoInternetUI() {
+
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height/5,
+
+          ),
+          Center(
+            child: Container(
+              height: 200,
+              child: Image.asset(
+                'assets/images/wifirr.png',
+                // Adjust the height as needed
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Text(
+            "لا يوجد اتصال بالانترنت".tr,
+            style: TextStyle(
+              fontSize: 14,
+              fontFamily: 'Cairo',
+              fontWeight: FontWeight.w400,
+              color: Colors.black,
+            ),
+          ),
+
+        ],
       ),
     );
   }
