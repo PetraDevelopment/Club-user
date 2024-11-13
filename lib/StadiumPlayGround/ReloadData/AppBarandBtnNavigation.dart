@@ -19,7 +19,24 @@ class AppBarandNavigationBTN extends StatelessWidget {
 
     return WillPopScope(
       onWillPop: () async {
-        Get.off(HomePage()); // Navigate to HomePage
+        Map<dynamic, dynamic>? arguments = ModalRoute.of(context)
+            ?.settings
+            .arguments as Map<dynamic, dynamic>?; // Explicit casting
+        if (arguments != null && arguments['from'] == 'home') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomePage(),
+            ),
+          );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => menupage(),
+            ),
+          );
+        }
         return false; // Prevent default back button behavior
       },
       child: Scaffold(
@@ -47,9 +64,26 @@ class AppBarandNavigationBTN extends StatelessWidget {
               centerTitle: true, // Center the title horizontally
               leading: IconButton(
                 onPressed: () {
-                  // Get.back();
-                  Get.off(HomePage());
-                  // Navigator.of(context).pop(true); // Navigate back to the previous page
+
+                    Map<dynamic, dynamic>? arguments = ModalRoute.of(context)
+                        ?.settings
+                        .arguments as Map<dynamic, dynamic>?; // Explicit casting
+                    if (arguments != null && arguments['from'] == 'home') {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HomePage(),
+                        ),
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => menupage(),
+                        ),
+                      );
+                    }
+
                 },
                 icon: Icon(
                   Directionality.of(context) == TextDirection.rtl

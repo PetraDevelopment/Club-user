@@ -29,7 +29,58 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
   User? user = FirebaseAuth.instance.currentUser;
 
   final NavigationController navigationController = Get.put(NavigationController());
+  Future<void> deleteCancelByPhoneAndPlaygroundId(
+      String normalizedPhoneNumber,
 
+      )
+  async {
+    final firestore = FirebaseFirestore.instance;
+    bool documentDeleted = false;
+    print("phoneee$normalizedPhoneNumber");
+    try {
+      // Get all documents from the booking collection
+      QuerySnapshot querySnapshot = await firestore.collection('booking').get();
+
+      for (var doc in querySnapshot.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+        // Retrieve user data list
+        var userDataList = data['AlluserData']?['UserData'] as List?;
+        var groundDataList = data['NeededGroundData']?['GroundData'] as List?;
+
+        // Debugging output
+        print('User  Data List: $userDataList');
+        print('Ground Data List: $groundDataList');
+        print('Document dateofBooking: ${data['dateofBooking']}');
+        print('Document selectedTimes: ${data['selectedTimes']}');
+
+        // Check if userDataList is not null
+        if (userDataList != null) {
+          bool userMatch = userDataList.any((userData) =>
+          userData['UserPhone'] == normalizedPhoneNumber
+          );
+
+          // Check if document-level dateofBooking and selectedTimes match
+
+            await firestore.collection('booking').doc(doc.id).delete();
+             documentDeleted = true;
+
+            // Navigate to HomePage after successful deletion
+
+            return; // Exit the function after deletion
+
+        }
+      }
+
+      if (!documentDeleted) {
+        print('No document found matching the specified phone, playgroundId, date, and selectedTime.');
+      }
+
+    }
+    catch (e) {
+      print('Error deleting document: $e');
+    }
+  }
   Future<void> deleteUser(String phoneNumber) async {
     try {
       // Get the current user from FirebaseAuth
@@ -51,17 +102,17 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
 
       // Proceed if we have a phone number
       if (normalizedPhoneNumber != null) {
+        deleteCancelByPhoneAndPlaygroundId(normalizedPhoneNumber);
         // Reference to the Firestore collection
         CollectionReference playerchat = FirebaseFirestore.instance.collection('Users');
         CollectionReference fav = FirebaseFirestore.instance.collection('Favourite');
-        CollectionReference booking = FirebaseFirestore.instance.collection('booking');
+
         CollectionReference teamData = FirebaseFirestore.instance.collection('teamData');
         CollectionReference accepted = FirebaseFirestore.instance.collection('accepted');
 
         // Get documents where phone number matches
         QuerySnapshot querySnapshot = await playerchat.where('phone', isEqualTo: normalizedPhoneNumber).get();
         QuerySnapshot querySnapshotfav = await fav.where('user_phone', isEqualTo: normalizedPhoneNumber).get();
-        QuerySnapshot querySnapshotbooking = await booking.where('phoneCommunication', isEqualTo: normalizedPhoneNumber).get();
         QuerySnapshot querySnapshotteamData = await teamData.where('phone', isEqualTo: normalizedPhoneNumber).get();
         QuerySnapshot querySnapshotaccepted = await accepted.where('phone_number', isEqualTo: normalizedPhoneNumber).get();
         // Check if a document is found
@@ -90,13 +141,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
 
               }
             }
-            if(querySnapshotbooking.docs.isNotEmpty){
-              for (var doc in querySnapshotbooking.docs){
-                await doc.reference.delete();
-                print("booking data with phone number $normalizedPhoneNumber deleted successfully.");
 
-              }
-            }
             print("Document with phone number $normalizedPhoneNumber deleted successfully.");
           }
 

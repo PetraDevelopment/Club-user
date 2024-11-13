@@ -596,8 +596,7 @@ class my_reservationState extends State<my_reservation>
     final query = await firestore
         .collection('cancel_book')
         .where('user_phone', isEqualTo: userPhone)
-        .where('adminid', isEqualTo: idAdmin)
-        .where('playgroundId', isEqualTo: idGround)
+
         .get();
 
     if (query.docs.isNotEmpty) {
@@ -721,7 +720,26 @@ class my_reservationState extends State<my_reservation>
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        Get.off(HomePage()); // Navigate to HomePage
+
+          Map<dynamic, dynamic>? arguments = ModalRoute.of(context)
+              ?.settings
+              .arguments as Map<dynamic, dynamic>?; // Explicit casting
+          if (arguments != null && arguments['from'] == 'home') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HomePage(),
+              ),
+            );
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => menupage(),
+              ),
+            );
+          }
+
         return false;
       },
       child: Scaffold(
@@ -745,8 +763,24 @@ class my_reservationState extends State<my_reservation>
               // Center the title horizontally
               leading: IconButton(
                 onPressed: () {
-                  Get.off(HomePage());
-                  // Navigator.of(context).pop(true); // Navigate back to the previous page
+                  Map<dynamic, dynamic>? arguments = ModalRoute.of(context)
+                      ?.settings
+                      .arguments as Map<dynamic, dynamic>?; // Explicit casting
+                  if (arguments != null && arguments['from'] == 'home') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HomePage(),
+                      ),
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => menupage(),
+                      ),
+                    );
+                  }
                 },
                 icon: Icon(
                   Directionality.of(context) == TextDirection.RTL
@@ -1138,12 +1172,12 @@ class my_reservationState extends State<my_reservation>
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontFamily: 'Cairo',
-                                        fontSize: 13.0,
-                                        fontWeight: FontWeight.w400,
+                                        fontSize: 10.77,
+                                        fontWeight: FontWeight.w700,
                                         color: Color(0xFF334154),
                                       ),
                                     ),
-                                     SizedBox(width: MediaQuery.of(context).size.width/12,),
+                                     SizedBox(width: MediaQuery.of(context).size.width/6.7,),
                                     Text(
 
                                       "${formatDate(playgroundbook[i].dateofBooking!)}",
@@ -1176,11 +1210,14 @@ class my_reservationState extends State<my_reservation>
                                     ),
                                     children: [
 
-                                      TextSpan(
+                                      playgroundbook[i]
+                                          .selectedTimes!.isNotEmpty?     TextSpan(
                                         text: getTimeRange(
                                             playgroundbook[i]
                                                 .selectedTimes![0]), // Add formatted time range
-                                      ),
+                                      ):TextSpan(
+                            text:"", // Add formatted time range
+                          ),
                                     ],
                                   ),
                                 ),

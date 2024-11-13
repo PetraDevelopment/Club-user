@@ -668,7 +668,7 @@ class HomePageState extends State<HomePage> {
       print('Error fetching ratings: $e');
     }
   }
-  String toArabicNumerals(num number, int i) {
+  String toArabicNumerals(num number) {
     const englishToArabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
 
     // Convert the number to a string for processing
@@ -678,7 +678,7 @@ class HomePageState extends State<HomePage> {
     String convertedNumber = numberString.replaceAllMapped(RegExp(r'\d'), (match) {
       return englishToArabicNumbers[int.parse(match.group(0)!)];
     });
-    print("kkkkkkk$convertedNumber");
+    print("kkkkkkتتتتتتk$convertedNumber");
     // If you want to assign the converted number back to the cost
     // playgroundAllData[i].bookTypes![0].cost = convertedNumber; // Assuming cost is a String
 
@@ -1070,13 +1070,26 @@ class HomePageState extends State<HomePage> {
                               )
                           ),
                         ):
-                        Padding(
-                          padding: const EdgeInsets.only(right: 34.0),
-                          child: Image.asset(
-                            "assets/images/profile.png",
-                            width: 63,
-                            height: 63,
-                            // Adjust size as needed
+                        GestureDetector(
+                          onTap: (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Profilepage(),
+                                settings: RouteSettings(arguments: {
+                                  'from': 'home'
+                                }),
+                              ),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 34.0),
+                            child: Image.asset(
+                              "assets/images/profile.png",
+                              width: 63,
+                              height: 63,
+                              // Adjust size as needed
+                            ),
                           ),
                         ),
                       ],
@@ -1265,12 +1278,12 @@ class HomePageState extends State<HomePage> {
                 Stack(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(right: 5, left: 5, bottom: 10),
+                      padding: const EdgeInsets.only(right: 5, left: 5, bottom: 10,top: 10),
                       child: CarouselSlider(
                         options: CarouselOptions(
                           height: 165.0,
-                          aspectRatio: 16 / 9,
-                          viewportFraction: 0.7,
+                          aspectRatio: 16 / 10,
+                          viewportFraction: 0.75,
                           initialPage: 1,
                           enableInfiniteScroll: false,
                           autoPlay: false,
@@ -1290,78 +1303,75 @@ class HomePageState extends State<HomePage> {
                                   ),
                                 );
                               },
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 5.0, vertical: 5),
-                                child: Stack(
-                                  children: [
-                                    Material(
-                                      elevation: 4,
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      child: Container(
-                                        height: 163,
-                                        width: 274,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(20.0),
-                                          shape: BoxShape.rectangle,
-                                        ),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(20.0),
-                                          child: fourtypes[i].img!.isNotEmpty
-                                              ? Image.network(
-                                            fourtypes[i].img![0],
-                                            height: 163,
-                                            width: 274,
-                                            fit: BoxFit.cover,
-                                          )
-                                              : Image.asset(
-                                            'assets/images/newwadi.png',
-                                            height: 163,
-                                            width: 274,
-                                            fit: BoxFit.cover,
-                                          ),
+                              child: Stack(
+                                children: [
+                                  Material(
+                                    // elevation: 4,
+                                    borderRadius: BorderRadius.circular(20.0),
+                                    child: Container(
+                                      height: 163,
+                                      width: 274,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20.0),
+                                        shape: BoxShape.rectangle,
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(20.0),
+                                        child: fourtypes[i].img!.isNotEmpty
+                                            ? Image.network(
+                                          fourtypes[i].img![0],
+                                          height: 163,
+                                          width: 274,
+                                          fit: BoxFit.cover,
+                                        )
+                                            : Image.asset(
+                                          'assets/images/newwadi.png',
+                                          height: 163,
+                                          width: 274,
+                                          fit: BoxFit.cover,
                                         ),
                                       ),
                                     ),
-                                    Positioned(
-                                      top: 6,
-                                      right: 0,
-                                      left: 0,
-                                      bottom: 0,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              Colors.transparent,
-                                              Color(0x1F8C4B).withOpacity(0.0),
-                                              Color(0x1F8C4B).withOpacity(1.0),
-                                            ],
-                                            begin: Alignment.topCenter,
-                                            end: Alignment.bottomCenter,
-                                          ),
-                                          borderRadius: BorderRadius.only(
-                                            bottomLeft: Radius.circular(20.0),
-                                            bottomRight: Radius.circular(20.0),
-                                          ),
+                                  ),
+                                  Positioned(
+                                    top: 6,
+                                    right: 0,
+                                    left: 0,
+                                    bottom: 0,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Colors.transparent,
+                                            Color(0x1F8C4B).withOpacity(0.0),
+                                            Color(0x1F8C4B).withOpacity(1.0),
+                                          ],
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                        ),
+                                        borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(20.0),
+                                          bottomRight: Radius.circular(20.0),
                                         ),
                                       ),
                                     ),
-                                    Positioned(
-                                      top: 113,
-                                      right: 40,
-                                      left: 55,
-                                      child: Text(
-                                        fourtypes[i].playgroundName!,
-                                        style: TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.white,
-                                        ),
-                                        textAlign: TextAlign.center,
+                                  ),
+                                  Positioned(
+                                    top: 113,
+                                    right: 40,
+                                    left: 55,
+                                    child: Text(
+                                      fourtypes[i].playgroundName!,
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
                                       ),
+                                      textAlign: TextAlign.center,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
                         ],
@@ -1519,10 +1529,11 @@ class HomePageState extends State<HomePage> {
                                             ),
                                             children: [
 
-                                              TextSpan(
+                                              playgroundbook[i].selectedTimes!.isNotEmpty?   TextSpan(
                                                 text: getTimeRange(
-                                                    playgroundbook[i]
-                                                        .selectedTimes![0]), // Add formatted time range
+                                                    playgroundbook[i].selectedTimes![0]??""), // Add formatted time range
+                                              ):TextSpan(
+                                                text:"", // Add formatted time range
                                               ),
                                             ],
                                           ),
@@ -1551,7 +1562,7 @@ class HomePageState extends State<HomePage> {
                                         Text(
                                           // " ${playgroundAllData[i].bookTypes![0].cost!}",
 
-                                          toArabicNumerals(playgroundAllData[i].bookTypes![0].cost!,i),
+                                          toArabicNumerals(playgroundbook[i].totalcost!),
                                           style: TextStyle(
                                             fontFamily: 'Cairo',
                                             fontSize: 14.0,
@@ -2178,22 +2189,30 @@ class HomePageState extends State<HomePage> {
             // Handle navigation based on index
             switch (index) {
               case 0:
-                Get.to(() => menupage())?.then((_) {
+                Get.to(
+                  menupage(),
+                  arguments: {'from': 'home'},
+                )?.then((_){
                   navigationController
                       .updateIndex(0); // Update index when navigating back
                 });
                 break;
 
               case 1:
-                Get.to(() => my_reservation())?.then((_) {
+                Get.to(() => my_reservation(), arguments: {'from': 'home'},)?.then((_) {
+                  navigationController.updateIndex(2);
+                });
+
+                break;
+              case 2:
+                Get.to(
+                  AppBarandNavigationBTN(),
+                  arguments: {'from': 'home'},
+                )?.then((_){
                   navigationController
                       .updateIndex(1); // Update index when navigating back
                 });
-                break;
-              case 2:
-                Get.to(() => AppBarandNavigationBTN())?.then((_) {
-                  navigationController.updateIndex(2);
-                });
+
                 break;
 
               case 3:

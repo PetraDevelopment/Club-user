@@ -41,8 +41,8 @@ class _LoadingState extends State<Loading> {
     var media = MediaQuery.of(context).size;
     return Container(
       alignment: Alignment.center,
-      height: media.height * 1,
-      width: media.width * 1,
+      height: media.height ,
+      width: media.width ,
       color: Colors.transparent.withOpacity(0.6),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

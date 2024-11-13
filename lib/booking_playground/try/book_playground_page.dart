@@ -33,11 +33,9 @@ class book_playground_page extends StatefulWidget {
 
 class book_playground_pageState extends State<book_playground_page> with TickerProviderStateMixin {
 
-  bool _isLoading = true; // flag to control shimmer effect
-  // late List<AddPlayGroundModel> addplayground = [];
+  bool _isLoading = true;
   int PhooneNumberMaxLength = 10;
   Set<String> selectedTimes = {};
-  // Helper function to fetch booking details based on the selected slot
   bool isLoading = false;
   late List<AddPlayGroundModel> playgroundAllData = [];
   List<String> dayss = [];
@@ -48,7 +46,6 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
   int _currentIndex = 0; // Add this state variable to track the current page
 
   late List<AddbookingModel> playgroundbook = [];
-  // late List<AddbookingModel> userplaygroundbook = [];
   List<AddbookingModel> matchedPlaygrounds = [];
   late List<AddPlayGroundModel> matchedplaygroundAllData = [];
   Future<String> convertmonthtonumber(date,int index) async{
@@ -105,7 +102,7 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
         date2=  date2.replaceAll(months[k] ,'-${k+1}-');
         print("updated matchedPlaygrounds done with ${date2}");
         // matchedPlaygrounds[index].dateofBooking=date2;
-print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[index].dateofBooking!}");
+// print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[index].dateofBooking!}");
       }
     }
 //loop in date to convert every en number to ar
@@ -140,19 +137,13 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
     print("number equal $convertedNumber");
     return convertedNumber; // Return the converted number
   }
-  // String cost = "";
   late DateTime Day1;
   late DateTime Day2;
-  // Map to hold already booked times per day
-
-// Track times that are already selected and should not be deselected
   var Phoone = '';
   String PhooneErrorText = '';
   String SelectedTimeErrorText = '';
 
-  List<User> users = []; // Your user list
-
-// Call startendtime and get the time slots
+  List<User> users = [];
   final NavigationController navigationController = Get.put(NavigationController());
   List<bool> _isCheckedList = [false, false, false, false, false];
   List<String> timeSlots = [];
@@ -185,47 +176,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
     return '$formattedStartTime     الي     $formattedEndTime';
   }
 
-// Helper function to get the next occurrence of a weekday
-  DateTime _getNextDayOfWeek(String dayName, DateTime today) {
-    List<String> daysOfWeek = [
-      'Sunday',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday'
-      // 'الاحد'.tr,
-      // 'الاثنبن'.tr,
-      // 'الثلاثاء'.tr,
-      // 'الاربعاء'.tr,
-      // 'الخميس'.tr,
-      // 'الجمعة'.tr,
-      // 'السبت'.tr
-    ];
-    int dayIndex = daysOfWeek.indexOf(dayName);
-    if (dayIndex == -1) throw ArgumentError('Invalid day name: $dayName');
 
-    int currentDayIndex =
-        today.weekday % 7; // Sunday is 0, Monday is 1, ..., Saturday is 6
-    int daysToAdd = (dayIndex - currentDayIndex + 7) % 7;
-
-    return today.add(Duration(days: daysToAdd));
-  }
-
-// Helper function to get the name of the day from a DateTime object
-  String _getDayName(DateTime date) {
-    List<String> daysOfWeek = [
-      'Sunday',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday'
-    ];
-    return daysOfWeek[date.weekday % 7];
-  }
   Future<void> getAllPlaygrounds() async {
     try {
       // Reference to the Firestore collection
@@ -248,6 +199,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
             // Filter by 'GroundId' within 'GroundData' array
             for (var groundData in groundDataList) {
               if (groundData['GroundId'] == widget.IdData) {
+
                 // If groundID matches, add the document to the list
                 playgrounds.add(AddbookingModel.fromMap(userData));
                 break; // Stop checking this document if a match is found
@@ -259,12 +211,10 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
         // Update the list and UI inside setState
         setState(() {
           playgroundbook = playgrounds; // Replace list with matched documents
+          print("kkkplaygroundbook${playgroundbook.length}");
         });
 
-        // Print playground data
-        playgroundbook.forEach((playground) {
-          print("Playground Name: ${playground.Name}");
-        });
+
 
         // Fetch and print phone number from SharedPreferences
         SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -275,15 +225,20 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
         String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
 
         for (int i = 0; i < playgroundbook.length; i++) {
+          print("playgroundbook.1${playgroundbook.length}");
           // Check if the current user's phone number matches any user in AllUserData
           if (playgroundbook[i].AllUserData![0].UserPhone == normalizedPhoneNumber) {
             setState(() {
               matchedPlaygrounds.add(playgroundbook[i]);
-              getmaatchedPlaygroundbyname(playgroundbook[i].NeededGroundData![0].GroundId!);
+
+              print("matchedPlaygrounds.1${matchedPlaygrounds.length}");
+
+              getmaatchedPlaygroundbyname(matchedPlaygrounds[i].NeededGroundData![0].GroundId!);
               print("shimaaaa${matchedPlaygrounds.length}");
-              print("shimaaaa dataaaaaa${playgroundbook[i]}");
+              print("shimaaaa dataaaaaa${matchedPlaygrounds[i]}");
               convertmonthtonumberforlastwidget(matchedPlaygrounds[0].dateofBooking!, i);
             });
+
           }
         }
 
@@ -301,72 +256,6 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
     }
   }
 
-  //funnnnnnnnnnnnnnnnnnnnnnnnnnnn
-//Fetch all playground bookings which exist under حجز الموعد
-//   Future<void> getAllPlaygrounds() async {
-//     try {
-//       // Reference to the Firestore collection with the appropriate query
-//       CollectionReference playerchat = FirebaseFirestore.instance.collection("booking");
-//
-//       // Fetch documents where 'groundID' matches the widget.IdData
-//       QuerySnapshot querySnapshot = await playerchat.where('groundID', isEqualTo: widget.IdData).get();
-//
-//       if (querySnapshot.docs.isNotEmpty) {
-//         // Process each document
-//         List<AddbookingModel> playgrounds = querySnapshot.docs.map((doc) {
-//           Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
-//           return AddbookingModel.fromMap(userData);
-//         }).toList();
-//
-//         // Update the list and UI inside setState
-//         setState(() {
-//           playgroundbook = playgrounds; // Replacing the list with all documents
-//         });
-//
-//         // Print playground data
-//         playgroundbook.forEach((playground) {
-//
-//           print("Playground Name: ${playground.Name}");
-//         });
-//         SharedPreferences prefs = await SharedPreferences.getInstance();
-//         String? phoneValue = prefs.getString('phonev');
-//         print("newphoneValue: ${phoneValue.toString()}");
-//
-//
-//         print("phoneValue$phoneValue");
-//         print("phoneuser${user?.phoneNumber !}");
-//         String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
-//
-//
-//         for (int i = 0; i < playgroundbook.length; i++) {
-//           if (playgroundbook[i]
-//               .AllUserData![i].UserPhone! == normalizedPhoneNumber) {
-//             setState(() {
-//               matchedPlaygrounds.add(playgroundbook[i]);
-//               getmaatchedPlaygroundbyname(playgroundbook[i]
-//                   .NeededGroundData![i].GroundId!);
-//               print("shimaaaa${matchedPlaygrounds.length}");
-//               print("shimaaaa dataaaaaa${playgroundbook[i]}");
-//               convertmonthtonumberforlastwidget( matchedPlaygrounds[0].dateofBooking!,i);
-//
-//             });
-//
-//           }
-//         }
-//
-//         if (timeSlots.isNotEmpty) {
-//           startendtime(timeSlots.first, timeSlots.last);
-//           print("time for start: ${timeSlots.first} + ${timeSlots.last}");
-//         } else {
-//           print("timeSlots is empty.");
-//         }
-//       } else {
-//         print("No playgrounds found.");
-//       }
-//     } catch (e) {
-//       print("Error fetching playgrounds: $e");
-//     }
-//   }
 
   String?USerID;
   String? timeofAddedPlayground;
@@ -374,7 +263,109 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
 
   String groundIiid = '';
   String groundIiid2 = '';
+  // Future<AddPlayGroundModel?> fetchPlayground(String playgroundId,selectedDayName,selectedTimes) async {
+  //   try {
+  //     print("playgroundId $playgroundId");
+  //     DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+  //         .collection('AddPlayground')
+  //         .doc(playgroundId)
+  //         .get();
+  //
+  //     if (documentSnapshot.exists) {
+  //       Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+  //       return AddPlayGroundModel.fromMap(data);
+  //     }
+  //   } catch (e) {
+  //     print("Error fetching playground: $e");
+  //   }
+  //   return null;
+  // }
+  int cnt=0;
+  List<num> selectedCosts = []; // Step 1: Create a list to hold the costs
+  List<num> selectedCostsperhour = []; // Step 1: Create a list to hold the costs
+  Future<AddPlayGroundModel?> fetchPlayground(String playgroundId, String selectedDayName, List<String> selectedTimes) async {
+    try {
+      print("Fetching playground with ID: $playgroundId");
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+          .collection('AddPlayground')
+          .doc(playgroundId)
+          .get();
 
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        AddPlayGroundModel playground = AddPlayGroundModel.fromMap(data);
+
+        // Filter bookTypes based on selectedDayName and selectedTimes
+        playground.bookTypes = playground.bookTypes!.where((bookType) {
+          return bookType.day == selectedDayName && selectedTimes.contains(bookType.time);
+        }).toList();
+
+        return playground;
+      }
+    } catch (e) {
+      print("Error fetching playground: $e");
+    }
+    return null;
+  }
+
+  void displayCosts(String playgroundId, String selectedDayName, List<String> selectedTimes) async {
+    AddPlayGroundModel? playground = await fetchPlayground(playgroundId, selectedDayName, selectedTimes);
+    selectedCosts.clear(); // Clear previous costs
+    selectedCostsperhour.clear();
+
+    if (playground != null && playground.bookTypes != null && playground.bookTypes!.isNotEmpty) {
+      for (var bookType in playground.bookTypes!) {
+        selectedCosts.add(bookType.cost!); // Add each cost to the list
+        selectedCostsperhour.add(bookType.costPerHour!);
+        print("Book Type: ${bookType.bookType}");
+        print("Cost: ${bookType.cost}");
+        print("Cost Per Hour: ${bookType.costPerHour}");
+        print("Day: ${bookType.day}");
+        print("Time: ${bookType.time}");
+      }
+    } else {
+      print("No playground found with the given ID or no available book types for the selected day and time.");
+    }
+  }
+
+  // void displayCosts(String playgroundId,selectedDayName,selectedTimes) async {
+  //   AddPlayGroundModel? playground = await fetchPlayground(playgroundId,selectedDayName,selectedTimes);
+  //   selectedCosts.clear(); // Clear previous costs
+  //   selectedCostsperhour.clear();
+  //   if (playground != null) {
+  //     for (var bookType in playground.bookTypes!) {
+  //       selectedCosts.add(bookType.cost!); // Step 2: Add each cost to the list
+  //       selectedCostsperhour.add(bookType.costPerHour!);
+  //       print("Book Type: ${bookType.bookType}");
+  //       print("Cost: ${bookType.cost}");
+  //       print("Cost Per Hour: ${bookType.costPerHour}");
+  //       print("Day: ${bookType.day}");
+  //       print("Time: ${bookType.time}");
+  //     }
+  //   } else {
+  //     print("No playground found with the given ID.");
+  //   }
+  // }
+
+
+  //old
+  // void displayCosts(String playgroundId) async {
+  //   AddPlayGroundModel? playground = await fetchPlayground(playgroundId);
+  //
+  //   if (playground != null) {
+  //     for (var bookType in playground.bookTypes!) {
+  //       cnt++;
+  //
+  //       print("Book Type: ${bookType.bookType}");
+  //       print("Cost: ${bookType.cost}");
+  //       print("Cost Per Hourjjjj: ${bookType.costPerHour}");
+  //       print("Day: ${bookType.day}");
+  //       print("Time: ${bookType.time}");
+  //     }
+  //   } else {
+  //     print("No playground found with the given ID.");
+  //   }
+  // }
   Future<void> getPlaygroundbyname(String iiid) async {
     try {
       CollectionReference playerchat =
@@ -391,11 +382,6 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
             playgroundAllData.add(user);
             String?  bookType = playgroundAllData[0].bookTypes![0].time;
 
-            // for(int i=0;i<playgroundAllData[0].bookTypes!.length;i++){
-            //   print("costPerHourkkkk${user.bookTypes?[i].costPerHour}   cost${user.bookTypes?[i].cost}");
-            //
-            // }
-            // Assuming 'time' is the field you want to split into start and end time
             String timeofAddedPlayground = bookType ?? '';
             print("timeofAddedPlayground: $timeofAddedPlayground");
 
@@ -445,90 +431,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
       print("Error getting playground: $e");
     }
   }
-  Future<void> calculatetotalcost(String iiid) async {
-    try {
-      CollectionReference playerchat =
-      FirebaseFirestore.instance.collection("AddPlayground");
 
-      QuerySnapshot querySnapshot = await playerchat.get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        for (QueryDocumentSnapshot document in querySnapshot.docs) {
-          Map<String, dynamic> userData =
-          document.data() as Map<String, dynamic>;
-          AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
-          if (document.id == widget.IdData) {
-            playgroundAllData.add(user);
-            String?  bookType = playgroundAllData[0].bookTypes![0].time;
-
-            // for(int i=0;i<playgroundAllData[0].bookTypes!.length;i++){
-            //   print("costPerHourkkkk${user.bookTypes?[i].costPerHour}   cost${user.bookTypes?[i].cost}");
-            //
-            // }
-            // Assuming 'time' is the field you want to split into start and end time
-            String timeofAddedPlayground = bookType ?? '';
-            print("timeofAddedPlayground: $timeofAddedPlayground");
-
-            // Splitting time into startTime and endTime based on '-'
-            List<String> times = timeofAddedPlayground.split(' - ');
-            if (times.length == 2) {
-              String startTime = times[0];
-              String endTime = times[1];
-
-              print("Start Time: $startTime");
-              print("End Time: $endTime");
-              String adminId =playgroundAllData[0].adminId! ; // Fetch AdminId directly from userData
-              groundPhoneee=playgroundAllData[0].phoneCommunication!;
-              groundNamee=playgroundAllData[0].playgroundName!;
-              // You can use these times to update the UI or for other logic
-              timeSlots.add(startTime); // Add start time to the list
-              timeSlots.add(endTime);   // Add end time to the list
-              // Find the correct bookType based on the selected time slot
-              for (var bookType in user.bookTypes!) {
-                // Compare the times, and get the cost for the selected time
-                if (bookType.time == timeofAddedPlayground) {
-                  print("Selected BookType: ${bookType.bookType}");
-                  print("Cost: ${bookType.cost}");
-
-                  // Now you can use bookType.cost or bookType.costperhour as needed
-                  setState(() {
-                    var totalCost = bookType.cost ?? 0; // Assuming you have a totalCost variable
-                    print("uuuttttttttttotl$totalCost");
-                  });
-                  break;
-                }
-              }
-
-              // You could directly update your UI here or save this data for later
-              // For example, show the start and end time in the UI
-              setState(() {
-                // Update any UI components with the start and end times
-                startTimeStr = startTime; // Assuming you have a state variable to store this
-                endTimeStr = endTime;     // Assuming you have a state variable to store this
-              });
-
-              print("Time slots: ${timeSlots}");
-            } else {
-              print("Invalid time format: $timeofAddedPlayground");
-            }
-            // }
-// الوقت  هو سبب المشكله
-            print(
-                "PlayGroungboook Iiid : ${document.id}"); // Print the latest playground
-            groundIiid = document.id;
-            print("Docummmmmmbook$groundIiid");
-            // Normalize playType before comparing
-            String playType = user.playType!.trim();
-          }
-
-          // Store the document ID in the AddPlayGroundModel object
-          user.id = document.id;
-        }
-      }
-    } catch (e) {
-      print("Error getting playground: $e");
-    }
-  }
   Future<void> getmaatchedPlaygroundbyname(String iiid) async {
     try {
       CollectionReference playerchat =
@@ -542,7 +445,9 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
           document.data() as Map<String, dynamic>;
           AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
           if (document.id == widget.IdData) {
+
             matchedplaygroundAllData.add(user);
+
             String?  bookType = matchedplaygroundAllData[0].bookTypes![0].time;
             // Assuming 'time' is the field you want to split into start and end time
             String timeofAddedPlayground = bookType ?? '';
@@ -598,7 +503,6 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
   Map<String, Set<String>> alreadySelectedTimesPerDay = {
 
   };
-//Fetch booking data and manage the selected times for each day
   Future<void> _fetchData() async {
 
     final playgrounddata = await FirebaseFirestore.instance.collection('booking')
@@ -637,16 +541,26 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
 
   String? groundNamee ;
   String? groundPhoneee;
-
-//Send booking data to Firestore
   Future<void> _sendData(BuildContext context) async {
+    setState(() {
+      _isLoading = true; // Set loading to true when starting the operation
+    });
     final name =user1[0].name!;
     final phooneNumber =user1[0].phoneNumber!;
      num cooooooooooost=playgroundAllData[0].bookTypes![0].cost!;
-    num cooooooooooostperhour=playgroundAllData[0].bookTypes![0].costPerHour!;
-    int tooooootl=cooooooooooostperhour.toInt()+cooooooooooost.toInt();
+    // num cooooooooooostperhour=playgroundAllData[0].bookTypes![0].costPerHour!;
+    // int tooooootl=cooooooooooostperhour.toInt()+cooooooooooost.toInt();
+    // Step 3: Calculate total cost based on selected times
+    num totalCost = 0;
+
+    // Assuming selectedTimes corresponds to the indices of selectedCosts
+    for (int i = 0; i < selectedTimes.length; i++) {
+      if (i < selectedCosts.length) {
+        totalCost += selectedCosts[i]; // Add cost for each selected time
+      }
+    }
     print("Checking phone number: $phooneNumber");
-    print("tooooootlcooooooooost: $tooooootl");
+    print("tooooootlcooooooooost: $totalCost");
 
     // Check for empty fields
     if (name.isNotEmpty && phooneNumber.isNotEmpty && selectedTimes.isNotEmpty) {
@@ -707,12 +621,12 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
         final bookingModel = AddbookingModel(
           Name: name,
           groundImage: playgroundAllData[0].img![0],
-          totalcost:tooooootl ,
+           totalcost:totalCost.toInt() ,
           dateofBooking: storeDate,
           Day_of_booking: selectedDayName,
           rentTheBall: _isCheckedList[0],
           selectedTimes: selectedTimes.toList(),
-          AdminId: docId,
+          AdminId: playgroundAllData[0].adminId,
           AllUserData: [newUserData], // Add the user data directly to the model,
           NeededGroundData: [GroundData],
           acceptorcancle: false,
@@ -736,6 +650,9 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
         selectedTimes.clear();
 
         _isCheckedList[0] = false;
+        setState(() {
+          matchedPlaygrounds.clear(); // Clear previous entries
+        });
         getAllPlaygrounds();
       }
     } else {
@@ -750,99 +667,11 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
         ),
       );
     }
+    setState(() {
+      _isLoading = false; // Set loading to false when operation is complete
+    });
   }
-//   Future<void> _sendData(BuildContext context) async {
-//     final name =user1[0].name!;
-//     final phooneNumber =user1[0].phoneNumber!;
-//
-//     // Check for empty fields
-//     if (name.isNotEmpty && phooneNumber.isNotEmpty && selectedTimes.isNotEmpty) {
-//
-//       print("Selected date: $storeDate");
-//
-//       // Check for existing bookings in Firestore
-//       final existingBooking = await FirebaseFirestore.instance
-//           .collection('booking')
-//           .where('dateofBooking', isEqualTo: storeDate) // Check date
-//           .where('Day_of_booking', isEqualTo: selectedDayName) // Check day of booking
-//           .where('PhooneCommunication', isEqualTo: phooneNumber) // Check Phoone number
-//           .where('selectedTimes', arrayContainsAny: selectedTimes.toList()) // Check time overlap
-//           .get();
-//
-//       if (existingBooking.docs.isNotEmpty) {
-//         // Show message if a duplicate booking is found
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           SnackBar(
-//             content: Text(
-//               'هذا الحجز موجود بالفعل', // "This booking already exists"
-//               textAlign: TextAlign.center,
-//             ),
-//             backgroundColor: Colors.red.shade800,
-//           ),
-//         );
-//         selectedTimes.clear();
-//         _isCheckedList[0] = false;
-//         String r=widget.IdData;
-//         Navigator.pushReplacement(
-//           context,
-//           MaterialPageRoute(builder: (context) => book_playground_page(r)),
-//         );
-//         return; // Exit function to prevent duplicate booking
-//       }
-//   else if(existingBooking.docs.isEmpty){
-//         convertmonthtonumber(selectedDates.toString(),0);
-//         print("shimaa shoooka$selectedDates");
-//
-//         // Create a booking model and add it to Firestore if no duplicates found
-//         final bookingModel = AddbookingModel(
-//             Name: name,
-//             phoneCommunication: phooneNumber,
-//             rentTheBall: _isCheckedList[0],
-//             selectedTimes: selectedTimes.toList(),
-//             dateofBooking: storeDate,
-//             Day_of_booking: selectedDayName,
-//             AdminId: playgroundAllData[0].adminId!,
-//             groundID: widget.IdData
-//         );
-//
-//         // Add booking to Firestore
-//         await FirebaseFirestore.instance.collection('booking').add(bookingModel.toMap());
-//
-//         // Fetch updated data and clear inputs after successful booking
-//         await _fetchData();
-//         selectedTimes.clear();
-//         _isCheckedList[0] = false;
-//         String rx=widget.IdData;
-//         // Navigator.pushReplacement(
-//         //   context,
-//         //   MaterialPageRoute(builder: (context) => book_playground_page(rx)),
-//         // );
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           SnackBar(
-//             content: Text(
-//               'تم تسجيل البيانات بنجاح', // "Data registered successfully"
-//               textAlign: TextAlign.center,
-//             ),
-//             backgroundColor: Color(0xFF1F8C4B),
-//           ),
-//         );
-//       }
-//       // Show success message
-//
-//     }
-//     else {
-//       // Show message if required fields are empty
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(
-//           content: Text(
-//             'يرجى ملء جميع البيانات', // "Please fill in all fields"
-//             textAlign: TextAlign.center,
-//           ),
-//           backgroundColor: Colors.red.shade800,
-//         ),
-//       );
-//     }
-//   }
+
   bool isAlreadySelected = false;
 
   String formatDate(String dateString) {
@@ -973,16 +802,13 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
   }
   void initState() {
     checkInternetConnection();
-    // super.initState();
     _loadUserData();
-    //   // _fetchBookingData();
     getAllPlaygrounds();
     getPlaygroundbyname(widget.IdData);
     getPlaygroundbyname(widget.IdData);
     getAllBookingDocuments();
-    //   // initializeDateFormatting('ar', null).then((_) {
-    //   //   // Now the locale data is ready, and you can safely use DateFormat in Arabic
-    //   // });
+
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -1134,14 +960,10 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
                                 enlargeCenterPage: true, // Ensure the center item is enlarged
                                 onPageChanged: (index, reason) {
                                   setState(() {
-                                    for(int x=0;x<playgroundAllData[0].bookTypes!.length;x++){
-                                      print("cooooooooostplaygroundAllData${playgroundAllData[0].bookTypes![x].cost}");
 
-                                    }
                                     _currentIndex = index; // Update the current index on page change
                                     selectedDayName = daysOfWeek[index]['dayName']!; // Update the selected day name
                                     storeDate = daysOfWeek[index]['dayDate']; // Store the date
-
                                   });
                                 },
                                 scrollDirection: Axis.horizontal,
@@ -1156,6 +978,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
                                     setState(() {
                                       _currentIndex = itemIndex; // Update the current index when an item is tapped
                                       selectedDayName = dayInfo['dayName']!; // Save the selected day name
+                                      selectedTimes = {};
                                     });
                                   },
                                   child: Center(
@@ -1244,7 +1067,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
                   )
                       : SizedBox(
                       height: 125,
-                      child: Center(child: Text("No Playground added yet "))),
+                      child: Center(child: Text("لم يتم اضافة تاريخ بعد "))),
 
                   Padding(
                     padding: const EdgeInsets.all(.0),
@@ -1338,23 +1161,9 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
                   )
                       :Container(),
                   GestureDetector(
-                    onTap: () async {
-                      // Check if any of the required fields are empty
-
-
-
-
-                        // Send the data to Firestore
-                        await _sendData(context);
-
-                        // Fetch data after successfully sending
-                        await _fetchData();
-                        // await getAllPlaygrounds();
-                        print("Data sent successfully");
-
-
-                        // Hide the loading indicator
-
+                    onTap: _isLoading ? null : () async { // Step 2: Disable button when loading
+                      await _sendData(context);
+                      await _fetchData();
                     },
                     child: Padding(
                       padding: const EdgeInsets.only(
@@ -1391,6 +1200,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
                       child: Wrap(
                         children: List.generate(matchedPlaygrounds.length, (index) {
                           final user = matchedPlaygrounds[index];
+                          print("objectmatching${matchedPlaygrounds.length}");
                           return Dismissible(
                             key: Key('${user.AllUserData?[0].UserPhone}_${index}'), // Ensure the key is unique
                             direction: DismissDirection.horizontal,
@@ -1403,11 +1213,14 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
                               );
                               setState(() {
                                 matchedPlaygrounds.removeAt(index); // Use removeAt to remove by index
+                               String i=widget.IdData;
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => book_playground_page(i)),
+                                      (Route<dynamic> route) => false,
+                                );
                               });
-                              // deleteCancelByPhoneAndPlaygroundId(user.AllUserData![0].UserPhone!,user.NeededGroundData![0].GroundId!,user.selectedTimes!.first,user.dateofBooking!);
-                              //
-                              // matchedPlaygrounds.remove(index);
-                              //
+
                             },
                             confirmDismiss: (direction) async {
                               // Show a confirmation dialog before dismissing
@@ -1499,7 +1312,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
                                                 Row(
                                                   children: [
                                                     Text(
-                                                      'ج م   ',
+                                                      'ج.م   ',
                                                       textAlign: TextAlign.center,
                                                       style: TextStyle(
                                                         color: Color(0xFF7C90AB),
@@ -1695,12 +1508,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
       ),
     );
   }
-//color based on time is selected before or not
-  // Function to generate hours between two time slots
 
-
-  ////oooooooooooooooooooo/////
-  // Function to generate hours between two time slots
   List<String> _getHoursBetween(String timeRange) {
     DateFormat formatter = DateFormat.jm();
 
@@ -1748,19 +1556,6 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
       print('Error parsing time range: $e');
       return [];
     }
-  }
-  Future<void> _handleSlotTap(String slot) async {
-    setState(() {
-      isLoading = true; // Start loading
-    });
-
-    // Simulate a delay for processing the selection
-    await Future.delayed(Duration(seconds: 2));
-
-    // Here you can perform your reservation logic
-    setState(() {
-      isLoading = false; // Stop loading
-    });
   }
 
   Future<void> deleteCancelByPhoneAndPlaygroundId(
@@ -1816,7 +1611,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
               context,
               MaterialPageRoute(builder: (context) => book_playground_page(x)),
             );
-            await getAllPlaygrounds();
+            // await getAllPlaygrounds();
             return; // Exit the function after deletion
           }
         }
@@ -1921,55 +1716,6 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
     }
   }
 
-  // Future<Widget> _generateTimeSlotWidget(String slot, bool isSelected, bool isAlreadySelected)
-  // async {
-  //   // Check if a document with the same Day_of_booking and selectedTimes already exists
-  //
-  //   final existingBookingQuery = FirebaseFirestore.instance
-  //       .collection('booking')
-  //       .where('Day_of_booking', isEqualTo: selectedDayName)
-  //       .where('dateofBooking', isEqualTo: storeDate)
-  //       .where('groundID', isEqualTo: widget.IdData)
-  //       .where('selectedTimes', arrayContainsAny: [slot]);
-  //
-  //   final existingBookings = await existingBookingQuery.get();
-  //   bool isTimeSlotBooked = existingBookings.docs.isNotEmpty;
-  //   print("isTimeSlotBooked: $isTimeSlotBooked");
-  //   bool _isAlreadySelected = isTimeSlotBooked;
-  //
-  //   // Ensure the widget is still mounted before returning the widget
-  //   if (mounted) {
-  //     return Padding(
-  //       padding: const EdgeInsets.all(6.0),
-  //       child: Container(
-  //         width: MediaQuery.of(context).size.width / 4,
-  //         decoration: BoxDecoration(
-  //           color: selectedTimes.contains(slot)
-  //               ? Color(0xFFC3FFDC)
-  //               : _isAlreadySelected
-  //               ? Color(0xFFFFBEC5)
-  //               : Color(0xFFEFF6FF), // Background color based on the condition
-  //           borderRadius: BorderRadius.circular(10.0), // Radius of the corners
-  //         ),
-  //         child: Padding(
-  //           padding: const EdgeInsets.all(6.0),
-  //           child: Text(
-  //             slot.characters.length == 7 ? "$slot   " : slot,
-  //             textAlign: TextAlign.center,
-  //             style: TextStyle(
-  //               fontSize: 16,
-  //               fontFamily: 'Cairo',
-  //               color: isSelected ? Colors.black87 : Color(0xFF495A71),
-  //               fontWeight: FontWeight.w500,
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //     );
-  //   } else {
-  //     return SizedBox.shrink(); // Return an empty widget if unmounted
-  //   }
-  // }
 
   Future<List<Widget>> _generateRows(Set<String> selectedTimes, String selectedDay) async {
     List<Widget> rows = [];
@@ -2116,260 +1862,6 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
   }
 
 
-
-
-
-
-
-
-
-////////////////***************/////
-//   List<String> _getHoursBetween(String timeRange) {
-//     DateFormat formatter = DateFormat.jm();
-//
-//     try {
-//       // Ensure the input has the correct format
-//       List<String> times = timeRange.split(' - ');
-//
-//       if (times.length == 1) {
-//         print("timesssssssss$times");
-//         // If only a single time is provided, return that hour as both start and end
-//         String singleTime = times[0].trim();
-//         DateTime start = formatter.parse(singleTime);
-//         // Add one hour to create an end time
-//         DateTime end = start.add(Duration(hours: 1));
-//
-//         List<String> hours = [];
-//         for (DateTime time = start; time.isBefore(end); time = time.add(Duration(hours: 1))) {
-//           hours.add(formatter.format(time));
-//         }
-//         return hours;
-//       } else if (times.length != 2) {
-//         throw FormatException('Invalid time range format: $timeRange');
-//       }
-//
-//       // Trim spaces
-//       String startTime = times[0].trim();
-//       String endTime = times[1].trim();
-//
-//       // Parse times
-//       DateTime start = formatter.parse(startTime);
-//       DateTime end = formatter.parse(endTime);
-//
-//       List<String> hours = [];
-//
-//       // Generate hours between start and end times
-//       for (DateTime time = start; time.isBefore(end) || time == end; time = time.add(Duration(hours: 1))) {
-//         hours.add(formatter.format(time));
-//       }
-//
-//       return hours;
-//     } catch (e) {
-//       // Log the exception and return an empty list or handle as needed
-//       print('Error parsing time range: $e');
-//       return [];
-//     }
-//   }
-//   Future<Widget> _generateTimeSlotWidget(
-//       String slot,
-//       bool isSelected,
-//       bool isAlreadySelected // Change Set<String> to bool
-//       ) async
-//   {
-//     // Check if a document with the same Day_of_booking and selectedTimes already exists
-//     final existingBookingQuery = FirebaseFirestore.instance
-//         .collection('booking')
-//         .where('Day_of_booking', isEqualTo: selectedDayName)
-//         .where('dateofBooking',isEqualTo: storeDate)
-//         .where('groundID', isEqualTo: widget.IdData)
-//         .where('selectedTimes', arrayContainsAny: [slot]);
-//
-//     final existingBookings = await existingBookingQuery.get();
-//     bool isTimeSlotBooked = existingBookings.docs.isNotEmpty;
-//     print("isTimeSlotBooked$isTimeSlotBooked");
-//     // isAlreadySelected =isTimeSlotBooked;
-//     return Padding(
-//       padding: const EdgeInsets.all(6.0),
-//       child: Container(
-//         width: MediaQuery.of(context).size.width / 4,
-//         decoration: BoxDecoration(
-//           color: selectedTimes.contains(slot)
-//               ? Color(0xFFC3FFDC)
-//               : isTimeSlotBooked
-//               ? Color(0xFFFFBEC5)
-//               : Color(0xFFEFF6FF), // Background color based on the condition
-//           borderRadius: BorderRadius.circular(10.0), // Radius of the corners
-//         ),
-//         child: Padding(
-//           padding: const EdgeInsets.all(6.0),
-//           child: Text(
-//             slot.characters.length == 7 ? "$slot   " : slot,
-//             textAlign: TextAlign.center,
-//             style: TextStyle(
-//               fontSize: 16,
-//               fontFamily: 'Cairo',
-//               color: isSelected ? Colors.black87 : Color(0xFF495A71),
-//               fontWeight: FontWeight.w500,
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-//   Future<List<Widget>> _generateRows(Set<String> selectedTimes,
-//       String selectedDay)
-//   async {
-//     List<Widget> rows = [];
-//     int index = 0;
-//
-//     // Filter the time slots for the selected day
-//     List<String> dayTimeSlots = _getTimeSlotsForSelectedDay(selectedDay);
-//     print("Time Slots for $selectedDay: $dayTimeSlots");
-//
-//     // Create a temporary list for the current row
-//     List<Widget> currentRowChildren = [];
-//
-//     while (index < dayTimeSlots.length) {
-//       String startTime = dayTimeSlots[index];
-//
-//       // Check if there's a next time slot
-//       if (index + 1 < dayTimeSlots.length) {
-//         String endTime = dayTimeSlots[index + 1];
-//         List<String> hoursBetween = _getHoursBetween('$startTime - $endTime');
-//
-//         for (String slot in hoursBetween) {
-//           // Check if the slot is selected
-//           bool isSelected = selectedTimes.contains(slot);
-//
-//           // Check if a document with the same Day_of_booking and selectedTimes already exists
-//           final existingBookingQuery = FirebaseFirestore.instance
-//               .collection('booking')
-//               .where('Day_of_booking', isEqualTo: selectedDayName)
-//               .where('dateofBooking', isEqualTo: storeDate)
-//               .where('groundID', isEqualTo: widget.IdData)
-//               .where('selectedTimes', arrayContainsAny: [slot]);
-//
-//           final existingBookings = await existingBookingQuery.get();
-//           bool isTimeSlotBooked = existingBookings.docs
-//               .isNotEmpty; // Check if time slot is already booked
-//
-//           // GestureDetector for each time slot
-//           currentRowChildren.add(
-//             GestureDetector(
-//               onTap: () {
-//                 if (isTimeSlotBooked) {
-//                   print("isTimeSlotBooked$isTimeSlotBooked");
-//                   // Show the popover if the time slot is already booked
-//                   print("isAlreadySelected$isAlreadySelected");
-//                   // showPopover(
-//                   //   context: context,
-//                   //   bodyBuilder: (context) => ListItems(),
-//                   //   onPop: () => print('Popover was popped!'),
-//                   //   direction: PopoverDirection.top,
-//                   //   width: MediaQuery.of(context).size.width / 1.3,
-//                   //   height: 322,
-//                   //   arrowHeight: 15,
-//                   //   arrowWidth: 30,
-//                   //   radius: 18,
-//                   // );
-//
-//                 }
-//                 else {
-//                   // Otherwise, allow selection or deselection of the slot
-//                   setState(() {
-//                     if (isSelected) {
-//                       reservation(); // Call reservation logic
-//                       selectedTimes.remove(slot); // Deselect time slot
-//                     } else {
-//                       reservation(); // Call reservation logic
-//                       selectedTimes.add(slot); // Select time slot
-//                     }
-//                   });
-//                 }
-//               },
-//               child: FutureBuilder<Widget>(
-//                 future: _generateTimeSlotWidget(
-//                     slot, isSelected, isTimeSlotBooked),
-//                 // Pass isTimeSlotBooked as well
-//                 builder: (context, snapshot) {
-//                   if (snapshot.hasData) {
-//                     return snapshot.data!;
-//                   } else {
-//                     return Container(); // or some other loading indicator
-//                   }
-//                 },
-//               ),
-//             ),
-//           );
-//
-//           // Increment index for the next slot
-//           index++;
-//
-//           // Check if we have reached the maximum number of slots in the current row
-//           if (currentRowChildren.length >= 3) {
-//             // Add the current row to rows and reset for the next row
-//             rows.add(
-//               Row(
-//                 mainAxisAlignment: MainAxisAlignment.start,
-//                 children: currentRowChildren,
-//               ),
-//             );
-//             currentRowChildren = []; // Reset for the next row
-//           }
-//         }
-//       } else {
-//         // Handle the last time slot if there is no pair
-//         currentRowChildren.add(
-//           FutureBuilder<Widget>(
-//             future: _generateTimeSlotWidget(startTime, true, true),
-//             builder: (context, snapshot) {
-//               if (snapshot.connectionState == ConnectionState.waiting) {
-//                 return Container(); // Loading indicator
-//               } else if (snapshot.hasData) {
-//                 return snapshot.data!;
-//               } else {
-//                 return Container(); // Handle error or no data case
-//               }
-//             },
-//           ),
-//         );
-//         index++; // Move to the next time slot
-//       }
-//     }
-//
-//     // Add any remaining children as the last row if they exist
-//     if (currentRowChildren.isNotEmpty) {
-//       rows.add(
-//         Row(
-//           mainAxisAlignment: MainAxisAlignment.start,
-//           children: currentRowChildren,
-//         ),
-//       );
-//     }
-//
-//     return rows;
-//   }
-// // Function to filter time slots based on the selected day
-//   List<String> _getTimeSlotsForSelectedDay(String selectedDay) {
-//     List<String> filteredTimeSlots = [];
-//
-//     // Iterate over all time slots and filter by selected day
-//     for (var bookTypeEntry in playgroundAllData[0].bookTypes!) {
-//       if (bookTypeEntry.day == selectedDay) {
-//         String? time = bookTypeEntry.time;
-//         if (time != null) {
-//           List<String> times = time.split(' - ');
-//           if (times.length == 2) {
-//             filteredTimeSlots.add(times[0]); // Add start time
-//             filteredTimeSlots.add(times[1]); // Add end time
-//           }
-//         }
-//       }
-//     }
-//
-//     return filteredTimeSlots;
-//   }
-
   Future<void> getAllBookingDocuments() async {
     setState(() {
       _isLoading = true; // Start loading indicator
@@ -2420,7 +1912,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
       return;
     }
 
-    final user = matchedPlaygrounds[index];
+    // final user = matchedPlaygrounds[index];
     final firestore = FirebaseFirestore.instance;
     QuerySnapshot querySnapshot = await firestore.collection('booking').get();
 
@@ -2447,30 +1939,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
        }
         print("userDataListuserDataList${userDataList}");
         print("groundDataListgroundDataList$groundDataList");
-//         bool userMatch = userDataList.any((userData) =>
-//         userData['UserPhone'] == user.AllUserData![0].UserPhone);
-// print("shoka userMatch$userMatch");
-//         bool groundMatch = groundDataList.any((groundData) =>
-//         groundData['GroundId'] == user.NeededGroundData![0].GroundId);
 
-        // Check if all conditions match for deletion
-        // if (userMatch &&
-        //     groundMatch &&
-        //     data['dateofBooking'] == user.dateofBooking && // Ensure exact date match
-        //     (data['selectedTimes'] as List).contains(user.selectedTimes!.first)) { // Check if selected time exists in the list
-        //
-        //   // Delete the document
-        //   await firestore.collection('booking').doc(doc.id).delete();
-        //   print(
-        //       'Document with phone ${user.AllUserData![0].UserPhone}, playgroundId ${user.NeededGroundData![0].GroundId!}, date ${user.dateofBooking}, and selectedTime ${user.selectedTimes} deleted successfully.');
-
-          // documentDeleted = true;
-
-          // Navigate back after successful deletion
-          // Navigator.pushReplacement(
-          //   context,
-          //   MaterialPageRoute(builder: (context) => my_reservation()),
-          // );
           return;
         }
       }
@@ -2511,10 +1980,7 @@ print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[ind
       ),
     );
   }
-    // If no document was deleted, show a message in the log
-    // if (!documentDeleted) {
-    //   print('No document found matching the specified phone, playgroundId, date, and selectedTime.');
-    // }
+
   }
 
 

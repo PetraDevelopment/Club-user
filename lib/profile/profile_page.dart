@@ -149,6 +149,10 @@ class ProfilepageState extends State<Profilepage>
             backgroundColor: Color(0xFF1F8C4B),
           ),
         );
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => Profilepage()),
+          );
         print('User  data updated successfully.');
       } else {
         // If the user's document is not found, create a new document
@@ -167,6 +171,10 @@ class ProfilepageState extends State<Profilepage>
   Future<void> _updateName(String name) async {
     CollectionReference usersRef =
     FirebaseFirestore.instance.collection('Users');
+    Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Profilepage()),
+      );
     setState(() {
       _isLoading = true;
     });
@@ -360,7 +368,7 @@ class ProfilepageState extends State<Profilepage>
             children: [ SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.only(
-                    top: 15.0, bottom: 15, right: 22, left: 22),
+                    top: 13.0, bottom: 13, right: 25, left: 25),
                 child:
                 Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                   Stack(
@@ -397,8 +405,10 @@ class ProfilepageState extends State<Profilepage>
                         ),
                       ),
                       Positioned(
-                        top: 129,
-                        left: 200,
+                        //129
+                        //200
+                        top: MediaQuery.of(context).size.height/6.2,
+                        left: MediaQuery.of(context).size.width/1.8,
                         child: Container(
                           height: 35,
                           width: 35,
@@ -482,12 +492,12 @@ class ProfilepageState extends State<Profilepage>
                         width: 1.0, // Border width
                       ),
                     ),
-                    alignment: Alignment.centerRight,
+                    // alignment: Alignment.centerRight,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Container(
-                          margin: EdgeInsets.symmetric(horizontal: 20.0),
+                          margin: EdgeInsets.only(right: 20.0,left: 5),
                           child: Image.asset(
                             'assets/images/name.png',
                             height: 19,
@@ -577,7 +587,8 @@ class ProfilepageState extends State<Profilepage>
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Container(
-                          margin: EdgeInsets.symmetric(horizontal: 20.0),
+                          margin: EdgeInsets.only(right: 20.0,left: 5),
+
                           child: Image.asset(
                             'assets/images/call.png',
                             height: 19,
