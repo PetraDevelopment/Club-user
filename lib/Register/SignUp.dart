@@ -1,5 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -76,6 +78,34 @@ class SignUpPageState extends State<SignUpPage>
         PhoneErrorText = ''; // No error message for 3-letter names
       });
     }
+  }
+  bool isConnected=false;
+  void _initialize() async {
+    await checkInternetConnection();
+    print("ggggg");
+    setState(() {});
+    // Other initialization tasks
+  }
+
+  Future<void> checkInternetConnection() async {
+
+    print("bvbbvbvbb$isConnected");
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    print("connectivityResult$connectivityResult");
+    print("connectivityResult${ConnectivityResult.none}");
+
+    if (connectivityResult[0] == ConnectivityResult.none) {
+      setState(() {
+        isConnected = false;
+        print("bvbbvbvbb$isConnected");
+      });
+    }else{
+      isConnected = true;
+
+    }
+    print("bvbbvbvbb$isConnected");
+
   }
   Future<void> verifyPhone(String phone) async {
     print('verificationIddd  ' + '+2$phone');
@@ -175,6 +205,10 @@ class SignUpPageState extends State<SignUpPage>
   }
 
   void _sendData() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    String? token = await messaging.getToken();
+    print("FCM Token: $token");
     final name = _nameController.text;
     final phoneNumber = _phoneNumberController.text;
   final imggggg=img_profile;
@@ -221,6 +255,7 @@ class SignUpPageState extends State<SignUpPage>
         'name': name,
         'phone': phoneNumber,
         'profile_image': imggggg,
+        'fcm':token
       });
 
       // Get the document ID of phone number
@@ -263,6 +298,19 @@ class SignUpPageState extends State<SignUpPage>
         SnackBar(
           content: Text(
             'يجب ادخال الصورة', // "There was an error with this account"
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Color(0xFF1F8C4B),
+        ),
+      );
+      isLoading=false;
+
+    }
+    else if(token!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'حدث خطأ فى ارسال الtoken', // "There was an error with this account"
             textAlign: TextAlign.center,
           ),
           backgroundColor: Color(0xFF1F8C4B),
@@ -353,6 +401,7 @@ class SignUpPageState extends State<SignUpPage>
 
   @override
   void initState() {
+    _initialize();
     // Define animation controller
     animationController = AnimationController(
       vsync: this,

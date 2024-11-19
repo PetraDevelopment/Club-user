@@ -267,6 +267,8 @@ class HomePageState extends State<HomePage> {
 
   }
   late List<AddPlayGroundModel> playgroundAllData = [];
+  late List<AddbookingModel> playgroundAllDatabook = [];
+
   late List<AddPlayGroundModel> basket = [];
   late List<AddPlayGroundModel> footbal = [];
   late List<AddPlayGroundModel> teniss = [];
@@ -1467,7 +1469,7 @@ class HomePageState extends State<HomePage> {
                                             Padding(
                                               padding: const EdgeInsets.only(top: 4.0),
                                               child: Text(
-                                                "${ playgroundAllData[i].playgroundName!}",
+                                                "${ playgroundbook[i].NeededGroundData![0].GroundName!}",
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
                                                   fontFamily: 'Cairo',
@@ -1584,7 +1586,7 @@ class HomePageState extends State<HomePage> {
                                   ),
 
 
-                                  Row(
+                                  playgroundbook[i].acceptorcancle==false?          Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       GestureDetector(
@@ -1653,6 +1655,81 @@ class HomePageState extends State<HomePage> {
                                             child: Center(
                                               child: Text(
                                                 "الموقع".tr,
+                                                style: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  fontSize : 11,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.white, // Text color
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                    ],
+                                  ):Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      GestureDetector(
+                                        // onTap: (){
+                                        //   print("phooonefff${playgroundbook[i]
+                                        //       .AllUserData![0].UserPhone!}");
+                                        //   updateCancelCount(playgroundbook[i]
+                                        //       .AllUserData![0].UserPhone!);
+                                        //   deleteCancelByPhoneAndPlaygroundId(playgroundbook[i]
+                                        //       .AllUserData![0].UserPhone!,playgroundbook[i]
+                                        //       .NeededGroundData![0].GroundId!,playgroundbook[i].selectedTimes!.first,playgroundbook[i].dateofBooking!);
+                                        //
+                                        // },
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),
+                                          child: Container(
+                                            height: 23,
+                                            width: 74,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(30.0),
+                                              shape: BoxShape.rectangle,
+                                              // color: Color(0xFFB3261E), // Background color of the container
+                                              // border: Border.all(
+                                              //   width: 1.0, // Border width
+                                              //   color: Colors.black
+                                              // ),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                "".tr,
+                                                style: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  fontSize: 11.0,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.white, // Text color
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      GestureDetector(
+
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),
+
+                                          child: Container(
+                                            height: 23,
+                                            width: 66,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(30.0),
+                                              // shape: BoxShape.rectangle,
+                                              // color: Color(0xFF064821), // Background color of the container
+                                              // border: Border.all(
+                                              //   width: 1.0, // Border width
+                                              //   color: Colors.black
+                                              // ),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                "".tr,
                                                 style: TextStyle(
                                                   fontFamily: 'Cairo',
                                                   fontSize : 11,

@@ -4,11 +4,15 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Home/HomePage.dart';
+import '../Home/Userclass.dart';
 import '../Splach/LoadingScreen.dart';
 import 'OTP.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'SignUp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
 class SigninPage extends StatefulWidget {
   @override
   State<SigninPage> createState() {
@@ -62,6 +66,7 @@ class SigninPageState extends State<SigninPage>
     return true;
   }
   Future<void> verifyPhone(String phone) async {
+
     print('verificationIddd  ' + '+2$phone');
     if(phone.startsWith("011")||phone.startsWith("015")){
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -122,8 +127,48 @@ setState(() {
 });
   }
   bool isLoading = false;
+  late List<User1> user1 = [];
 
+  Future<void> updatetoken( String tooken) async {
+    CollectionReference usersRef = FirebaseFirestore.instance.collection('Users');
 
+    try {
+      // Query the Firestore database to find the user's document based on their phone number
+      QuerySnapshot querySnapshot = await usersRef.where('phone', isEqualTo: PhoneController.text).get();
+
+      // Check if the user document exists
+      if (querySnapshot.docs.isNotEmpty) {
+        DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+        String existingfcm = documentSnapshot['fcm'];
+
+        if (tooken == existingfcm) {
+          print("Token is already up to date");
+        } else {
+          // Update the user's document with the new token
+          await documentSnapshot.reference.update({'fcm': tooken});
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'تم حفظ التعديل بنجاح',
+                textAlign: TextAlign.center,
+              ),
+              backgroundColor: Color(0xFF1F8C4B),
+            ),
+          );
+          print('User  data updated successfully.');
+        }
+      } else {
+        // If the user's document is not found, create a new document
+        await usersRef.add({
+          'phone': PhoneController.text, // Assuming you want to store the phone number
+          'fcm': tooken,
+        });
+        print('User  data added successfully.');
+      }
+    } catch (e) {
+      print('Error updating user data: $e');
+    }
+  }
   bool startsWith015or011(String input) {
     return input.startsWith('015') || input.startsWith('011');
   }
@@ -140,7 +185,10 @@ setState(() {
 
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString('phone', value);
-
+        FirebaseMessaging messaging = FirebaseMessaging.instance;
+        String? token = await messaging.getToken();
+        print("FCM Token: $token");
+await updatetoken(token!);
           // Start the phone verification process
           await verifyPhone(value);
 
@@ -166,10 +214,38 @@ setState(() {
       );
     }
   }
+  bool isConnected=false;
+  void _initialize() async {
+    await checkInternetConnection();
+    print("ggggg");
+    setState(() {});
+    // Other initialization tasks
+  }
 
+  Future<void> checkInternetConnection() async {
+
+    print("bvbbvbvbb$isConnected");
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    print("connectivityResult$connectivityResult");
+    print("connectivityResult${ConnectivityResult.none}");
+
+    if (connectivityResult[0] == ConnectivityResult.none) {
+      setState(() {
+        isConnected = false;
+        print("bvbbvbvbb$isConnected");
+      });
+    }else{
+      isConnected = true;
+
+    }
+    print("bvbbvbvbb$isConnected");
+
+  }
 
   @override
   void initState() {
+    _initialize();
     // Define animation controller
     animationController = AnimationController(
       vsync: this,

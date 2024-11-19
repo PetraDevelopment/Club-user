@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../Controller/NavigationController.dart';
@@ -171,14 +171,15 @@ class ProfilepageState extends State<Profilepage>
   Future<void> _updateName(String name) async {
     CollectionReference usersRef =
     FirebaseFirestore.instance.collection('Users');
-    Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => Profilepage()),
-      );
+
     setState(() {
       _isLoading = true;
     });
     try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+      String? token = await messaging.getToken();
+      print("FCM Token: $token");
       // Query the Firestore database to find the user's document based on their phone number
       QuerySnapshot querySnapshot =
       await usersRef.where('phone', isEqualTo: _phoneNumberController.text)
@@ -190,13 +191,19 @@ class ProfilepageState extends State<Profilepage>
 
       else {
         if (querySnapshot.docs.isNotEmpty) {
+
           // Update the user's document with the new image URL
           DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
           await documentSnapshot.reference.update({
+            'fcm':token,
             'name': name,
             'phone': _phoneNumberController.text,
             'profile_image': img_profile,
           });
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => Profilepage()),
+          );
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -666,7 +673,7 @@ class ProfilepageState extends State<Profilepage>
 
                           // Update user name
                           await _updateName(_nameController.text);
-
+await  getUserByPhone(_phoneNumberController.text);
                           if (selectedImages != null) {
                             String downloadUrl = await _uploadImage(
                                 selectedImages!);

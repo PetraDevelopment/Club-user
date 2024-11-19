@@ -819,8 +819,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 Text(
-                                  allplaygrounds[0].playgroundName!.contains('ملعب')?allplaygrounds[0].playgroundName!
-                                  :'ملعب '+allplaygrounds[0].playgroundName!,
+                                 allplaygrounds[0].playgroundName!,
                                   // Updated English text
                                   style: TextStyle(
                                     fontFamily: 'Cairo',

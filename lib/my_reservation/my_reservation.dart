@@ -296,7 +296,77 @@ class my_reservationState extends State<my_reservation>
       getAccepted_bookDataByPhone(normalizedPhoneNumber!);
     }
   }
+  Future<void> getPlaygroundbynameE(String iiid) async {
+    try {
+      CollectionReference playerchat =
+      FirebaseFirestore.instance.collection("AddPlayground");
 
+      QuerySnapshot querySnapshot = await playerchat.get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (QueryDocumentSnapshot document in querySnapshot.docs) {
+          Map<String, dynamic> userData =
+          document.data() as Map<String, dynamic>;
+          AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
+          if (document.id == iiid) {
+            playgroundAllData.add(user);
+
+            String?  bookType = playgroundAllData[0].bookTypes![0].time;
+            // Assuming 'time' is the field you want to split into start and end time
+            String timeofAddedPlayground = bookType ?? '';
+            print("timeofAddedPlayground: $timeofAddedPlayground");
+
+            // Splitting time into startTime and endTime based on '-'
+            List<String> times = timeofAddedPlayground.split(' - ');
+            if (times.length == 2) {
+              String startTime = times[0];
+              String endTime = times[1];
+              for(int i=0;i<playgroundAllData.length;i++){
+                print("locattttion${playgroundAllData[i].location}");
+
+              }
+
+              print("End Time: $endTime");
+              String adminId = userData['AdminId'] ?? ''; // Fetch AdminId directly from userData
+              user.adminId = adminId; // Assuming your model has a property for AdminId
+              print("Admin ID: $adminId");
+              // USerID=adminId;
+              // // You can use these times to update the UI or for other logic
+              // timeSlots.add(startTime); // Add start time to the list
+              // timeSlots.add(endTime);   // Add end time to the list
+
+              // You could directly update your UI here or save this data for later
+              // For example, show the start and end time in the UI
+              setState(() {
+                // Update any UI components with the start and end times
+                // startTimeStr = startTime; // Assuming you have a state variable to store this
+                // endTimeStr = endTime;     // Assuming you have a state variable to store this
+              });
+
+              // print("Time slots: ${timeSlots}");
+            } else {
+              print("Invalid time format: $timeofAddedPlayground");
+            }
+            // }
+// الوقت  هو سبب المشكله
+            print(
+                "PlayGroungboook Iiid : ${document.id}"); // Print the latest playground
+            // groundIiid = document.id;
+            // print("Docummmmmmbook$groundIiid");
+            // Normalize playType before comparing
+            String playType = user.playType!.trim();
+          }
+
+          // Store the document ID in the AddPlayGroundModel object
+          user.id = document.id;
+        }
+        wait = playgroundbook.length - numberaccepted;
+        print("wait${wait}");
+      }
+    } catch (e) {
+      print("Error getting playground: $e");
+    }
+  }
   // Future<void> fetchBookingData() async {
   //   try {
   //     CollectionReference bookingCollection = FirebaseFirestore.instance.collection("booking");
@@ -413,7 +483,9 @@ class my_reservationState extends State<my_reservation>
   //   }
   // }
   Future<void> fetchBookingData() async {
+
     try {
+
       CollectionReference bookingCollection = FirebaseFirestore.instance.collection("booking");
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -486,7 +558,7 @@ class my_reservationState extends State<my_reservation>
             print('Name: ${playgroundbook[i].Name}');
             print('Rent_the_ball: ${playgroundbook[i].rentTheBall}');
             print('phoneshoka: ${playgroundbook[i].AllUserData![0].UserPhone!}');
-            getPlaygroundbyname(playgroundbook[i].NeededGroundData![0].GroundId!);
+            getPlaygroundbynameE(playgroundbook[i].NeededGroundData![0].GroundId!);
           }
         } else {
           print('No matching bookings found for the user’s phone number.');
@@ -496,6 +568,7 @@ class my_reservationState extends State<my_reservation>
     catch (e) {
       print('Error fetching booking data: $e');
     }
+
   }
 
   late List<AddPlayGroundModel> playgroundAllData = [];
@@ -640,79 +713,7 @@ class my_reservationState extends State<my_reservation>
     return '$formattedStartTime الي $formattedEndTime';
   }
 
-  Future<void> getPlaygroundbyname(String iiid) async {
-    try {
-      CollectionReference playerchat =
-      FirebaseFirestore.instance.collection("AddPlayground");
 
-      QuerySnapshot querySnapshot = await playerchat.get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        for (QueryDocumentSnapshot document in querySnapshot.docs) {
-          Map<String, dynamic> userData =
-          document.data() as Map<String, dynamic>;
-          AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
-          if (document.id == iiid) {
-            playgroundAllData.add(user);
-
-            String? bookType = playgroundAllData[0].bookTypes![0].time;
-            // Assuming 'time' is the field you want to split into start and end time
-            String timeofAddedPlayground = bookType ?? '';
-            print("timeofAddedPlayground: $timeofAddedPlayground");
-
-            // Splitting time into startTime and endTime based on '-'
-            List<String> times = timeofAddedPlayground.split(' - ');
-            if (times.length == 2) {
-              String startTime = times[0];
-              String endTime = times[1];
-              for (int i = 0; i < playgroundAllData.length; i++) {
-                print("locattttion${playgroundAllData[i].location}");
-              }
-              print("Start Time: $startTime");
-              print("End Time: $endTime");
-              String adminId = userData['AdminId'] ??
-                  ''; // Fetch AdminId directly from userData
-              user.adminId =
-                  adminId; // Assuming your model has a property for AdminId
-              print("Admin ID: $adminId");
-              // USerID=adminId;
-              // // You can use these times to update the UI or for other logic
-              // timeSlots.add(startTime); // Add start time to the list
-              // timeSlots.add(endTime);   // Add end time to the list
-
-              // You could directly update your UI here or save this data for later
-              // For example, show the start and end time in the UI
-              setState(() {
-                // Update any UI components with the start and end times
-                // startTimeStr = startTime; // Assuming you have a state variable to store this
-                // endTimeStr = endTime;     // Assuming you have a state variable to store this
-              });
-
-              // print("Time slots: ${timeSlots}");
-            } else {
-              print("Invalid time format: $timeofAddedPlayground");
-            }
-            // }
-// الوقت  هو سبب المشكله
-            print(
-                "PlayGroungboook Iiid : ${document
-                    .id}"); // Print the latest playground
-            // groundIiid = document.id;
-            // print("Docummmmmmbook$groundIiid");
-            // Normalize playType before comparing
-            String playType = user.playType!.trim();
-          }
-
-          // Store the document ID in the AddPlayGroundModel object
-          user.id = document.id;
-        }
-        wait = playgroundAllData.length - numberaccepted;
-        print("wait${wait}");
-      }
-    } catch (e) {
-      print("Error getting playground: $e");
-    }
-  }
 
   late List<AddPlayGroundModel> allplaygroundsData = [];
 
@@ -1077,7 +1078,7 @@ class my_reservationState extends State<my_reservation>
                           ),
                         ],
                       ),
-                      child: playgroundAllData.isNotEmpty ? Column(
+                      child: playgroundbook.isNotEmpty ? Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Padding(
@@ -1092,7 +1093,7 @@ class my_reservationState extends State<my_reservation>
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
-                                      "${playgroundAllData[i].playgroundName!}",
+                                      "${playgroundbook[i].NeededGroundData![0].GroundName!}",
                                       style: TextStyle(
                                         fontFamily: 'Cairo',
                                         fontSize: 16.0,
@@ -1226,7 +1227,7 @@ class my_reservationState extends State<my_reservation>
                           ),
 
 
-                          Row(
+                          playgroundbook[i].acceptorcancle == false?         Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Padding(
@@ -1308,6 +1309,75 @@ class my_reservationState extends State<my_reservation>
                                     child: Center(
                                       child: Text(
                                         "الموقع".tr,
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 12.0,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.white, // Text color
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                            ],
+                          ):Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    top: 12.0, bottom: 7, left: 22),
+                                child: GestureDetector(
+
+                                  child: Container(
+                                    height: 29,
+                                    width: 114,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(30.0),
+                                      shape: BoxShape.rectangle,
+                                      // color: Color(
+                                      //     0xFFB3261E), // Background color of the container
+                                      // border: Border.all(
+                                      //   width: 1.0, // Border width
+                                      //   color: Colors.black
+                                      // ),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        "".tr,
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 12.0,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.white, // Text color
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    top: 12.0, bottom: 7, right: 22),
+                                child: GestureDetector(
+
+                                  child: Container(
+                                    height: 29,
+                                    width: 114,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(30.0),
+                                      // shape: BoxShape.rectangle,
+                                      // color: Color(
+                                      //     0xFF064821), // Background color of the container
+                                      // border: Border.all(
+                                      //   width: 1.0, // Border width
+                                      //   color: Colors.black
+                                      // ),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        "".tr,
                                         style: TextStyle(
                                           fontFamily: 'Cairo',
                                           fontSize: 12.0,
