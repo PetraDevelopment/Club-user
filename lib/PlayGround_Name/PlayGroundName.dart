@@ -189,7 +189,7 @@ class PlaygroundNameState extends State<PlaygroundName>
       return snapshot.docs.isNotEmpty;
     } catch (e) {
       // Handle any errors that occur during the query process
-      print('Error checking if favorite exists: $e');
+      print('Error checking if favorite exists  : $e');
       return false; // Return false in case of an error
     }
   }

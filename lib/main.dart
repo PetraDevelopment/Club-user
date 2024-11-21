@@ -8,6 +8,8 @@ import 'package:get/get.dart';
 import 'Splach/PlayGroundSplach.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'notification/notification_repo.dart';
+
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // This method will be called when the app is in the background
   print('Handling a background message: ${message.messageId}');

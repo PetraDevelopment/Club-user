@@ -9,7 +9,7 @@ import 'package:intl/intl.dart' as intl;
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:popover/popover.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../Controller/NavigationController.dart';
 import '../../Home/HomePage.dart';
@@ -18,6 +18,7 @@ import '../../Menu/menu.dart';
 import '../../Register/SignInPage.dart';
 import '../../Splach/LoadingScreen.dart';
 import '../../my_reservation/my_reservation.dart';
+import '../../notification/notification_repo.dart';
 import '../../playground_model/AddPlaygroundModel.dart';
 import '../AddbookingModel/AddbookingModel.dart';
 import '../widgets_for_popover_cancel_and_add/reservation.dart';
@@ -721,7 +722,7 @@ if(x==true){
 
         // Add booking to Firestore
         await FirebaseFirestore.instance.collection('booking').add(bookingModel.toMap());
-
+       await sendnotfication(playgroundAllData[0].adminId!);
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -759,6 +760,30 @@ if(x==true){
     });
   }
 
+  Future<void> sendnotfication(String Adminidd) async {
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      String? token = await messaging.getToken();
+      print("FCM Token: $token");
+      String ms="تم اضافة حجز جديد";
+      final res = await Sendnotification().sendnotification(ms,ms,"fmhAWKT5T_GLgOnMGDX8-n:APA91bHoJkWj3T19_mLgNBSKeFLWtDC5dww8mWyayMa765tqLYxMwZrnkIR_zzF4Kw0Hev0wtYDlPNjRz5lLIjKPrWzUmmbSB4fipSu-qeMB9roJAEdlokY");
+print("result equal${res.message}");
+      // setState(() {
+      //   if (res.message!.isNotEmpty) {
+      //     print("allnotifications: ${res.data.toString()}");
+      //     Advertsment = res.data!;
+      //   }
+      // });
+    } catch (e) {
+      // if (e is DioError && e.response?.statusCode == 401) {
+      //   // Token is invalid, log out and clear data
+      //   await logout();
+      //   print('Token is invalid, logging out and clearing data');
+      // } else {
+      //   print('Error fetching data: $e');
+      // }
+    }
+  }
   bool isAlreadySelected = false;
 
   String formatDate(String dateString) {

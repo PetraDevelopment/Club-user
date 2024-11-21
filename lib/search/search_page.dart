@@ -93,43 +93,7 @@ class SearchpageState extends State<Searchpage> {
       print("No phone number available.");
     }
   }
-  // String searchcontent="";
-  // Future<void> serarchforplayground() async {
-  //   try {
-  //     CollectionReference playerchat =
-  //     FirebaseFirestore.instance.collection("AddPlayground");
-  //
-  //     QuerySnapshot querySnapshot = await playerchat.get();
-  //
-  //     if (querySnapshot.docs.isNotEmpty) {
-  //       String userInput = Searchcontrol.text; // Get the user's input from the TextField
-  //
-  //       List<AddPlayGroundModel> filteredPlaygrounds = [];
-  //
-  //       for (QueryDocumentSnapshot document in querySnapshot.docs) {
-  //         Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
-  //         AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
-  //
-  //         if (user.playgroundName!.toLowerCase().contains(userInput.toLowerCase())) {
-  //           filteredPlaygrounds.add(user);
-  //         }
-  //       }
-  //
-  //       if (filteredPlaygrounds.isNotEmpty) {
-  //         // Show the design with the filtered playgrounds
-  //         searchcontent=filteredPlaygrounds.last.playgroundName!;
-  //         print("searchcontent$searchcontent");
-  //       } else {
-  //
-  //         print("this play round not found");
-  //         // Show the "this play round not found" text
-  //         // return Text("this play round not found");
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print("Error getting playground: $e");
-  //   }
-  // }
+
   List<AddPlayGroundModel> searchPlaygrounds = [];
 
   Future<void> serarchforplayground() async {
