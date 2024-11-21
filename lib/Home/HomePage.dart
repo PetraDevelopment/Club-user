@@ -112,13 +112,13 @@ class HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _initialize();
-
+    fetchBookingData();
 
     requestLocationPermission();
     getPlaygroundbyname();
     getfourplaygroundsbytype();
     _loadData();
-    fetchBookingData();
+
     _loadUserData();
 
     print("njbjbhbbb");
@@ -177,84 +177,243 @@ class HomePageState extends State<HomePage> {
     print("bvbbvbvbb$isConnected");
 
     }
+  fetchuserdatabyid(AddbookingModel userid) async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot docSnapshot =
+      await firestore.collection('Users').doc(userid.userID).get();
 
+      if (docSnapshot.exists) {
+        // Cast data to Map<String, dynamic>
+        Map<String, dynamic>? data = docSnapshot.data() as Map<String, dynamic>?;
+// for(int ii = 0; ii <playgroundbook.length ;ii++){
+
+
+        if (data != null ) {
+          return data;
+// userid.UserName= data['name'];
+// userid.UserPhone = data['phone'];
+// userid.UserImg = data['profile_image'];
+//
+// print("playgroundbook[0].UserName ${userid.UserName }");
+// print("playgroundbook[0].UserPhonee${userid.UserPhone }");
+// print("playgroundbook[0].UserImg ${userid.UserImg }");
+//           print('Data for this daaata: $data');
+        }
+        else {
+          print('FCMToken field is missing for this admin.');
+        }
+      } else {
+        print('No document found with ID: $userid');
+      }
+    } catch (e) {
+      print('Error fetching document: $e');
+    }
+  }
+  fetchgrounddatabyid(AddbookingModel ground) async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot docSnapshot =
+      await firestore.collection('AddPlayground').doc(ground.GroundId).get();
+
+      if (docSnapshot.exists) {
+        // Cast data to Map<String, dynamic>
+        Map<String, dynamic>? data = docSnapshot.data() as Map<String, dynamic>?;
+// for(int ii = 0; ii <playgroundbook.length ;ii++){
+
+
+        if (data != null ) {
+          print("grounddaaaaaaaaaaaaata$data");
+          return data;
+// userid.UserName= data['name'];
+// userid.UserPhone = data['phone'];
+// userid.UserImg = data['profile_image'];
+//
+// print("playgroundbook[0].UserName ${userid.UserName }");
+// print("playgroundbook[0].UserPhonee${userid.UserPhone }");
+// print("playgroundbook[0].UserImg ${userid.UserImg }");
+//           print('Data for this daaata: $data');
+        }
+        else {
+          print('FCMToken field is missing for this admin.');
+        }
+      } else {
+        print('No document found with ID: $ground');
+      }
+    } catch (e) {
+      print('Error fetching document: $e');
+    }
+  }
+  String useridddd="";
   Future<void> fetchBookingData() async {
 
     try {
-
-      CollectionReference bookingCollection = FirebaseFirestore.instance.collection("booking");
-
+      CollectionReference bookingdataa = FirebaseFirestore.instance.collection("booking");
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? phoneValue = prefs.getString('phonev');
       print("newphoneValue${phoneValue.toString()}");
 
       if (phoneValue != null && phoneValue.isNotEmpty) {
         String normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
+        CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
 
-        QuerySnapshot querySnapshot = await bookingCollection.get();
 
-        playgroundbook = []; // Initialize as an empty list
 
-        for (var doc in querySnapshot.docs) {
-          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          var userDataList = data['AlluserData']?['UserData'] as List?;
+// Query the PlayersChat collection to find the document where phone number matches
+        QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo: normalizedPhoneNumber).get();
+        print('shared phooone $normalizedPhoneNumber');
+        if(adminSnapshot.docs.isNotEmpty){
+          var adminDoc = adminSnapshot.docs.first;
+          String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+          print("Matched user docId: $docId");
+          useridddd=docId;
 
-          if (userDataList != null) {
-            for (var userData in userDataList) {
-              if (userData['UserPhone'] == normalizedPhoneNumber) {
-                AddbookingModel booking = AddbookingModel.fromMap(data);
-                playgroundbook.add(booking); // Add each booking to the list
-                break;
-              }
-            }
-          }
         }
+        QuerySnapshot bookingSnapshot =
+        await bookingdataa.where('userID', isEqualTo: useridddd).get();
+
+if(bookingSnapshot.docs.isNotEmpty){
+  playgroundbook = []; // Initialize as an empty list
+  for (var document in bookingSnapshot.docs) {
+    Map<String, dynamic> userData =
+    document.data() as Map<String, dynamic>;
+    AddbookingModel bookingData = AddbookingModel.fromMap(userData);
+    Map<String, dynamic>? user =   await fetchuserdatabyid(bookingData);
+
+    bookingData.UserName = user!['name'];
+    bookingData.UserPhone = user['phone'];
+    bookingData.UserImg = user['profile_image'];
+    Map<String, dynamic>? Grounddata =   await fetchgrounddatabyid(bookingData);
+    // print("grounddataaa${Grounddata!['groundName']}");
+    bookingData.groundName = Grounddata!['groundName'];
+    bookingData.groundphone = Grounddata['phone'];
+    bookingData.groundImage = Grounddata['img'][0];
+    // Store the document ID in the model
+    playgroundbook.add(bookingData); // Add playground to the list
+print("bookingData is equal $bookingData");
+    // print("Stored document ID in model: ${user.id}");
+  }
+  setState(() {
+
+  });
+
+}
+
+        // for (var doc in querySnapshot.docs) {
+        //   Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        //   var userDataList = data['AlluserData']?['UserData'] as List?;
+        //
+        //   if (userDataList != null) {
+        //     for (var userData in userDataList) {
+        //       if (userData['UserPhone'] == normalizedPhoneNumber) {
+        //         AddbookingModel booking = AddbookingModel.fromMap(data);
+        //
+        //         playgroundbook.add(booking); // Add each booking to the list
+        //         break;
+        //       }
+        //     }
+        //   }
+        // }
 
         if (playgroundbook.isNotEmpty) {
           // Print and access specific fields for each booking
           for (int i = 0; i < playgroundbook.length; i++) {
             // formatDate(playgroundbook[i].dateofBooking!);
 
-            print('AdminId: ${playgroundbook[i].AdminId}');
-            print('Day_of_booking: ${playgroundbook[i].Day_of_booking}');
-            print('Name: ${playgroundbook[i].Name}');
-            print('Rent_the_ball: ${playgroundbook[i].rentTheBall}');
-            print('phoneshoka: ${playgroundbook[i].AllUserData![0].UserPhone!}');
+            if (playgroundbook[i].AdminId != null) {
+              print('AdminIdforbook: ${playgroundbook[i].AdminId}');
+            }
+            if (playgroundbook[i].Day_of_booking != null) {
+              print('Day_of_booking: ${playgroundbook[i].Day_of_booking}');
+            }
+            if (playgroundbook[i].rentTheBall != null) {
+              print('Rent_the_ball: ${playgroundbook[i].rentTheBall}');
+            }
+            if (playgroundbook[i].UserPhone != null) {
+              print('phoneshoka: ${playgroundbook[i].UserPhone!}');
+            }
           }
         } else {
           print('No matching bookings found for the phone number.');
         }
-      } else if (user?.phoneNumber != null) {
+      }
+      else if (user?.phoneNumber != null) {
         String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
-        QuerySnapshot querySnapshot = await bookingCollection.get();
+        CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
 
-        playgroundbook = []; // Initialize as an empty list
 
-        for (var doc in querySnapshot.docs) {
-          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          var userDataList = data['AlluserData']?['UserData'] as List?;
 
-          if (userDataList != null) {
-            for (var userData in userDataList) {
-              if (userData['UserPhone'] == normalizedPhoneNumber) {
-                AddbookingModel booking = AddbookingModel.fromMap(data);
-                playgroundbook.add(booking); // Add each booking to the list
-                break;
-              }
-            }
-          }
+// Query the PlayersChat collection to find the document where phone number matches
+        QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo: normalizedPhoneNumber).get();
+        print('shared phooone $normalizedPhoneNumber');
+        if(adminSnapshot.docs.isNotEmpty){
+          var adminDoc = adminSnapshot.docs.first;
+          String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+          print("Matched user docId: $docId");
+          useridddd=docId;
+
         }
+        QuerySnapshot bookingSnapshot =
+        await bookingdataa.where('userID', isEqualTo: useridddd).get();
+
+        if(bookingSnapshot.docs.isNotEmpty){
+          playgroundbook = []; // Initialize as an empty list
+          for (var document in bookingSnapshot.docs) {
+            Map<String, dynamic> userData =
+            document.data() as Map<String, dynamic>;
+            AddbookingModel bookingData = AddbookingModel.fromMap(userData);
+            Map<String, dynamic>? user =   await fetchuserdatabyid(bookingData);
+
+            bookingData.UserName = user!['name'];
+            bookingData.UserPhone = user['phone'];
+            bookingData.UserImg = user['profile_image'];
+            Map<String, dynamic>? Grounddata =   await fetchgrounddatabyid(bookingData);
+            bookingData.groundName = Grounddata!['groundName'];
+            bookingData.groundphone = Grounddata['phone'];
+            bookingData.groundImage = Grounddata['img'][0];
+            // Store the document ID in the model
+            playgroundbook.add(bookingData); // Add playground to the list
+
+            // print("Stored document ID in model: ${user.id}");
+          }
+          setState(() {
+
+          });
+
+        }
+
+
+        // for (var doc in querySnapshot.docs) {
+        //   Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        //   var userDataList = data['AlluserData']?['UserData'] as List?;
+        //
+        //   if (userDataList != null) {
+        //     for (var userData in userDataList) {
+        //       if (userData['UserPhone'] == normalizedPhoneNumber) {
+        //         AddbookingModel booking = AddbookingModel.fromMap(data);
+        //         playgroundbook.add(booking); // Add each booking to the list
+        //         break;
+        //       }
+        //     }
+        //   }
+        // }
 
         if (playgroundbook.isNotEmpty) {
           // Print and access specific fields for each booking
           for (int i = 0; i < playgroundbook.length; i++) {
-            print('AdminId: ${playgroundbook[i].AdminId}');
-            // formatDate(playgroundbook[i].dateofBooking!);
-            print('Day_of_booking: ${playgroundbook[i].Day_of_booking}');
-            print('Name: ${playgroundbook[i].Name}');
-            print('Rent_the_ball: ${playgroundbook[i].rentTheBall}');
-            print('phoneshoka: ${playgroundbook[i].AllUserData![0].UserPhone!}');
-            getPlaygroundbynameE(playgroundbook[i].NeededGroundData![0].GroundId!);
+            if (playgroundbook[i].AdminId != null) {
+              print('AdminIdforbook: ${playgroundbook[i].AdminId}');
+            }
+            if (playgroundbook[i].Day_of_booking != null) {
+              print('Day_of_booking: ${playgroundbook[i].Day_of_booking}');
+            }
+            if (playgroundbook[i].rentTheBall != null) {
+              print('Rent_the_ball: ${playgroundbook[i].rentTheBall}');
+            }
+            if (playgroundbook[i].UserPhone != null) {
+              print('phoneshoka: ${playgroundbook[i].UserPhone!}');
+            }
+            getPlaygroundbynameE(playgroundbook[i].GroundId!);
           }
         } else {
           print('No matching bookings found for the user’s phone number.');
@@ -512,40 +671,8 @@ class HomePageState extends State<HomePage> {
   List<Rate_fetched> rat_list2 = [];
   bool isConnected=false;
 
-
-  // Future<void> deleteCancelByPhoneAndPlaygroundId(String phone, String playgroundId,String selectedTime) async {
-  //   final firestore = FirebaseFirestore.instance;
-  //   print("phoneggggg${phone}");
-  //   try {
-  //     // Query to find the document where 'user_phone' matches the provided phone number
-  //     // and 'playgroundId' matches the provided playgroundId
-  //     final querySnapshot = await firestore
-  //         .collection('booking')
-  //         .where('phoneCommunication', isEqualTo: phone)
-  //         .where('groundID', isEqualTo: playgroundId)
-  //         .where('selectedTimes', arrayContains: selectedTime)
-  //         .get();
-  //
-  //     // Check if any documents were found
-  //     if (querySnapshot.docs.isNotEmpty) {
-  //       // Loop through the documents and delete them
-  //       for (var doc in querySnapshot.docs) {
-  //         await firestore.collection('booking').doc(doc.id).delete();
-  //         print('Document X phone $phone, playgroundId $playgroundId, and selectedTime $selectedTime deleted successfully.');
-  //         Navigator.pushReplacement(
-  //           context,
-  //           MaterialPageRoute(builder: (context) => HomePage()),
-  //         );
-  //       }
-  //     } else {
-  //       print('No document found for phone number: $phone and playgroundId: $playgroundId');
-  //     }
-  //   } catch (e) {
-  //     print('Error deleting document: $e');
-  //   }
-  // }
   Future<void> deleteCancelByPhoneAndPlaygroundId(
-      String normalizedPhoneNumber,
+      String userid,
       String playgroundId,
       String selectedTime,
       String bookingDate,
@@ -553,58 +680,43 @@ class HomePageState extends State<HomePage> {
   async {
     final firestore = FirebaseFirestore.instance;
     bool documentDeleted = false;
-    print("phoneee$normalizedPhoneNumber");
+    print("Normalized Phone: $userid");
+    print("Playground ID: $playgroundId");
+    print("Selected Time: $selectedTime");
+    print("Booking Date: $bookingDate");
+
     try {
-      // Get all documents from the booking collection
-      QuerySnapshot querySnapshot = await firestore.collection('booking').get();
+      QuerySnapshot querySnapshot = await firestore.collection('booking')
+          .where('GroundId', isEqualTo: playgroundId)
+          .where('userID', isEqualTo: userid)
+          .where('dateofBooking', isEqualTo: bookingDate)
+          .where('selectedTimes', arrayContains: selectedTime)
+          .get();
 
-      for (var doc in querySnapshot.docs) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+      if (querySnapshot.docs.isNotEmpty) {
+        for (var doc in querySnapshot.docs) {
+          print('Document ID: ${doc.id}');
+          print('Selected Times: ${doc['selectedTimes']}');
 
-        // Retrieve user data list
-        var userDataList = data['AlluserData']?['UserData'] as List?;
-        var groundDataList = data['NeededGroundData']?['GroundData'] as List?;
+          // Delete the document
+          await firestore.collection('booking').doc(doc.id).delete();
+          print(
+              'Document with phone $userid, playgroundId $playgroundId, date $bookingDate, and selectedTime $selectedTime deleted successfully.');
+          documentDeleted = true;
 
-        // Debugging output
-        print('User  Data List: $userDataList');
-        print('Ground Data List: $groundDataList');
-        print('Document dateofBooking: ${data['dateofBooking']}');
-        print('Document selectedTimes: ${data['selectedTimes']}');
-
-        // Check if userDataList is not null
-        if (userDataList != null) {
-          bool userMatch = userDataList.any((userData) =>
-          userData['UserPhone'] == normalizedPhoneNumber
+          // Navigate to HomePage
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomePage()),
           );
-
-          // Check if document-level dateofBooking and selectedTimes match
-          if (userMatch &&
-              data['dateofBooking'] == bookingDate &&
-              (data['selectedTimes'] as List).contains(selectedTime)) {
-            // All conditions are met, delete the document
-            await firestore.collection('booking').doc(doc.id).delete();
-            print(
-                'Document with phone $normalizedPhoneNumber, playgroundId $playgroundId, and selectedTime $selectedTime deleted successfully.');
-            // await firestore.collection('booking').doc(doc.id).delete();
-            print('Document with phone: $normalizedPhoneNumber, playgroundId: $playgroundId, date: $bookingDate, and selectedTime: $selectedTime deleted successfully.');
-            documentDeleted = true;
-
-            // Navigate to HomePage after successful deletion
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomePage()),
-            );
-            return; // Exit the function after deletion
-          }
+          return; // Exit after deletion
         }
       }
 
       if (!documentDeleted) {
-        print('No document found matching the specified phone, playgroundId, date, and selectedTime.');
+        print('No matching document found for deletion.');
       }
-
-    }
-    catch (e) {
+    } catch (e) {
       print('Error deleting document: $e');
     }
   }
@@ -1435,7 +1547,7 @@ class HomePageState extends State<HomePage> {
 
                     child:Row(
                       children: [
-                        for (var i = 0; i < playgroundAllData.length; i++) // Repeat the container 5 times
+                        for (var i = 0; i < playgroundbook.length; i++) // Repeat the container 5 times
                           Padding(
                             padding: const EdgeInsets.only(right: 8.0,left: 12,bottom: 3), // Adds spacing between containers
                             child: Container(
@@ -1469,7 +1581,7 @@ class HomePageState extends State<HomePage> {
                                             Padding(
                                               padding: const EdgeInsets.only(top: 4.0),
                                               child: Text(
-                                                "${ playgroundbook[i].NeededGroundData![0].GroundName!}",
+                                                "${ playgroundbook[i].groundName.toString()!}",
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
                                                   fontFamily: 'Cairo',
@@ -1592,13 +1704,14 @@ class HomePageState extends State<HomePage> {
                                       GestureDetector(
                                         onTap: (){
                                           print("phooonefff${playgroundbook[i]
-                                              .AllUserData![0].UserPhone!}");
+                                              .UserPhone!}");
                                           updateCancelCount(playgroundbook[i]
-                                              .AllUserData![0].UserPhone!);
-                                          deleteCancelByPhoneAndPlaygroundId(playgroundbook[i]
-                                              .AllUserData![0].UserPhone!,playgroundbook[i]
-                                              .NeededGroundData![0].GroundId!,playgroundbook[i].selectedTimes!.first,playgroundbook[i].dateofBooking!);
-
+                                              .UserPhone!);
+                                          deleteCancelByPhoneAndPlaygroundId(
+                                              playgroundbook[i].userID!,
+                                              playgroundbook[i].GroundId!,
+                                              playgroundbook[i].selectedTimes!.first,
+                                              playgroundbook[i].dateofBooking!);
                                         },
                                         child: Padding(
                                           padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),

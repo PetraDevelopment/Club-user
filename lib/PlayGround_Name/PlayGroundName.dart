@@ -22,7 +22,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../Splach/LoadingScreen.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
-import '../booking_playground/try/book_playground_page.dart';
+import '../booking_playground/booking_bage/book_playground_page.dart';
 import '../model_rate/model_rate.dart';
 import '../my_reservation/my_reservation.dart';
 import '../playground_model/AddPlaygroundModel.dart';
@@ -1640,10 +1640,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                         shape: BoxShape.rectangle,
                         color: Color(
                             0xFF064821), // Background color of the container
-                        // border: Border.all(
-                        //   width: 1.0, // Border width
-                        //   color: Colors.black
-                        // ),
+
                       ),
                       child: Center(
                         child: Text(
