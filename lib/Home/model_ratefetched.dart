@@ -1,14 +1,14 @@
 class Rate_fetched {
-  List<String>? img;
-  String? name;
-  String? phone;
+  String?PlayGroundName;
+  String?PlayGroundimg;
+  String? userid;
   String? playgroundIdstars;
   List<bool>? rate;
 
   Rate_fetched({
-    this.img,
-    this.name,
-    this.phone,
+   this.PlayGroundimg,
+    this.PlayGroundName,
+    this.userid,
     this.playgroundIdstars,
     this.rate,
   });
@@ -16,9 +16,10 @@ class Rate_fetched {
   // Factory constructor to create the model from a Map
   factory Rate_fetched.fromMap(Map<String, dynamic> map) {
     return Rate_fetched(
-      img: List<String>.from(map['img'] ?? []), // Convert to a list of strings
-      name: map['name'],
-      phone: map['phone'],
+      PlayGroundName:'',
+      PlayGroundimg:'',
+
+      userid: map['userid'],
       playgroundIdstars: map['playground_idstars'] ?? '',
       rate: List<bool>.from(map['rate'] ?? []), // Convert to a list of booleans
     );
@@ -30,9 +31,7 @@ class Rate_fetched {
   // Method to convert the model to a Map
   Map<String, dynamic> toMap() {
     return {
-      'playground_name': name,
-      'img': img,
-      'phone': phone,
+      'userid': userid,
       'playground_idstars': playgroundIdstars,
       'rate': rate,
     };
@@ -40,7 +39,7 @@ class Rate_fetched {
 
   @override
   String toString() {
-    return 'Ratemodel(playgroundName: $name, user_phone: $phone, playground_id: $playgroundIdstars, img: $img, totalRating: $totalRating)';
+    return 'Ratemodel(userid: $userid,  playground_id: $playgroundIdstars, totalRating: $totalRating)';
   }
 }
 

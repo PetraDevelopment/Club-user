@@ -2165,176 +2165,177 @@ print("bookingData is equal $bookingData");
                   ),
                 ),
                 SizedBox(height: 20,),
-                Padding(
-                  padding: const EdgeInsets.only(right: 25,left: 26,top: 10,bottom: 10,),
-                  child: Text(
-                    "الملاعب الاعلى تقييم".tr,
-                    style: TextStyle(
-                      color: Color(0xFF495A71),
-                      fontFamily: 'Cairo',
-                      fontSize: 15.0,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                rat_list2.isNotEmpty?    SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  reverse: true, // Reverses the scroll direction
-                  child: rat_list2.isNotEmpty
-                      ? Padding(
-                    padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),
-
-                    child: Row(
-                      children: [
-                        for (var i = 0; i < rat_list2.length; i++)
-                          GestureDetector(
-                            onTap: () {
-                              print("length equal ${rat_list2.length}");
-                              print("objectidddddd ${rat_list2[i].playgroundIdstars!}");
-
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => PlaygroundName(rat_list2[i].playgroundIdstars!),
-                                ),
-                              );
-                            },
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20.0),
-                              ),
-                              elevation: 4,
-                              margin: EdgeInsets.all(8),
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    height: 163,
-                                    width: 274,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      shape: BoxShape.rectangle,
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      child: rat_list2[i].img!.isNotEmpty ? Image.network(
-                                        rat_list2[i].img![0],
-                                        height: 163,
-                                        width: 274,
-                                        fit: BoxFit.fill,
-                                      ) : Image(
-                                        image: AssetImage("assets/images/newground.png"),
-                                        color: Colors.white,
-                                        height: 163,
-                                        width: 274,
-                                        fit: BoxFit.fill,
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 6,
-                                    right: 0,
-                                    left: 0,
-                                    bottom: 0,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Colors.transparent,
-                                            Color(0x1F8C4B).withOpacity(0.0),
-                                            Color(0x1F8C4B).withOpacity(1.0),
-                                          ],
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                        ),
-                                        borderRadius: BorderRadius.only(
-                                          bottomLeft: Radius.circular(20.0),
-                                          bottomRight: Radius.circular(20.0),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 113,
-                                    right: 40,
-                                    left: 55,
-                                    child: Text(
-                                      rat_list2[i].name!,
-                                      style: TextStyle(
-                                        fontFamily: 'Cairo',
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ) : Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Center(
-                          child: Container(
-                            height: 142.51,
-                            width: 142.51,
-
-                            child:  Image.asset(
-                              "assets/images/amico.png",
-
-                              // Adjust size as needed
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 2,),
-                        Text(
-                          'لم يتم اضافة بيانات يمكن عرضها بعد',
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 14.62,
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF181A20),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ): Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Center(
-                        child: Container(
-                          height: 142.51,
-                          width: 142.51,
-
-                          child:  Opacity(
-                            opacity: 0.5,
-                            child: Image.asset(
-                              "assets/images/amico.png",
-
-                              // Adjust size as needed
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 2,),
-                      Text(
-                        'لم يتم اضافة بيانات يمكن عرضها بعد',
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 14.62,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF181A20),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // Padding(
+                //   padding: const EdgeInsets.only(right: 25,left: 26,top: 10,bottom: 10,),
+                //   child: Text(
+                //     "الملاعب الاعلى تقييم".tr,
+                //     style: TextStyle(
+                //       color: Color(0xFF495A71),
+                //       fontFamily: 'Cairo',
+                //       fontSize: 15.0,
+                //       fontWeight: FontWeight.w700,
+                //     ),
+                //   ),
+                // ),
+                // rat_list2.isNotEmpty?    SingleChildScrollView(
+                //   scrollDirection: Axis.horizontal,
+                //   reverse: true, // Reverses the scroll direction
+                //   child: rat_list2.isNotEmpty
+                //       ? Padding(
+                //     padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),
+                //
+                //     child: Row(
+                //       children: [
+                //         for (var i = 0; i < rat_list2.length; i++)
+                //           GestureDetector(
+                //             onTap: () {
+                //               print("length equal ${rat_list2.length}");
+                //               print("objectidddddd ${rat_list2[i].playgroundIdstars!}");
+                //
+                //               Navigator.push(
+                //                 context,
+                //                 MaterialPageRoute(
+                //                   builder: (context) => PlaygroundName(rat_list2[i].playgroundIdstars!),
+                //                 ),
+                //               );
+                //             },
+                //             child: Card(
+                //               shape: RoundedRectangleBorder(
+                //                 borderRadius: BorderRadius.circular(20.0),
+                //               ),
+                //               elevation: 4,
+                //               margin: EdgeInsets.all(8),
+                //               child: Stack(
+                //                 children: [
+                //                   Container(
+                //                     height: 163,
+                //                     width: 274,
+                //                     decoration: BoxDecoration(
+                //                       borderRadius: BorderRadius.circular(20.0),
+                //                       shape: BoxShape.rectangle,
+                //                     ),
+                //                     child: ClipRRect(
+                //                       borderRadius: BorderRadius.circular(20.0),
+                //                       child: rat_list2[i].PlayGroundimg!.isNotEmpty ? Image.network(
+                //                         rat_list2[i].PlayGroundimg![0],
+                //                         height: 163,
+                //                         width: 274,
+                //                         fit: BoxFit.fill,
+                //                       ) : Image(
+                //                         image: AssetImage("assets/images/newground.png"),
+                //                         color: Colors.white,
+                //                         height: 163,
+                //                         width: 274,
+                //                         fit: BoxFit.fill,
+                //                       ),
+                //                     ),
+                //                   ),
+                //                   Positioned(
+                //                     top: 6,
+                //                     right: 0,
+                //                     left: 0,
+                //                     bottom: 0,
+                //                     child: Container(
+                //                       decoration: BoxDecoration(
+                //                         gradient: LinearGradient(
+                //                           colors: [
+                //                             Colors.transparent,
+                //                             Color(0x1F8C4B).withOpacity(0.0),
+                //                             Color(0x1F8C4B).withOpacity(1.0),
+                //                           ],
+                //                           begin: Alignment.topCenter,
+                //                           end: Alignment.bottomCenter,
+                //                         ),
+                //                         borderRadius: BorderRadius.only(
+                //                           bottomLeft: Radius.circular(20.0),
+                //                           bottomRight: Radius.circular(20.0),
+                //                         ),
+                //                       ),
+                //                     ),
+                //                   ),
+                //                   Positioned(
+                //                     top: 113,
+                //                     right: 40,
+                //                     left: 55,
+                //                     child: Text(
+                //                       rat_list2[i].PlayGroundName!,
+                //                       style: TextStyle(
+                //                         fontFamily: 'Cairo',
+                //                         fontSize: 16,
+                //                         fontWeight: FontWeight.w700,
+                //                         color: Colors.white,
+                //                       ),
+                //                       textAlign: TextAlign.center,
+                //                     ),
+                //                   ),
+                //                 ],
+                //               ),
+                //             ),
+                //           ),
+                //       ],
+                //     ),
+                //   ) : Center(
+                //     child: Column(
+                //       mainAxisAlignment: MainAxisAlignment.center,
+                //       children: [
+                //         Center(
+                //           child: Container(
+                //             height: 142.51,
+                //             width: 142.51,
+                //
+                //             child:  Image.asset(
+                //               "assets/images/amico.png",
+                //
+                //               // Adjust size as needed
+                //             ),
+                //           ),
+                //         ),
+                //         SizedBox(height: 2,),
+                //         Text(
+                //           'لم يتم اضافة بيانات يمكن عرضها بعد',
+                //           style: TextStyle(
+                //             fontFamily: 'Cairo',
+                //             fontSize: 14.62,
+                //             fontWeight: FontWeight.w500,
+                //             color: Color(0xFF181A20),
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ):
+                // Center(
+                //   child: Column(
+                //     mainAxisAlignment: MainAxisAlignment.center,
+                //     children: [
+                //       Center(
+                //         child: Container(
+                //           height: 142.51,
+                //           width: 142.51,
+                //
+                //           child:  Opacity(
+                //             opacity: 0.5,
+                //             child: Image.asset(
+                //               "assets/images/amico.png",
+                //
+                //               // Adjust size as needed
+                //             ),
+                //           ),
+                //         ),
+                //       ),
+                //       SizedBox(height: 2,),
+                //       Text(
+                //         'لم يتم اضافة بيانات يمكن عرضها بعد',
+                //         style: TextStyle(
+                //           fontFamily: 'Cairo',
+                //           fontSize: 14.62,
+                //           fontWeight: FontWeight.w500,
+                //           color: Color(0xFF181A20),
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
                 SizedBox(height: 20,),
               ],
             ),
