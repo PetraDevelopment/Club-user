@@ -9,7 +9,7 @@ import 'package:intl/intl.dart' as intl;
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../Controller/NavigationController.dart';
 import '../../Home/HomePage.dart';
@@ -18,6 +18,8 @@ import '../../Menu/menu.dart';
 import '../../Register/SignInPage.dart';
 import '../../Splach/LoadingScreen.dart';
 import '../../my_reservation/my_reservation.dart';
+import '../../notification/model/modelsendtodevice.dart';
+import '../../notification/model/send_modelfirebase.dart';
 import '../../notification/notification_repo.dart';
 import '../../playground_model/AddPlaygroundModel.dart';
 import '../AddbookingModel/AddbookingModel.dart';
@@ -639,6 +641,89 @@ class book_playground_pageState extends State<book_playground_page> with TickerP
   String? groundNamee ;
   String? groundPhoneee;
   String?useridd="";
+  fetchadmindatabyid(String admin) async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot docSnapshot =
+      await firestore.collection('PlayersChat').doc(admin).get();
+
+      if (docSnapshot.exists) {
+        // Cast data to Map<String, dynamic>
+        Map<String, dynamic>? data = docSnapshot.data() as Map<String, dynamic>?;
+// for(int ii = 0; ii <playgroundbook.length ;ii++){
+
+
+        if (data != null ) {
+          print("PlayersChat data is $data");
+          return data;
+// userid.UserName= data['name'];
+// userid.UserPhone = data['phone'];
+// userid.UserImg = data['profile_image'];
+//
+// print("playgroundbook[0].UserName ${userid.UserName }");
+// print("playgroundbook[0].UserPhonee${userid.UserPhone }");
+// print("playgroundbook[0].UserImg ${userid.UserImg }");
+//           print('Data for this daaata: $data');
+        }
+        else {
+          print('FCMToken field is missing for this admin.');
+        }
+      } else {
+        print('No document found with ID: $admin');
+      }
+    } catch (e) {
+      print('Error fetching document: $e');
+    }
+  }
+
+  String convertTo12HourFormat(DateTime dateTime) {
+    int hour = dateTime.hour;
+    String period = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12;
+    hour = hour == 0 ? 12 : hour; // Convert hour '0' to '12'
+    return '$hour:${dateTime.minute.toString().padLeft(2, '0')} $period';
+  }
+
+  Future<void> _sendnotificationtofirebase(int type) async {
+    setState(() {
+      _isLoading = true; // Set loading to true when starting the operation
+    });
+
+
+    DateTime now = DateTime.now();
+    String timeIn12HourFormat =  convertTo12HourFormat(now);
+    String time = timeIn12HourFormat;
+    print("time converted to be 12 hour $time");
+    print(now.year.toString() + ":" + now.month.toString() + ":" + now.day.toString());
+    String daaate = now.year.toString() + ":" + now.month.toString() + ":" + now.day.toString();
+
+    final notificationModel = NotificationModel(
+    adminId:playgroundAllData[0].adminId! ,
+    userId:useridddd ,
+    time: time,
+    date: daaate,
+    notificationType:type,
+        );
+
+        // Add booking to Firestore
+        await FirebaseFirestore.instance.collection('notification').add(notificationModel.toMap());
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'تم ارسال البيانات بنجاح', // "Data registered successfully"
+              textAlign: TextAlign.center,
+            ),
+            backgroundColor: Color(0xFF1F8C4B),
+          ),
+        );
+
+        // Clear inputs after successful booking
+
+    setState(() {
+      _isLoading = false; // Set loading to false when operation is complete
+    });
+  }
   Future<void> _sendData(BuildContext context,bool x) async {
     setState(() {
       _isLoading = true; // Set loading to true when starting the operation
@@ -722,7 +807,14 @@ if(x==true){
 
         // Add booking to Firestore
         await FirebaseFirestore.instance.collection('booking').add(bookingModel.toMap());
-       await sendnotfication(playgroundAllData[0].adminId!);
+        Map<String, dynamic>? user =   await fetchadmindatabyid(playgroundAllData[0].adminId!);
+        String ms="تم اضافة حجز جديد";
+        String title="حجز جديد";
+        String token =user!['FCMToken'];
+
+        print("toooooooooook$token");
+        await _sendnotificationtofirebase(1);
+        await sp(ms,title,token);  // await sendnotfication(playgroundAllData[0].adminId!);
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -759,31 +851,50 @@ if(x==true){
       _isLoading = false; // Set loading to false when operation is complete
     });
   }
+  String apiEndpoint = 'http://192.168.0.42/notificaions/send_notification.php';
+  Future<http.Response> sendNotification(NotificationData data) async {
+    final uri = Uri.parse(apiEndpoint);
+    final response = await http.post(uri, body: data.toMap());
+    return response;
+  }
+  Future<void> sp(String ms,title,d_token) async {
+    final notificationData = NotificationData(
+      message: ms,
+      title: title,
+      deviceToken: d_token);
+    final response = await sendNotification(notificationData);
 
-  Future<void> sendnotfication(String Adminidd) async {
-    try {
-      FirebaseMessaging messaging = FirebaseMessaging.instance;
-      String? token = await messaging.getToken();
-      print("FCM Token: $token");
-      String ms="تم اضافة حجز جديد";
-      final res = await Sendnotification().sendnotification(ms,ms,"fmhAWKT5T_GLgOnMGDX8-n:APA91bHoJkWj3T19_mLgNBSKeFLWtDC5dww8mWyayMa765tqLYxMwZrnkIR_zzF4Kw0Hev0wtYDlPNjRz5lLIjKPrWzUmmbSB4fipSu-qeMB9roJAEdlokY");
-print("result equal${res.message}");
-      // setState(() {
-      //   if (res.message!.isNotEmpty) {
-      //     print("allnotifications: ${res.data.toString()}");
-      //     Advertsment = res.data!;
-      //   }
-      // });
-    } catch (e) {
-      // if (e is DioError && e.response?.statusCode == 401) {
-      //   // Token is invalid, log out and clear data
-      //   await logout();
-      //   print('Token is invalid, logging out and clearing data');
-      // } else {
-      //   print('Error fetching data: $e');
-      // }
+    if (response.statusCode == 200) {
+      print('Notification sent successfully!');
+    } else {
+      print('Error sending notification: ${response.statusCode}');
+      print(response.body);
     }
   }
+//   Future<void> sendnotfication(String Adminidd) async {
+//     try {
+//       FirebaseMessaging messaging = FirebaseMessaging.instance;
+//       String? token = await messaging.getToken();
+//       print("FCM Token: $token");
+//       String ms="تم اضافة حجز جديد";
+//       final res = await Sendnotification().sendnotification(ms,ms,'fAnytLlUSvKQSdQ0pEe61U:APA91bGAUt11ZWQDqmLF2e4HToBljWQ2kt5x8OoYzNLxfHVZuYUWyeBiabpaFMPtBJrWD4OTbXXkuIgSWXw-BG0eeIVlpPk3WpBzNVJpje18iLTicQTk2E0');
+// print("result equal${res.message}");
+//       // setState(() {
+//       //   if (res.message!.isNotEmpty) {
+//       //     print("allnotifications: ${res.data.toString()}");
+//       //     Advertsment = res.data!;
+//       //   }
+//       // });
+//     } catch (e) {
+//       // if (e is DioError && e.response?.statusCode == 401) {
+//       //   // Token is invalid, log out and clear data
+//       //   await logout();
+//       //   print('Token is invalid, logging out and clearing data');
+//       // } else {
+//       //   print('Error fetching data: $e');
+//       // }
+//     }
+//   }
   bool isAlreadySelected = false;
 
   String formatDate(String dateString) {
@@ -918,6 +1029,7 @@ print("result equal${res.message}");
     checkInternetConnection();
     _loadUserData();
     fetchBookingData();
+
     _fetchData();
     getAllBookingDocuments();
     getPlaygroundbyname(widget.IdData);

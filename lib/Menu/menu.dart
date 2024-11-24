@@ -18,6 +18,7 @@ import '../My_group/my_group.dart';
 import '../my_reservation/my_reservation.dart';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import '../notification/notification_page.dart';
 import '../profile/profile_page.dart';
 class menupage extends StatefulWidget {
   @override
@@ -781,7 +782,11 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                   child: GestureDetector
                     (
                     onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Notification_page()),
 
+                      );
                     },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

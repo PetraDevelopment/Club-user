@@ -23,6 +23,7 @@ import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import '../booking_playground/AddbookingModel/AddbookingModel.dart';
 import '../location/map_page.dart';
 import '../my_reservation/my_reservation.dart';
+import '../notification/utils/setting.dart';
 import '../playground_model/AddPlaygroundModel.dart';
 import '../search/search_page.dart';
 import 'Userclass.dart';
@@ -128,6 +129,9 @@ class HomePageState extends State<HomePage> {
         _currentIndex = _pageController.page!.round();
       });
     });
+    notificationHandleClose(context);
+    notificationHandleBackground(context);
+    notificationHandleOpened(context);
     // Call setState to rebuild the widget tree
   }
   @override

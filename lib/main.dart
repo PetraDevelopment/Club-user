@@ -39,7 +39,6 @@ Future<void> main() async {
   await _initializeLocalNotifications();
 
   // Register the background message handler
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // Initialize NavigationController
   Get.put(NavigationController());
@@ -59,22 +58,16 @@ Future<void> main() async {
     sound: true,
   );
 
-  // Set up message handlers
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Received a message while in the foreground: ${message.notification?.title}');
 
-    // Extract title and body from the RemoteMessage notification
-    String title = message.notification?.title ?? 'No Title';
-    String body = message.notification?.body ?? 'No Body';
+  @pragma('vm:entry-point')
+  Future<void> _firebaseMessagingBackgroundHandler(
+      RemoteMessage message) async {
+    print('jjshsghshs');
 
-    // Pass the title and body to the _showNotification function
-    _showNotification(title, body);
-  }); // Add the closing parenthesis and semicolon here
-
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    print('Message clicked! ${message.data}');
-    // Handle the message when the app is opened from a notification
-  });
+    // If you're going to use other Firebase services in the background, such as Firestore,
+    // make sure you call `initializeApp` before using other Firebase services.
+    await Firebase.initializeApp();
+  }
 
   // Run the app
   runApp(
