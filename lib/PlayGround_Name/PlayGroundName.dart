@@ -8,7 +8,7 @@ import 'dart:async';
 import 'package:geocoding/geocoding.dart';
 import 'package:share/share.dart';
 import '../Controller/NavigationController.dart';
-import '../Favourite_model/AddPlaygroundModel.dart';
+import '../Favourite_model/Favouritemodel.dart';
 import '../Home/HomePage.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -116,15 +116,38 @@ class PlaygroundNameState extends State<PlaygroundName>
 
         if (phoneValue != null && phoneValue.isNotEmpty) {
           try {
-            isFavorite = await checkIfFavoriteExists(widget.id!, phoneValue);
+            CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
+
+            QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo:phoneValue.toString()).get();
+            print('shared phooone ${phoneValue.toString()}');
+            if(adminSnapshot.docs.isNotEmpty){
+              var adminDoc = adminSnapshot.docs.first;
+              String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+              print("Matched user docId: $docId");
+              useridddd=docId;
+
+            }
+            isFavorite = await checkIfFavoriteExists(widget.id!, useridddd);
           } catch (e) {
             print('Error checking if favorite exists: $e');
             isFavorite = false;
           }
         } else if (user?.phoneNumber != null) {
           try {
+            CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
+            String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
+// Query the PlayersChat collection to find the document where phone number matches
+            QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo:normalizedPhoneNumber).get();
+            print('shared phooone ${normalizedPhoneNumber}');
+            if(adminSnapshot.docs.isNotEmpty){
+              var adminDoc = adminSnapshot.docs.first;
+              String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+              print("Matched user docId: $docId");
+              useridddd=docId;
+
+            }
             isFavorite =
-            await checkIfFavoriteExists(widget.id!, user!.phoneNumber!);
+            await checkIfFavoriteExists(widget.id!, useridddd);
           } catch (e) {
             print('Error checking if favorite exists: $e');
             isFavorite = false;
@@ -142,9 +165,7 @@ class PlaygroundNameState extends State<PlaygroundName>
           if (phoneValue != null && phoneValue.isNotEmpty) {
             await FirebaseFirestore.instance.collection('Favourite').add({
               'playground_id': widget.id!,
-              'playground_name': allplaygrounds[0].playgroundName!,
-              'user_phone': phoneValue,
-              'img': allplaygrounds[0].img!,
+              'userid': useridddd,
               'is_favourite': allplaygrounds[0].favourite!,
             });
             setState(() {
@@ -153,10 +174,8 @@ class PlaygroundNameState extends State<PlaygroundName>
           } else if (user?.phoneNumber != null) {
             await FirebaseFirestore.instance.collection('Favourite').add({
               'playground_id': widget.id!,
-              'playground_name': allplaygrounds[0].playgroundName!,
-              'user_phone': user?.phoneNumber!,
-              'img': allplaygrounds[0].img!,
-              'is_favourite': allplaygrounds[0].favourite,
+              'userid': useridddd,
+              'is_favourite': allplaygrounds[0].favourite!,
             });
           }
         }
@@ -175,14 +194,14 @@ class PlaygroundNameState extends State<PlaygroundName>
   }
 
   Future<bool> checkIfFavoriteExists(
-      String playgroundId, String userPhone) async {
+      String playgroundId, String u_id) async {
     try {
-      print("kkkkk$userPhone");
+      print("kkkkk$u_id");
       // Query Firebase to check if the playground is already marked as a favorite
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('Favourite')
           .where('playground_id', isEqualTo: playgroundId)
-          .where('user_phone', isEqualTo: userPhone)
+          .where('userid', isEqualTo: u_id)
           .get();
 
       // Check if any documents match the query
@@ -200,7 +219,7 @@ class PlaygroundNameState extends State<PlaygroundName>
     // You can update the record based on the playgroundId
   }
 
-  Future<void> getfavdata(String phoneNumber) async {
+  Future<void> getfavdata(String iduser) async {
     try {
       CollectionReference fav =
       FirebaseFirestore.instance.collection("Favourite");
@@ -213,7 +232,7 @@ class PlaygroundNameState extends State<PlaygroundName>
           document.data() as Map<String, dynamic>;
           Favouritemodel favourite = Favouritemodel.fromMap(userData);
 
-          if (favourite.user_phone == phoneNumber &&
+          if (favourite.userid == iduser &&
               favourite.playground_id == widget.id) {
             favlist.add(favourite);
             print("Fav Id : ${document.id}"); // Print the latest playground
@@ -249,7 +268,18 @@ class PlaygroundNameState extends State<PlaygroundName>
       setState(() {
         _isLoading = true; // set flag to false when data is loaded
       });
-      await getfavdata(phoneValue); // simulate data loading
+      CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
+
+      QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo:phoneValue.toString()).get();
+      print('shared phooone ${phoneValue.toString()}');
+      if(adminSnapshot.docs.isNotEmpty){
+        var adminDoc = adminSnapshot.docs.first;
+        String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+        print("Matched user docId: $docId");
+        useridddd=docId;
+
+      }
+      await getfavdata(useridddd); // simulate data loading
       setState(() {
         _isLoading = false; // set flag to false when data is loaded
       });
@@ -257,7 +287,19 @@ class PlaygroundNameState extends State<PlaygroundName>
       setState(() {
         _isLoading = true; // set flag to false when data is loaded
       });
-      await getfavdata(user!.phoneNumber!.toString()); // simulate data loading
+      CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
+      String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
+// Query the PlayersChat collection to find the document where phone number matches
+      QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo:normalizedPhoneNumber).get();
+      print('shared phooone ${normalizedPhoneNumber}');
+      if(adminSnapshot.docs.isNotEmpty){
+        var adminDoc = adminSnapshot.docs.first;
+        String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+        print("Matched user docId: $docId");
+        useridddd=docId;
+
+      }
+      await getfavdata(useridddd); // simulate data loading
       setState(() {
         _isLoading = false; // set flag to false when data is loaded
       });
@@ -393,6 +435,7 @@ class PlaygroundNameState extends State<PlaygroundName>
       print("No phone number available.");
     }
   }
+  String useridddd="";
 
   List<Ratemodel> rat_list = [];
 
@@ -423,10 +466,21 @@ class PlaygroundNameState extends State<PlaygroundName>
       print("new phoneValue ${phoneValue.toString()}");
 
       if (phoneValue != null && phoneValue.isNotEmpty) {
-        CollectionReference playerchat =
-        FirebaseFirestore.instance.collection("Playground_Rate");
+        CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
+
+// Query the PlayersChat collection to find the document where phone number matches
+        QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo: phoneValue.toString()).get();
+        print('shared phooone ${phoneValue.toString()}');
+        if(adminSnapshot.docs.isNotEmpty){
+          var adminDoc = adminSnapshot.docs.first;
+          String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+          print("Matched user docId: $docId");
+          useridddd=docId;
+
+        }
+        CollectionReference playerchat = FirebaseFirestore.instance.collection("Playground_Rate");
         QuerySnapshot querySnapshot = await playerchat
-            .where('phone', isEqualTo: phoneValue)
+            .where('userid', isEqualTo: useridddd)
             .where('playground_idstars', isEqualTo: widget.id)
             .get();
 //to avoid add to total rate that already exist
@@ -454,10 +508,8 @@ class PlaygroundNameState extends State<PlaygroundName>
           // Document doesn't exist, create a new one
           await playerchat.add({
             'rate': isstared,
-            'phone': phoneValue,
+            'userid': useridddd,
             'playground_idstars': widget.id,
-            'img': allplaygrounds[0].img!,
-            'name': allplaygrounds[0].playgroundName!,
             'totalrating': newTotalRating
           });
           Navigator.pushReplacement(
@@ -465,12 +517,25 @@ class PlaygroundNameState extends State<PlaygroundName>
             MaterialPageRoute(builder: (context) => PlaygroundName(widget.id)),
           );
         }
-      } else if (user?.phoneNumber != null) {
+      }
+      else if (user?.phoneNumber != null) {
+        CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
+        String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
+// Query the PlayersChat collection to find the document where phone number matches
+        QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo:normalizedPhoneNumber).get();
+        print('shared phooone ${normalizedPhoneNumber}');
+        if(adminSnapshot.docs.isNotEmpty){
+          var adminDoc = adminSnapshot.docs.first;
+          String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+          print("Matched user docId: $docId");
+          useridddd=docId;
+
+        }
         // Similar logic if phone number is obtained from `user`
         CollectionReference playerchat =
         FirebaseFirestore.instance.collection("Playground_Rate");
         QuerySnapshot querySnapshot = await playerchat
-            .where('phone', isEqualTo: user?.phoneNumber)
+            .where('userid', isEqualTo: useridddd)
             .where('playground_idstars', isEqualTo: widget.id)
             .get();
 
@@ -496,10 +561,9 @@ class PlaygroundNameState extends State<PlaygroundName>
           // Document doesn't exist, create a new one
           await playerchat.add({
             'rate': isstared,
-            'phone': user?.phoneNumber,
+            'userid': useridddd,
             'playground_idstars': widget.id,
-            'img': allplaygrounds[0].img!,
-            'name': allplaygrounds[0].playgroundName!,
+
             'totalrating': newTotalRating
           });
           Navigator.pushReplacement(

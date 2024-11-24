@@ -176,7 +176,7 @@ class HomePageState extends State<HomePage> {
     }
     print("bvbbvbvbb$isConnected");
 
-    }
+  }
   fetchuserdatabyid(AddbookingModel userid) async {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -272,32 +272,32 @@ class HomePageState extends State<HomePage> {
         QuerySnapshot bookingSnapshot =
         await bookingdataa.where('userID', isEqualTo: useridddd).get();
 
-if(bookingSnapshot.docs.isNotEmpty){
-  playgroundbook = []; // Initialize as an empty list
-  for (var document in bookingSnapshot.docs) {
-    Map<String, dynamic> userData =
-    document.data() as Map<String, dynamic>;
-    AddbookingModel bookingData = AddbookingModel.fromMap(userData);
-    Map<String, dynamic>? user =   await fetchuserdatabyid(bookingData);
+        if(bookingSnapshot.docs.isNotEmpty){
+          playgroundbook = []; // Initialize as an empty list
+          for (var document in bookingSnapshot.docs) {
+            Map<String, dynamic> userData =
+            document.data() as Map<String, dynamic>;
+            AddbookingModel bookingData = AddbookingModel.fromMap(userData);
+            Map<String, dynamic>? user =   await fetchuserdatabyid(bookingData);
 
-    bookingData.UserName = user!['name'];
-    bookingData.UserPhone = user['phone'];
-    bookingData.UserImg = user['profile_image'];
-    Map<String, dynamic>? Grounddata =   await fetchgrounddatabyid(bookingData);
-    // print("grounddataaa${Grounddata!['groundName']}");
-    bookingData.groundName = Grounddata!['groundName'];
-    bookingData.groundphone = Grounddata['phone'];
-    bookingData.groundImage = Grounddata['img'][0];
-    // Store the document ID in the model
-    playgroundbook.add(bookingData); // Add playground to the list
-print("bookingData is equal $bookingData");
-    // print("Stored document ID in model: ${user.id}");
-  }
-  setState(() {
+            bookingData.UserName = user!['name'];
+            bookingData.UserPhone = user['phone'];
+            bookingData.UserImg = user['profile_image'];
+            Map<String, dynamic>? Grounddata =   await fetchgrounddatabyid(bookingData);
+            // print("grounddataaa${Grounddata!['groundName']}");
+            bookingData.groundName = Grounddata!['groundName'];
+            bookingData.groundphone = Grounddata['phone'];
+            bookingData.groundImage = Grounddata['img'][0];
+            // Store the document ID in the model
+            playgroundbook.add(bookingData); // Add playground to the list
+            print("bookingData is equal $bookingData");
+            // print("Stored document ID in model: ${user.id}");
+          }
+          setState(() {
 
-  });
+          });
 
-}
+        }
 
         // for (var doc in querySnapshot.docs) {
         //   Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
@@ -720,7 +720,40 @@ print("bookingData is equal $bookingData");
       print('Error deleting document: $e');
     }
   }
+  fetchrateofgrounddatabyid(Rate_fetched ground) async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot docSnapshot =
+      await firestore.collection('AddPlayground').doc(ground.playgroundIdstars).get();
 
+      if (docSnapshot.exists) {
+        // Cast data to Map<String, dynamic>
+        Map<String, dynamic>? data = docSnapshot.data() as Map<String, dynamic>?;
+// for(int ii = 0; ii <playgroundbook.length ;ii++){
+
+
+        if (data != null ) {
+          print("grounddaaaaaaaaaaaaata$data");
+          return data;
+// userid.UserName= data['name'];
+// userid.UserPhone = data['phone'];
+// userid.UserImg = data['profile_image'];
+//
+// print("playgroundbook[0].UserName ${userid.UserName }");
+// print("playgroundbook[0].UserPhonee${userid.UserPhone }");
+// print("playgroundbook[0].UserImg ${userid.UserImg }");
+//           print('Data for this daaata: $data');
+        }
+        else {
+          print('FCMToken field is missing for this admin.');
+        }
+      } else {
+        print('No document found with ID: $ground');
+      }
+    } catch (e) {
+      print('Error fetching document: $e');
+    }
+  }
   Future<void> fetchRatings(String id) async {
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -729,7 +762,7 @@ print("bookingData is equal $bookingData");
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        print("ID: $id");
+        print("IDrate: $id");
 
         rat_list = querySnapshot.docs
             .map((doc) => Rate_fetched.fromMap(doc.data() as Map<String, dynamic>))
@@ -737,8 +770,12 @@ print("bookingData is equal $bookingData");
 
         rat_list.sort((a, b) => b.totalRating.compareTo(a.totalRating));
         print("Sorted Ratings: $rat_list");
-
-
+       for(int i=0;i<rat_list.length;i++){
+         Map<String, dynamic>? user =   await fetchrateofgrounddatabyid(rat_list[i]);
+         rat_list[i].PlayGroundName=user!['groundName'];
+         rat_list[i].PlayGroundimg=user['img'][0];
+         print("image of rate ${user['img'][0]}");
+       }
         Map<String, Rate_fetched> idToHighestRatingMap = {};
         for (var rating in rat_list2) {
 
@@ -747,6 +784,7 @@ print("bookingData is equal $bookingData");
               idToHighestRatingMap[rating.playgroundIdstars!] = rating;
               if (rat_list2.length < 5) {
                 var uniqueRatings = rat_list.where((rating) => !idToHighestRatingMap.containsKey(rating.playgroundIdstars!));
+
                 rat_list2.addAll(uniqueRatings.take(5 -rat_list2.length ));
                 print("erooooooooooooooooooooooooooooooooooooooooooooo   :${rat_list2.length}");
               }
@@ -991,8 +1029,7 @@ print("bookingData is equal $bookingData");
           for(int m=0;m<allplaygrounds.length;m++){
             print("kkkkkkkkshok${allplaygrounds[m]}");
             print("shimaaaaaaaplaygroundiddddd${allplaygrounds[m].id}");
-
-            fetchRatings(allplaygrounds[m].id!);
+        await    fetchRatings(allplaygrounds[m].id!);
 
           }
 
@@ -1047,7 +1084,7 @@ print("bookingData is equal $bookingData");
         backgroundColor: Colors.white,
 
         body:  isConnected
-      ? Padding(
+            ? Padding(
           padding: const EdgeInsets.only(top: 66.0),
           child: SingleChildScrollView(
             child: Column(
@@ -2165,177 +2202,176 @@ print("bookingData is equal $bookingData");
                   ),
                 ),
                 SizedBox(height: 20,),
-                // Padding(
-                //   padding: const EdgeInsets.only(right: 25,left: 26,top: 10,bottom: 10,),
-                //   child: Text(
-                //     "الملاعب الاعلى تقييم".tr,
-                //     style: TextStyle(
-                //       color: Color(0xFF495A71),
-                //       fontFamily: 'Cairo',
-                //       fontSize: 15.0,
-                //       fontWeight: FontWeight.w700,
-                //     ),
-                //   ),
-                // ),
-                // rat_list2.isNotEmpty?    SingleChildScrollView(
-                //   scrollDirection: Axis.horizontal,
-                //   reverse: true, // Reverses the scroll direction
-                //   child: rat_list2.isNotEmpty
-                //       ? Padding(
-                //     padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),
-                //
-                //     child: Row(
-                //       children: [
-                //         for (var i = 0; i < rat_list2.length; i++)
-                //           GestureDetector(
-                //             onTap: () {
-                //               print("length equal ${rat_list2.length}");
-                //               print("objectidddddd ${rat_list2[i].playgroundIdstars!}");
-                //
-                //               Navigator.push(
-                //                 context,
-                //                 MaterialPageRoute(
-                //                   builder: (context) => PlaygroundName(rat_list2[i].playgroundIdstars!),
-                //                 ),
-                //               );
-                //             },
-                //             child: Card(
-                //               shape: RoundedRectangleBorder(
-                //                 borderRadius: BorderRadius.circular(20.0),
-                //               ),
-                //               elevation: 4,
-                //               margin: EdgeInsets.all(8),
-                //               child: Stack(
-                //                 children: [
-                //                   Container(
-                //                     height: 163,
-                //                     width: 274,
-                //                     decoration: BoxDecoration(
-                //                       borderRadius: BorderRadius.circular(20.0),
-                //                       shape: BoxShape.rectangle,
-                //                     ),
-                //                     child: ClipRRect(
-                //                       borderRadius: BorderRadius.circular(20.0),
-                //                       child: rat_list2[i].PlayGroundimg!.isNotEmpty ? Image.network(
-                //                         rat_list2[i].PlayGroundimg![0],
-                //                         height: 163,
-                //                         width: 274,
-                //                         fit: BoxFit.fill,
-                //                       ) : Image(
-                //                         image: AssetImage("assets/images/newground.png"),
-                //                         color: Colors.white,
-                //                         height: 163,
-                //                         width: 274,
-                //                         fit: BoxFit.fill,
-                //                       ),
-                //                     ),
-                //                   ),
-                //                   Positioned(
-                //                     top: 6,
-                //                     right: 0,
-                //                     left: 0,
-                //                     bottom: 0,
-                //                     child: Container(
-                //                       decoration: BoxDecoration(
-                //                         gradient: LinearGradient(
-                //                           colors: [
-                //                             Colors.transparent,
-                //                             Color(0x1F8C4B).withOpacity(0.0),
-                //                             Color(0x1F8C4B).withOpacity(1.0),
-                //                           ],
-                //                           begin: Alignment.topCenter,
-                //                           end: Alignment.bottomCenter,
-                //                         ),
-                //                         borderRadius: BorderRadius.only(
-                //                           bottomLeft: Radius.circular(20.0),
-                //                           bottomRight: Radius.circular(20.0),
-                //                         ),
-                //                       ),
-                //                     ),
-                //                   ),
-                //                   Positioned(
-                //                     top: 113,
-                //                     right: 40,
-                //                     left: 55,
-                //                     child: Text(
-                //                       rat_list2[i].PlayGroundName!,
-                //                       style: TextStyle(
-                //                         fontFamily: 'Cairo',
-                //                         fontSize: 16,
-                //                         fontWeight: FontWeight.w700,
-                //                         color: Colors.white,
-                //                       ),
-                //                       textAlign: TextAlign.center,
-                //                     ),
-                //                   ),
-                //                 ],
-                //               ),
-                //             ),
-                //           ),
-                //       ],
-                //     ),
-                //   ) : Center(
-                //     child: Column(
-                //       mainAxisAlignment: MainAxisAlignment.center,
-                //       children: [
-                //         Center(
-                //           child: Container(
-                //             height: 142.51,
-                //             width: 142.51,
-                //
-                //             child:  Image.asset(
-                //               "assets/images/amico.png",
-                //
-                //               // Adjust size as needed
-                //             ),
-                //           ),
-                //         ),
-                //         SizedBox(height: 2,),
-                //         Text(
-                //           'لم يتم اضافة بيانات يمكن عرضها بعد',
-                //           style: TextStyle(
-                //             fontFamily: 'Cairo',
-                //             fontSize: 14.62,
-                //             fontWeight: FontWeight.w500,
-                //             color: Color(0xFF181A20),
-                //           ),
-                //         ),
-                //       ],
-                //     ),
-                //   ),
-                // ):
-                // Center(
-                //   child: Column(
-                //     mainAxisAlignment: MainAxisAlignment.center,
-                //     children: [
-                //       Center(
-                //         child: Container(
-                //           height: 142.51,
-                //           width: 142.51,
-                //
-                //           child:  Opacity(
-                //             opacity: 0.5,
-                //             child: Image.asset(
-                //               "assets/images/amico.png",
-                //
-                //               // Adjust size as needed
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //       SizedBox(height: 2,),
-                //       Text(
-                //         'لم يتم اضافة بيانات يمكن عرضها بعد',
-                //         style: TextStyle(
-                //           fontFamily: 'Cairo',
-                //           fontSize: 14.62,
-                //           fontWeight: FontWeight.w500,
-                //           color: Color(0xFF181A20),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 25,left: 26,top: 10,bottom: 10,),
+                  child: Text(
+                    "الملاعب الاعلى تقييم".tr,
+                    style: TextStyle(
+                      color: Color(0xFF495A71),
+                      fontFamily: 'Cairo',
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                rat_list2.isNotEmpty?    SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  reverse: true, // Reverses the scroll direction
+                  child: rat_list2.isNotEmpty
+                      ? Padding(
+                    padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),
+
+                    child: Row(
+                      children: [
+                        for (var i = 0; i < rat_list2.length; i++)
+                          GestureDetector(
+                            onTap: () {
+                              print("length equal ${rat_list2.length}");
+                              print("objectidddddd ${rat_list2[i].playgroundIdstars!}");
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PlaygroundName(rat_list2[i].playgroundIdstars!),
+                                ),
+                              );
+                            },
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                              elevation: 4,
+                              margin: EdgeInsets.all(8),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    height: 163,
+                                    width: 274,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                      shape: BoxShape.rectangle,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                      child: rat_list2[i].PlayGroundimg!.isNotEmpty ? Image.network(
+                                        rat_list2[i].PlayGroundimg!,
+                                        height: 163,
+                                        width: 274,
+                                        fit: BoxFit.fill,
+                                      ) : Image(
+                                        image: AssetImage("assets/images/newground.png"),
+                                        color: Colors.white,
+                                        height: 163,
+                                        width: 274,
+                                        fit: BoxFit.fill,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 6,
+                                    right: 0,
+                                    left: 0,
+                                    bottom: 0,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Colors.transparent,
+                                            Color(0x1F8C4B).withOpacity(0.0),
+                                            Color(0x1F8C4B).withOpacity(1.0),
+                                          ],
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                        ),
+                                        borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(20.0),
+                                          bottomRight: Radius.circular(20.0),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 113,
+                                    right: 40,
+                                    left: 55,
+                                    child: Text(
+                                      rat_list2[i].PlayGroundName!,
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ) : Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Center(
+                          child: Container(
+                            height: 142.51,
+                            width: 142.51,
+
+                            child:  Image.asset(
+                              "assets/images/amico.png",
+
+                              // Adjust size as needed
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 2,),
+                        Text(
+                          'لم يتم اضافة بيانات يمكن عرضها بعد',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.62,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF181A20),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ): Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Center(
+                        child: Container(
+                          height: 142.51,
+                          width: 142.51,
+
+                          child:  Opacity(
+                            opacity: 0.5,
+                            child: Image.asset(
+                              "assets/images/amico.png",
+
+                              // Adjust size as needed
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 2,),
+                      Text(
+                        'لم يتم اضافة بيانات يمكن عرضها بعد',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 14.62,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF181A20),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 SizedBox(height: 20,),
               ],
             ),
@@ -2420,40 +2456,40 @@ print("bookingData is equal $bookingData");
   }
   Widget _buildNoInternetUI() {
 
-      return Container(
-        color: Colors.white,
-        child: Column(
-          children: [
-            SizedBox(
-              height: MediaQuery.of(context).size.height/3,
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height/3,
 
-            ),
-            Center(
-              child: Container(
-                height: 200,
-                child: Image.asset(
-                  'assets/images/wifirr.png',
-                  // Adjust the height as needed
-                ),
+          ),
+          Center(
+            child: Container(
+              height: 200,
+              child: Image.asset(
+                'assets/images/wifirr.png',
+                // Adjust the height as needed
               ),
             ),
-            SizedBox(
-              height: 20,
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Text(
+            "لا يوجد اتصال بالانترنت".tr,
+            style: TextStyle(
+              fontSize: 14,
+              fontFamily: 'Cairo',
+              fontWeight: FontWeight.w400,
+              color: Colors.black,
             ),
-            Text(
-              "لا يوجد اتصال بالانترنت".tr,
-              style: TextStyle(
-                fontSize: 14,
-                fontFamily: 'Cairo',
-                fontWeight: FontWeight.w400,
-                color: Colors.black,
-              ),
-            ),
+          ),
 
-          ],
-        ),
-      );
-    }
-    // Your UI design when there's no internet connection
-
+        ],
+      ),
+    );
   }
+// Your UI design when there's no internet connection
+
+}

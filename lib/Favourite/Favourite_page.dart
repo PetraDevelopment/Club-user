@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../Controller/NavigationController.dart';
-import '../Favourite_model/AddPlaygroundModel.dart';
+import '../Favourite_model/Favouritemodel.dart';
 import '../Menu/menu.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../PlayGround_Name/PlayGroundName.dart';
@@ -47,6 +47,41 @@ class FavouritePageState extends State<FavouritePage> {
     print("bvbbvbvbb$isConnected");
 
   }
+  String useridddd="";
+  fetchfavofgrounddatabyid(Favouritemodel ground) async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot docSnapshot =
+      await firestore.collection('AddPlayground').doc(ground.playground_id).get();
+
+      if (docSnapshot.exists) {
+        // Cast data to Map<String, dynamic>
+        Map<String, dynamic>? data = docSnapshot.data() as Map<String, dynamic>?;
+// for(int ii = 0; ii <playgroundbook.length ;ii++){
+
+
+        if (data != null ) {
+          print("grounddaaaaaaaaaaaaata$data");
+          return data;
+// userid.UserName= data['name'];
+// userid.UserPhone = data['phone'];
+// userid.UserImg = data['profile_image'];
+//
+// print("playgroundbook[0].UserName ${userid.UserName }");
+// print("playgroundbook[0].UserPhonee${userid.UserPhone }");
+// print("playgroundbook[0].UserImg ${userid.UserImg }");
+//           print('Data for this daaata: $data');
+        }
+        else {
+          print('FCMToken field is missing for this admin.');
+        }
+      } else {
+        print('No document found with ID: $ground');
+      }
+    } catch (e) {
+      print('Error fetching document: $e');
+    }
+  }
   Future<void> getfavdata(String playgroundid) async {
     try {
       CollectionReference fav =
@@ -61,25 +96,75 @@ class FavouritePageState extends State<FavouritePage> {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           String Phone011=prefs.getString('phonev')??'';
           print("phone011$Phone011");
-          print("user${user?.phoneNumber}");
-          if (favourite.user_phone?.replaceAll(RegExp(r'\D'), '') == user?.phoneNumber?.replaceAll(RegExp(r'\D'), '') ||
-              favourite.user_phone?.replaceAll(RegExp(r'\D'), '') == Phone011.replaceAll(RegExp(r'\D'), '')) {
-           if(favlist.contains(playgroundid)){
-             print("this id already added to favourite list"); // Print the playground
-           }else{
-             favlist.add(favourite);
-             print("Fav Id : ${document.id}"); // Print the playground ID
-             print('Fav list: $favlist');
-             print("allplaygrounds[i] : ${favourite}"); // Print the playground
-             // Store the document ID in the AddPlayGroundModel object
-             favourite.id = document.id;
-             print("favouriteid${favourite.id}");
-             print("favourite${favourite.playground_id}");
-           }
+          if(Phone011.toString()!=null&&Phone011.isNotEmpty){
+            CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
 
-          } else {
-            print("this user not have favourite playground");
+            QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo:Phone011.toString()).get();
+            print('shared phooone ${Phone011.toString()}');
+            if(adminSnapshot.docs.isNotEmpty){
+              var adminDoc = adminSnapshot.docs.first;
+              String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+              print("Matched user docId: $docId");
+              useridddd=docId;
+              Map<String, dynamic>? user =   await fetchfavofgrounddatabyid(favourite);
+              favourite.playground_name=user!['groundName'];
+              favourite.img=user['img'][0];
+              print("image of rate ${user['img'][0]}");
+              if (favourite.userid ==useridddd) {
+                if(favlist.contains(playgroundid)){
+                  print("this id already added to favourite list"); // Print the playground
+                }else{
+                  favlist.add(favourite);
+                  print("Fav Id : ${document.id}"); // Print the playground ID
+                  print('Fav list: $favlist');
+                  print("allplaygrounds[i] : ${favourite}"); // Print the playground
+                  // Store the document ID in the AddPlayGroundModel object
+                  favourite.id = document.id;
+                  print("favouriteid${favourite.id}");
+                  print("favourite${favourite.playground_id}");
+                }
+
+              } else {
+                print("this user not have favourite playground");
+              }
+            }
           }
+         else if(user?.phoneNumber!=null){
+            print("user${user?.phoneNumber}");
+            CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
+            String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
+// Query the PlayersChat collection to find the document where phone number matches
+            QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo:normalizedPhoneNumber).get();
+            print('shared phooone ${normalizedPhoneNumber}');
+            if(adminSnapshot.docs.isNotEmpty){
+              var adminDoc = adminSnapshot.docs.first;
+              String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+              print("Matched user docId: $docId");
+              useridddd=docId;
+              Map<String, dynamic>? user =   await fetchfavofgrounddatabyid(favourite);
+              favourite.playground_name=user!['groundName'];
+              favourite.img=user['img'][0];
+              print("image of rate ${user['img'][0]}");
+              if (favourite.userid ==useridddd) {
+                if(favlist.contains(playgroundid)){
+                  print("this id already added to favourite list"); // Print the playground
+                }else{
+                  favlist.add(favourite);
+                  print("Fav Id : ${document.id}"); // Print the playground ID
+                  print('Fav list: $favlist');
+                  print("allplaygrounds[i] : ${favourite}"); // Print the playground
+                  // Store the document ID in the AddPlayGroundModel object
+                  favourite.id = document.id;
+                  print("favouriteid${favourite.id}");
+                  print("favourite${favourite.playground_id}");
+                }
+
+              } else {
+                print("this user not have favourite playground");
+              }
+            }
+          }
+
         }
         print("All Fav list: $favlist"); // Print all playgrounds
       }
@@ -269,7 +354,7 @@ class FavouritePageState extends State<FavouritePage> {
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
                                 child:Image.network(
-                                  favlist[i].img![0],
+                                  favlist[i].img!,
                                   height: 163,
                                   width: MediaQuery.of(context).size.width,
                                   fit: BoxFit.cover, // Ensure image covers the container

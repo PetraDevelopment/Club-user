@@ -2,15 +2,15 @@ class Favouritemodel {
   String? playground_id;
   String? id;
   bool isfav; // Update this field to be a boolean field
-  List<String>? img = [];
+  String? img;
   String? playground_name;
-  String? user_phone;
+  String? userid;
 
   Favouritemodel({
     this.playground_id,
     this.img,
     this.playground_name,
-    this.user_phone,
+    this.userid,
     this.id,
     this.isfav = false, // Initialize the isfav field to false
   });
@@ -18,29 +18,29 @@ class Favouritemodel {
   // Factory constructor to create the model from a Map
   factory Favouritemodel.fromMap(Map<String, dynamic> map) {
     return Favouritemodel(
-      img: (map['img'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-
+      playground_name:'',
+      img:'',
       isfav: map['is_favourite'] ?? false, // Update this line to handle null values
       id: '',
       playground_id: map['playground_id'],
-      user_phone: map['user_phone'],
-      playground_name: map['playground_name'],
+      userid: map['userid'],
+
     );
   }
 
   // Method to convert the model to a Map
   Map<String, dynamic> toMap() {
     return {
-      'playground_name': playground_name,
+
       'is_favourite': isfav,
-      'user_phone': user_phone,
+      'userid': userid,
       'playground_id': playground_id,
-      'img': img?.isNotEmpty == true ? img : [],
+
     };
   }
 
   @override
   String toString() {
-    return 'AddPlayGroundModel(playgroundName: $playground_name, user_phone: $user_phone, playground_id: $playground_id,  img: $img,isfav: $isfav)';
+    return 'AddPlayGroundModel(playgroundName: $playground_name, userid: $userid, playground_id: $playground_id,  img: $img,isfav: $isfav)';
   }
 }
