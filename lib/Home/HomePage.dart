@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
+import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
 import 'package:geocoding/geocoding.dart';
@@ -23,6 +25,9 @@ import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import '../booking_playground/AddbookingModel/AddbookingModel.dart';
 import '../location/map_page.dart';
 import '../my_reservation/my_reservation.dart';
+import '../notification/model/modelsendtodevice.dart';
+import '../notification/model/send_modelfirebase.dart';
+import '../notification/notification_page.dart';
 import '../notification/utils/setting.dart';
 import '../playground_model/AddPlaygroundModel.dart';
 import '../search/search_page.dart';
@@ -195,14 +200,7 @@ class HomePageState extends State<HomePage> {
 
         if (data != null ) {
           return data;
-// userid.UserName= data['name'];
-// userid.UserPhone = data['phone'];
-// userid.UserImg = data['profile_image'];
-//
-// print("playgroundbook[0].UserName ${userid.UserName }");
-// print("playgroundbook[0].UserPhonee${userid.UserPhone }");
-// print("playgroundbook[0].UserImg ${userid.UserImg }");
-//           print('Data for this daaata: $data');
+
         }
         else {
           print('FCMToken field is missing for this admin.');
@@ -229,14 +227,7 @@ class HomePageState extends State<HomePage> {
         if (data != null ) {
           print("grounddaaaaaaaaaaaaata$data");
           return data;
-// userid.UserName= data['name'];
-// userid.UserPhone = data['phone'];
-// userid.UserImg = data['profile_image'];
-//
-// print("playgroundbook[0].UserName ${userid.UserName }");
-// print("playgroundbook[0].UserPhonee${userid.UserPhone }");
-// print("playgroundbook[0].UserImg ${userid.UserImg }");
-//           print('Data for this daaata: $data');
+
         }
         else {
           print('FCMToken field is missing for this admin.');
@@ -303,21 +294,6 @@ class HomePageState extends State<HomePage> {
 
         }
 
-        // for (var doc in querySnapshot.docs) {
-        //   Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        //   var userDataList = data['AlluserData']?['UserData'] as List?;
-        //
-        //   if (userDataList != null) {
-        //     for (var userData in userDataList) {
-        //       if (userData['UserPhone'] == normalizedPhoneNumber) {
-        //         AddbookingModel booking = AddbookingModel.fromMap(data);
-        //
-        //         playgroundbook.add(booking); // Add each booking to the list
-        //         break;
-        //       }
-        //     }
-        //   }
-        // }
 
         if (playgroundbook.isNotEmpty) {
           // Print and access specific fields for each booking
@@ -461,16 +437,7 @@ class HomePageState extends State<HomePage> {
 
     return '$formattedStartTime الي $formattedEndTime';
   }
-//   String getTimeRange(String startTime) {
-//     DateTime start = DateFormat.jm().parse(startTime);
-//     DateTime end = start.add(Duration(hours: 1)); //if book one hour
-//
-//
-//     String formattedStartTime = DateFormat('h:mm a', 'en_US').format(start);
-//     String formattedEndTime = DateFormat('h:mm a', 'en_US').format(end);
-//
-//     return '$formattedStartTime    :   $formattedEndTime';
-//   }
+
   Future<void> getPlaygroundbynameE(String iiid) async {
     try {
       CollectionReference playerchat =
@@ -674,9 +641,74 @@ class HomePageState extends State<HomePage> {
   List<Rate_fetched> rat_list = [];
   List<Rate_fetched> rat_list2 = [];
   bool isConnected=false;
+String adminoooken="";
+  String convertTo12HourFormat(DateTime dateTime) {
+    int hour = dateTime.hour;
+    String period = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12;
+    hour = hour == 0 ? 12 : hour; // Convert hour '0' to '12'
+    return '$hour:${dateTime.minute.toString().padLeft(2, '0')} $period';
+  }
+
+  Future<void> _sendnotificationtofirebase(int type,String Groundid,day,booktime) async {
+    setState(() {
+      _isLoading = true; // Set loading to true when starting the operation
+    });
+
+    DateTime now = DateTime.now();
+    String timeIn12HourFormat = convertTo12HourFormat(now);
+    String time = timeIn12HourFormat;
+    print("time converted to be 12 hour $time");
+    print(now.year.toString() +
+        ":" +
+        now.month.toString() +
+        ":" +
+        now.day.toString());
+    String daaate = now.year.toString() +
+        ":" +
+        now.month.toString() +
+        ":" +
+        now.day.toString();
+
+    final notificationModel = NotificationModel(
+
+      adminId: playgroundAllData[0].adminId!,
+      groundid:Groundid,
+      userId: useridddd,
+      adminreply:false,
+      time: time,
+      date: daaate,
+      day:day,
+      bookingtime: booktime,
+      notificationType: type,
+    );
+
+    // Add booking to Firestore
+    await FirebaseFirestore.instance
+        .collection('notification')
+        .add(notificationModel.toMap());
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'تم ارسال البيانات بنجاح', // "Data registered successfully"
+          textAlign: TextAlign.center,
+        ),
+        backgroundColor: Color(0xFF1F8C4B),
+      ),
+    );
+
+    // Clear inputs after successful booking
+
+    setState(() {
+      _isLoading = false; // Set loading to false when operation is complete
+    });
+  }
 
   Future<void> deleteCancelByPhoneAndPlaygroundId(
       String userid,
+      String a_id,
+      String g_name,
       String playgroundId,
       String selectedTime,
       String bookingDate,
@@ -688,6 +720,48 @@ class HomePageState extends State<HomePage> {
     print("Playground ID: $playgroundId");
     print("Selected Time: $selectedTime");
     print("Booking Date: $bookingDate");
+    print("g_name Date: $g_name");
+
+    List<String> dateParts = bookingDate.split(' ');
+    int day = int.parse(dateParts[0]);
+    String monthName = dateParts[1];
+    int year = int.parse(dateParts[2]);
+
+    Map<String, int> monthMap = {
+      "يناير": 1,
+      "فبراير": 2,
+      "مارس": 3,
+      "أبريل": 4,
+      "مايو": 5,
+      "يونيو": 6,
+      "يوليو": 7,
+      "أغسطس": 8,
+      "سبتمبر": 9,
+      "أكتوبر": 10,
+      "نوفمبر": 11,
+      "ديسمبر": 12,
+    };
+
+
+    int month = monthMap[monthName] ?? 0;
+    DateTime date = DateTime(year, month, day);
+
+    List<String> dayNames = [
+      "الأحد",
+      "الاثنين",
+      "الثلاثاء",
+      "الأربعاء",
+      "الخميس",
+      "الجمعة",
+      "السبت"
+    ];
+
+
+    String dayName = dayNames[date.weekday % 7];
+
+    print("Booking Date: $bookingDate");
+    print("Day Name: $dayName");
+
 
     try {
       QuerySnapshot querySnapshot = await firestore.collection('booking')
@@ -701,11 +775,37 @@ class HomePageState extends State<HomePage> {
         for (var doc in querySnapshot.docs) {
           print('Document ID: ${doc.id}');
           print('Selected Times: ${doc['selectedTimes']}');
+          DocumentSnapshot documentSnapshot = await firestore
+              .collection('PlayersChat')
+              .doc(a_id) // Use adminid as the document ID
+              .get();
+          if (documentSnapshot.exists) {
+            var data = documentSnapshot.data() as Map<String, dynamic>;
+print(data);
 
+            adminoooken = data['FCMToken'];
+            print ("admintoken is $adminoooken");
+          }
           // Delete the document
           await firestore.collection('booking').doc(doc.id).delete();
-          print(
-              'Document with phone $userid, playgroundId $playgroundId, date $bookingDate, and selectedTime $selectedTime deleted successfully.');
+if(selectedTime.contains("PM")){
+  String ms=" "+"تم إلغاء حجز ملعب "+" $g_name "+"يوم"+ " ${dayName} "+" ${selectedTime.substring(0,4)} "+"م";
+  print("message of delete is $ms");
+
+  String title = "الغاء حجز ";
+  await _sendnotificationtofirebase(2,playgroundId,dayName,selectedTime);
+  await sp(ms, title,
+      adminoooken);
+}else{
+  String ms=" "+"تم إلغاء حجز ملعب "+" $g_name "+"يوم"+ " ${dayName} "+" ${selectedTime.substring(0,4)} "+"ص";
+  print("message of delete is $ms");
+  String title = "الغاء حجز ";
+  await sp(ms, title,
+      adminoooken);
+  await _sendnotificationtofirebase(2,playgroundId,dayName,selectedTime);
+}
+
+          print('Document with phone $userid, playgroundId $playgroundId, dayName $dayName, and selectedTime $selectedTime deleted successfully.');
           documentDeleted = true;
 
           // Navigate to HomePage
@@ -739,14 +839,7 @@ class HomePageState extends State<HomePage> {
         if (data != null ) {
           print("grounddaaaaaaaaaaaaata$data");
           return data;
-// userid.UserName= data['name'];
-// userid.UserPhone = data['phone'];
-// userid.UserImg = data['profile_image'];
-//
-// print("playgroundbook[0].UserName ${userid.UserName }");
-// print("playgroundbook[0].UserPhonee${userid.UserPhone }");
-// print("playgroundbook[0].UserImg ${userid.UserImg }");
-//           print('Data for this daaata: $data');
+
         }
         else {
           print('FCMToken field is missing for this admin.');
@@ -910,103 +1003,6 @@ class HomePageState extends State<HomePage> {
   }
 
 
-
-//   Future<void>getfourplaygroundsbytype() async {
-//     try {
-//
-//       CollectionReference playerchat =
-//       FirebaseFirestore.instance.collection("AddPlayground");
-//
-//       QuerySnapshot querySnapshot = await playerchat.get();
-//
-//       if (querySnapshot.docs.isNotEmpty) {
-//         for (QueryDocumentSnapshot document in querySnapshot.docs) {
-//           Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
-//           AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
-//
-//           allplaygrounds.add(user);
-//           for(int m=0;m<allplaygrounds.length;m++) {
-//             print("kkkkkkkkshok${allplaygrounds[m]}");
-//             print("dddddddddddddddddddddd${allplaygrounds[m].id}");
-//
-//
-//
-//
-//
-//           }
-//           if (user.playType == "كرة تنس"&&teniss.isEmpty) {
-//             teniss.add(user);
-//             print("tenisssssss$teniss");
-//           }
-//           else{
-//             print("teniss.length${teniss.length}");
-//           }
-//           if (user.playType == "كرة سلة"&&basket.isEmpty) {
-//             basket.add(user);
-//
-//
-//
-//             print("basket$basket");
-//
-//           }
-//           else{
-//             print("basket.length${basket.length}");
-//           }
-//           if (user.playType == "كرة قدم"&&footbal.isEmpty) {
-//             footbal.add(user);
-//             print("footbal$footbal");
-//
-//
-//           }
-//           else{
-//             print("footbal.length${footbal.length}");
-//
-//           }
-//           if (user.playType == "كرة طائرة"&&volly.isEmpty) {
-//             volly.add(user);
-//             print("volly$volly");
-//
-//
-//           }else{
-//             print("volly.length${volly.length}");
-//
-//           }
-//           if(footbal.isNotEmpty&&footbal.length==1)
-//           {
-//
-//             print("objectfootbal.first${footbal.first}");
-//           }
-//
-//
-//
-//           print("PlayGroung Id : ${document.id}"); // Print the latest playground
-//
-//           print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
-// // Store the document ID in the AddPlayGroundModel object
-//           // user.id = document.id;
-//           user.id = document.id;
-//           print("Docummmmmm${user.id}");
-//           // Store the document ID in the AddPlayGroundModel object
-//           // idddddd1 = document.id;
-//           // idddddd2=document.id;
-//           // print("Docummmmmm$idddddd1    gggg$idddddd2");
-//         }
-//
-//         loadfourtype();
-//       }
-//     } catch (e) {
-//       print("Error getting playground: $e");
-//     }
-//   }
-//   void loadfourtype(){
-//
-//     fourtypes.add(teniss[0]);
-//     fourtypes.add(basket[0]);
-//     fourtypes.add(volly[0]);
-//     fourtypes.add(footbal[0]);
-//
-//     print("shokaaaaaaa${fourtypes.length}");
-//   }
   Future<void> getPlaygroundbyname() async {
 
 
@@ -1075,7 +1071,26 @@ class HomePageState extends State<HomePage> {
       });
     }
   }
+  String apiEndpoint = 'http://192.168.0.42/notificaions/send_notification.php';
+  Future<http.Response> sendNotification(NotificationData data) async {
+    final uri = Uri.parse(apiEndpoint);
+    final response = await http.post(uri, body: data.toMap());
+    return response;
+  }
+  Future<void> sp(String ms,title,d_token) async {
+    final notificationData = NotificationData(
+        message: ms,
+        title: title,
+        deviceToken: d_token);
+    final response = await sendNotification(notificationData);
 
+    if (response.statusCode == 200) {
+      print('Notification sent successfully!');
+    } else {
+      print('Error sending notification: ${response.statusCode}');
+      print(response.body);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1097,12 +1112,21 @@ class HomePageState extends State<HomePage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 33.0),
-                      child: Image.asset(
-                        'assets/images/notification.png',
-                        height: 28,
-                        width: 28,
+                    GestureDetector(
+                      onTap: (){
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Notification_page()),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 33.0),
+                        child: Image.asset(
+                          'assets/images/notification.png',
+                          height: 28,
+                          width: 28,
+                        ),
                       ),
                     ),
                     _isLoading?   Shimmer.fromColors(
@@ -1744,12 +1768,14 @@ class HomePageState extends State<HomePage> {
                                     children: [
                                       GestureDetector(
                                         onTap: (){
-                                          print("phooonefff${playgroundbook[i]
-                                              .UserPhone!}");
+                                          print("groundName${playgroundbook[i]
+                                              .groundName!}");
                                           updateCancelCount(playgroundbook[i]
                                               .UserPhone!);
                                           deleteCancelByPhoneAndPlaygroundId(
                                               playgroundbook[i].userID!,
+                                              playgroundbook[i].AdminId!,
+                                              playgroundbook[i].groundName!,
                                               playgroundbook[i].GroundId!,
                                               playgroundbook[i].selectedTimes!.first,
                                               playgroundbook[i].dateofBooking!);

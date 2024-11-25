@@ -3,6 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+
+import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -14,6 +16,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import '../booking_playground/AddbookingModel/AddbookingModel.dart';
 import '../location/map_page.dart';
+import '../notification/model/modelsendtodevice.dart';
+import '../notification/model/send_modelfirebase.dart';
 import '../playground_model/AddPlaygroundModel.dart';
 import '../Home/HomePage.dart';
 import '../Home/Userclass.dart';
@@ -32,78 +36,127 @@ class my_reservationState extends State<my_reservation>
   final NavigationController navigationController =
   Get.put(NavigationController());
   User? user = FirebaseAuth.instance.currentUser;
-  bool _isLoading = true; // flag to control shimmer effect
+  bool _isLoading = true;
   String groundIid = '';
+  String convertTo12HourFormat(DateTime dateTime) {
+    int hour = dateTime.hour;
+    String period = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12;
+    hour = hour == 0 ? 12 : hour;
+    return '$hour:${dateTime.minute.toString().padLeft(2, '0')} $period';
+  }
+
+  Future<void> _sendnotificationtofirebase(int type,String Groundid,day,booktime) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    DateTime now = DateTime.now();
+    String timeIn12HourFormat = convertTo12HourFormat(now);
+    String time = timeIn12HourFormat;
+    print("time converted to be 12 hour $time");
+    print(now.year.toString() +
+        ":" +
+        now.month.toString() +
+        ":" +
+        now.day.toString());
+    String daaate = now.year.toString() +
+        ":" +
+        now.month.toString() +
+        ":" +
+        now.day.toString();
+
+    final notificationModel = NotificationModel(
+      adminId: playgroundAllData[0].adminId!,
+      groundid:Groundid,
+      userId: useridddd,
+      adminreply:false,
+      time: time,
+      date: daaate,
+      day:day,
+      bookingtime: booktime,
+      notificationType: type,
+    );
+
+    await FirebaseFirestore.instance
+        .collection('notification')
+        .add(notificationModel.toMap());
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'تم ارسال البيانات بنجاح',
+          textAlign: TextAlign.center,
+        ),
+        backgroundColor: Color(0xFF1F8C4B),
+      ),
+    );
+
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   Future<void> _loadData() async {
-    // Simulate data loading
     await Future.delayed(Duration(seconds: 2));
 
-    // Check if the state is still mounted before calling setState
     if (mounted) {
       setState(() {
-        _isLoading = false; // set flag to false when data is loaded
+        _isLoading = false;
       });
     }
   }
   String toArabicNumerals(num number, int i) {
     const englishToArabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
 
-    // Convert the number to a string for processing
     String numberString = number.toString();
 
-    // Replace each digit in the number string with its Arabic equivalent
     String convertedNumber = numberString.replaceAllMapped(RegExp(r'\d'), (match) {
       return englishToArabicNumbers[int.parse(match.group(0)!)];
     });
     print("kkkkkkk$convertedNumber");
-    // If you want to assign the converted number back to the cost
-    // playgroundAllData[i].bookTypes![0].cost = convertedNumber; // Assuming cost is a String
 
     print("number equal $convertedNumber");
-    return convertedNumber; // Return the converted number
+    return convertedNumber;
   }
   late List<User1> user1 = [];
+  String docId='';
 
 
   Future<void> getUserByPhone(String phoneNumber) async {
     try {
-      // Normalize the phone number by stripping the country code
       String normalizedPhoneNumber = phoneNumber.replaceFirst('+20', '0');
-
-      // Reference to the Firestore collection
       CollectionReference playerchat =
       FirebaseFirestore.instance.collection('Users');
 
-      // Get the documents in the collection where phone number matches
       QuerySnapshot querySnapshot = await playerchat
           .where('phone', isEqualTo: normalizedPhoneNumber)
           .get();
 
-      // Check if a document is found
       if (querySnapshot.docs.isNotEmpty) {
-        // Get the document data
+        var playerDoc = querySnapshot.docs.first;
+        docId = playerDoc.id;
+        print("Document ID for the Phoone number: $docId");
         Map<String, dynamic> userData =
         querySnapshot.docs.first.data() as Map<String, dynamic>;
-
-        // Create a User object from the map
         User1 user = User1.fromMap(userData);
 
-        // Add the User object to the list
-        user1.add(user);
+        setState(() {
+          user1.add(user);
+        });
 
-        print("Loaded User: ${user1[0].name}");
-
-        // Print the user data
+        print("object${user1[0].name}");
         print("User data: $userData");
       } else {
         print("User not found with phone number $phoneNumber");
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.clear();
-        // Clear SharedPreferences
-
-        // Navigate to the SigninPage using GetX
-        Get.offAll(() => SigninPage());
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => SigninPage()),
+              (Route<dynamic> route) => false,
+        );
       }
     } catch (e) {
       print("Error getting user: $e");
@@ -158,7 +211,6 @@ class my_reservationState extends State<my_reservation>
 
     fetchBookingData();
 
-    // print("groundId${widget.groundId}");
     setState(() {});
   }
 
@@ -190,21 +242,19 @@ class my_reservationState extends State<my_reservation>
     final firestore = FirebaseFirestore.instance;
 
     try {
-      // Query the collection where user_phone matches the provided phone number
+
       final querySnapshot = await firestore
           .collection('cancel_book')
           .where('user_phone', isEqualTo: userPhone)
           .get();
 
-      // Check if any documents are returned
       if (querySnapshot.docs.isNotEmpty) {
-        // Iterate over each document returned by the query
+
         querySnapshot.docs.forEach((doc) {
-          // Get the document data
+
           Map<String, dynamic> data = doc.data();
           int numberOfCancel = data['numberofcancel'] ?? 0;
 
-          // Do something with the retrieved data
           print('User Phone: ${data['user_phone']}');
           print('Number of Cancels: $numberOfCancel');
           numbercanceled = numberOfCancel;
@@ -217,49 +267,23 @@ class my_reservationState extends State<my_reservation>
     }
   }
 
-  // Future<String> convertmonthtonumber(date,int index) async{
-  //   List<String>months=[ 'January',
-  //     'February',
-  //     'March',
-  //     'April',
-  //     'May',
-  //     'June',
-  //     'July',
-  //     'August',
-  //     'September',
-  //     'October',
-  //     'November',
-  //     'December',];
-  //   for(int k=0;k<months.length;k++){
-  //     if(date.contains(months[k])){
-  //       date=  date.replaceAll(months[k] ,'-${k+1}-');
-  //       print("updated done with ${date}");
-  //       playgroundbook[index].dateofBooking=date;
-  //     }
-  //   }
-  //   return date;
-  //
-  // }
   Future<void> getAccepted_bookDataByPhone(String userPhone) async {
     final firestore = FirebaseFirestore.instance;
 
     try {
       print("uuuuusershimaaa: ${userPhone}");
-      // Query the collection where user_phone matches the provided phone number
+
       final querySnapshot = await firestore
           .collection('accepted')
           .where('phone_number', isEqualTo: userPhone)
           .get();
 
-      // Check if any documents are returned
       if (querySnapshot.docs.isNotEmpty) {
-        // Iterate over each document returned by the query
         querySnapshot.docs.forEach((doc) {
-          // Get the document data
+
           Map<String, dynamic> data = doc.data();
           int numberOfaccepted = data['accepted_number'] ?? 0;
 
-          // Do something with the retrieved data
           print('User Phone: ${data['phone_number']}');
           print('Number of accepted: $numberOfaccepted');
           numberaccepted = numberOfaccepted;
@@ -312,11 +336,10 @@ class my_reservationState extends State<my_reservation>
             playgroundAllData.add(user);
 
             String?  bookType = playgroundAllData[0].bookTypes![0].time;
-            // Assuming 'time' is the field you want to split into start and end time
+
             String timeofAddedPlayground = bookType ?? '';
             print("timeofAddedPlayground: $timeofAddedPlayground");
 
-            // Splitting time into startTime and endTime based on '-'
             List<String> times = timeofAddedPlayground.split(' - ');
             if (times.length == 2) {
               String startTime = times[0];
@@ -327,37 +350,25 @@ class my_reservationState extends State<my_reservation>
               }
 
               print("End Time: $endTime");
-              String adminId = userData['AdminId'] ?? ''; // Fetch AdminId directly from userData
-              user.adminId = adminId; // Assuming your model has a property for AdminId
+              String adminId = userData['AdminId'] ?? '';
+              user.adminId = adminId;
               print("Admin ID: $adminId");
-              // USerID=adminId;
-              // // You can use these times to update the UI or for other logic
-              // timeSlots.add(startTime); // Add start time to the list
-              // timeSlots.add(endTime);   // Add end time to the list
 
-              // You could directly update your UI here or save this data for later
-              // For example, show the start and end time in the UI
               setState(() {
-                // Update any UI components with the start and end times
-                // startTimeStr = startTime; // Assuming you have a state variable to store this
-                // endTimeStr = endTime;     // Assuming you have a state variable to store this
-              });
+                 });
 
-              // print("Time slots: ${timeSlots}");
+
             } else {
               print("Invalid time format: $timeofAddedPlayground");
             }
-            // }
-// الوقت  هو سبب المشكله
+
             print(
-                "PlayGroungboook Iiid : ${document.id}"); // Print the latest playground
-            // groundIiid = document.id;
-            // print("Docummmmmmbook$groundIiid");
-            // Normalize playType before comparing
+                "PlayGroungboook Iiid : ${document.id}");
+
             String playType = user.playType!.trim();
           }
 
-          // Store the document ID in the AddPlayGroundModel object
+
           user.id = document.id;
         }
         wait = playgroundbook.length - numberaccepted;
@@ -375,21 +386,14 @@ class my_reservationState extends State<my_reservation>
       await firestore.collection('Users').doc(userid.userID).get();
 
       if (docSnapshot.exists) {
-        // Cast data to Map<String, dynamic>
+
         Map<String, dynamic>? data = docSnapshot.data() as Map<String, dynamic>?;
-// for(int ii = 0; ii <playgroundbook.length ;ii++){
+
 
 
         if (data != null ) {
           return data;
-// userid.UserName= data['name'];
-// userid.UserPhone = data['phone'];
-// userid.UserImg = data['profile_image'];
-//
-// print("playgroundbook[0].UserName ${userid.UserName }");
-// print("playgroundbook[0].UserPhonee${userid.UserPhone }");
-// print("playgroundbook[0].UserImg ${userid.UserImg }");
-//           print('Data for this daaata: $data');
+
         }
         else {
           print('FCMToken field is missing for this admin.');
@@ -408,22 +412,11 @@ class my_reservationState extends State<my_reservation>
       await firestore.collection('AddPlayground').doc(ground.GroundId).get();
 
       if (docSnapshot.exists) {
-        // Cast data to Map<String, dynamic>
         Map<String, dynamic>? data = docSnapshot.data() as Map<String, dynamic>?;
-// for(int ii = 0; ii <playgroundbook.length ;ii++){
-
-
         if (data != null ) {
           print("grounddaaaaaaaaaaaaata$data");
           return data;
-// userid.UserName= data['name'];
-// userid.UserPhone = data['phone'];
-// userid.UserImg = data['profile_image'];
-//
-// print("playgroundbook[0].UserName ${userid.UserName }");
-// print("playgroundbook[0].UserPhonee${userid.UserPhone }");
-// print("playgroundbook[0].UserImg ${userid.UserImg }");
-//           print('Data for this daaata: $data');
+
         }
         else {
           print('FCMToken field is missing for this admin.');
@@ -435,121 +428,7 @@ class my_reservationState extends State<my_reservation>
       print('Error fetching document: $e');
     }
   }
-  // Future<void> fetchBookingData() async {
-  //   try {
-  //     CollectionReference bookingCollection = FirebaseFirestore.instance.collection("booking");
-  //
-  //     SharedPreferences prefs = await SharedPreferences.getInstance();
-  //     String? phoneValue = prefs.getString('phonev');
-  //     print("newphoneValue${phoneValue.toString()}");
-  //
-  //     if (phoneValue != null && phoneValue.isNotEmpty) {
-  //       String normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
-  //
-  //       // QuerySnapshot querySnapshot = await bookingCollection.where('phoneCommunication', isEqualTo: normalizedPhoneNumber).get();
-  //       QuerySnapshot querySnapshot = await bookingCollection.get();
-  //       for (var doc in querySnapshot.docs) {
-  //         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-  //
-  //         // Check if the document has the expected structure
-  //         var userDataList = data['AlluserData']?['UserData'] as List?;
-  //
-  //         if (userDataList != null) {
-  //           for (var userData in userDataList) {
-  //             if (userData['UserPhone'] == normalizedPhoneNumber) {
-  //               List<AddbookingModel> bookings = querySnapshot.docs.map((doc) {
-  //                 Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // Explicit casting
-  //                 return AddbookingModel.fromMap(data);
-  //               }).toList();
-  //               // Update the playgroundbook list with fetched bookings
-  //               playgroundbook = bookings;
-  //               break;  // Stop checking once a match is found
-  //             }
-  //           }
-  //         }
-  //       }
-  //       if (querySnapshot.docs.isNotEmpty) {
-  //         List<AddbookingModel> bookings = querySnapshot.docs.map((doc) {
-  //           Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // Explicit casting
-  //           return AddbookingModel.fromMap(data);
-  //         }).toList();
-  //         // Update the playgroundbook list with fetched bookings
-  //         playgroundbook = bookings;
-  //         // Print and access specific fields for each booking
-  //         for (int g=0;g<playgroundbook.length;g++){
-  //           formatDate(playgroundbook[g].dateofBooking!);
-  //
-  //           print('AdminId: ${playgroundbook[g].AdminId}');
-  //           print('Day_of_booking: ${playgroundbook[g].Day_of_booking}');
-  //           print('Name: ${playgroundbook[g].Name}');
-  //           print('Rent_the_ball: ${playgroundbook[g].rentTheBall}');
-  //           print('phoneshoka: ${playgroundbook[g]
-  //               .AllUserData![g].UserPhone!}');
-  //
-  //         }
-  //
-  //
-  //       }
-  //       else {
-  //         print('No documents found in the "booking" collection.');
-  //       }
-  //     }
-  //     else if (user?.phoneNumber != null) {
-  //       String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
-  //       // QuerySnapshot querySnapshot = await bookingCollection.where('phoneCommunication', isEqualTo: normalizedPhoneNumber).get();
-  //       QuerySnapshot querySnapshot = await bookingCollection.get();
-  //
-  //       if (querySnapshot.docs.isNotEmpty) {
-  //         for (var doc in querySnapshot.docs) {
-  //           Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-  //
-  //           // Check if the document has the expected structure
-  //           var userDataList = data['AlluserData']?['UserData'] as List?;
-  //
-  //           if (userDataList != null) {
-  //             for (var userData in userDataList) {
-  //               if (userData['UserPhone'] == normalizedPhoneNumber) {
-  //                 List<AddbookingModel> bookings = querySnapshot.docs.map((doc) {
-  //                   Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // Explicit casting
-  //                   return AddbookingModel.fromMap(data);
-  //                 }).toList();
-  //                 // Update the playgroundbook list with fetched bookings
-  //                 playgroundbook = bookings;
-  //
-  //
-  //               }
-  //             }
-  //           }
-  //         }
-  //         List<AddbookingModel> bookings = querySnapshot.docs.map((doc) {
-  //           Map<String, dynamic> data = doc.data() as Map<String, dynamic>; // Explicit casting
-  //           return AddbookingModel.fromMap(data);
-  //         }).toList();
-  //         // Update the playgroundbook list with fetched bookings
-  //         playgroundbook = bookings;
-  //         // Print and access specific fields for each booking
-  //         for(int r=0;r<playgroundbook.length;r++) {
-  //           print('AdminId: ${playgroundbook[r].AdminId}');
-  //           formatDate(playgroundbook[r].dateofBooking!);
-  //           print('Day_of_booking: ${playgroundbook[r].Day_of_booking}');
-  //           print('Name: ${playgroundbook[r].Name}');
-  //           print('Rent_the_ball: ${playgroundbook[r].rentTheBall}');
-  //           print('phoneshoka: ${playgroundbook[r]
-  //               .AllUserData![r].UserPhone!}');
-  //           getPlaygroundbyname(playgroundbook[r]
-  //               .NeededGroundData![r].GroundId!);
-  //           // Access other fields as needed
-  //         }
-  //
-  //       }
-  //       else {
-  //         print('No documents found in the "booking" collection.');
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print('Error fetching booking data: $e');
-  //   }
-  // }
+
   Future<void> fetchBookingData() async {
 
     try {
@@ -563,13 +442,11 @@ class my_reservationState extends State<my_reservation>
         CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
 
 
-
-// Query the PlayersChat collection to find the document where phone number matches
         QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo: normalizedPhoneNumber).get();
         print('shared phooone $normalizedPhoneNumber');
         if(adminSnapshot.docs.isNotEmpty){
           var adminDoc = adminSnapshot.docs.first;
-          String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+          String docId = adminDoc.id;
           print("Matched user docId: $docId");
           useridddd=docId;
 
@@ -578,7 +455,7 @@ class my_reservationState extends State<my_reservation>
         await bookingdataa.where('userID', isEqualTo: useridddd).get();
 
         if(bookingSnapshot.docs.isNotEmpty){
-          playgroundbook = []; // Initialize as an empty list
+          playgroundbook = [];
           for (var document in bookingSnapshot.docs) {
             Map<String, dynamic> userData =
             document.data() as Map<String, dynamic>;
@@ -592,10 +469,7 @@ class my_reservationState extends State<my_reservation>
             bookingData.groundName = Grounddata!['groundName'];
             bookingData.groundphone = Grounddata['phone'];
             bookingData.groundImage = Grounddata['img'][0];
-            // Store the document ID in the model
-            playgroundbook.add(bookingData); // Add playground to the list
-
-            // print("Stored document ID in model: ${user.id}");
+            playgroundbook.add(bookingData);
           }
           setState(() {
 
@@ -603,26 +477,9 @@ class my_reservationState extends State<my_reservation>
 
         }
 
-        // for (var doc in querySnapshot.docs) {
-        //   Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        //   var userDataList = data['AlluserData']?['UserData'] as List?;
-        //
-        //   if (userDataList != null) {
-        //     for (var userData in userDataList) {
-        //       if (userData['UserPhone'] == normalizedPhoneNumber) {
-        //         AddbookingModel booking = AddbookingModel.fromMap(data);
-        //
-        //         playgroundbook.add(booking); // Add each booking to the list
-        //         break;
-        //       }
-        //     }
-        //   }
-        // }
-
         if (playgroundbook.isNotEmpty) {
-          // Print and access specific fields for each booking
+
           for (int i = 0; i < playgroundbook.length; i++) {
-            // formatDate(playgroundbook[i].dateofBooking!);
 
             print('AdminId: ${playgroundbook[i].AdminId}');
             print('Day_of_booking: ${playgroundbook[i].Day_of_booking}');
@@ -637,14 +494,11 @@ class my_reservationState extends State<my_reservation>
         String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
         CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
 
-
-
-// Query the PlayersChat collection to find the document where phone number matches
         QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo: normalizedPhoneNumber).get();
         print('shared phooone $normalizedPhoneNumber');
         if(adminSnapshot.docs.isNotEmpty){
           var adminDoc = adminSnapshot.docs.first;
-          String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+          String docId = adminDoc.id;
           print("Matched user docId: $docId");
           useridddd=docId;
 
@@ -653,7 +507,7 @@ class my_reservationState extends State<my_reservation>
         await bookingdataa.where('userID', isEqualTo: useridddd).get();
 
         if(bookingSnapshot.docs.isNotEmpty){
-          playgroundbook = []; // Initialize as an empty list
+          playgroundbook = [];
           for (var document in bookingSnapshot.docs) {
             Map<String, dynamic> userData =
             document.data() as Map<String, dynamic>;
@@ -667,10 +521,8 @@ class my_reservationState extends State<my_reservation>
             bookingData.groundName = Grounddata!['groundName'];
             bookingData.groundphone = Grounddata['phone'];
             bookingData.groundImage = Grounddata['img'][0];
-            // Store the document ID in the model
-            playgroundbook.add(bookingData); // Add playground to the list
 
-            // print("Stored document ID in model: ${user.id}");
+            playgroundbook.add(bookingData);
           }
           setState(() {
 
@@ -678,27 +530,9 @@ class my_reservationState extends State<my_reservation>
 
         }
 
-
-        // for (var doc in querySnapshot.docs) {
-        //   Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        //   var userDataList = data['AlluserData']?['UserData'] as List?;
-        //
-        //   if (userDataList != null) {
-        //     for (var userData in userDataList) {
-        //       if (userData['UserPhone'] == normalizedPhoneNumber) {
-        //         AddbookingModel booking = AddbookingModel.fromMap(data);
-        //         playgroundbook.add(booking); // Add each booking to the list
-        //         break;
-        //       }
-        //     }
-        //   }
-        // }
-
         if (playgroundbook.isNotEmpty) {
-          // Print and access specific fields for each booking
           for (int i = 0; i < playgroundbook.length; i++) {
             print('AdminId: ${playgroundbook[i].AdminId}');
-            // formatDate(playgroundbook[i].dateofBooking!);
             print('Day_of_booking: ${playgroundbook[i].Day_of_booking}');
             print('Rent_the_ball: ${playgroundbook[i].rentTheBall}');
             print('phoneshoka: ${playgroundbook[i].UserPhone!}');
@@ -716,9 +550,32 @@ class my_reservationState extends State<my_reservation>
   }
 
   late List<AddPlayGroundModel> playgroundAllData = [];
+  String apiEndpoint = 'http://192.168.0.42/notificaions/send_notification.php';
+
+  Future<http.Response> sendNotification(NotificationData data) async {
+    final uri = Uri.parse(apiEndpoint);
+    final response = await http.post(uri, body: data.toMap());
+    return response;
+  }
+
+  Future<void> sp(String ms, title, d_token) async {
+    final notificationData =
+    NotificationData(message: ms, title: title, deviceToken: d_token);
+    final response = await sendNotification(notificationData);
+
+    if (response.statusCode == 200) {
+      print('Notification sent successfully!');
+    } else {
+      print('Error sending notification: ${response.statusCode}');
+      print(response.body);
+    }
+  }
+  String adminoooken="";
 
   Future<void> deleteCancelByPhoneAndPlaygroundId(
       String userid,
+      String a_id,
+      String g_name,
       String playgroundId,
       String selectedTime,
       String bookingDate,
@@ -730,6 +587,48 @@ class my_reservationState extends State<my_reservation>
     print("Playground ID: $playgroundId");
     print("Selected Time: $selectedTime");
     print("Booking Date: $bookingDate");
+    print("g_name Date: $g_name");
+
+    List<String> dateParts = bookingDate.split(' ');
+    int day = int.parse(dateParts[0]);
+    String monthName = dateParts[1];
+    int year = int.parse(dateParts[2]);
+
+    Map<String, int> monthMap = {
+      "يناير": 1,
+      "فبراير": 2,
+      "مارس": 3,
+      "أبريل": 4,
+      "مايو": 5,
+      "يونيو": 6,
+      "يوليو": 7,
+      "أغسطس": 8,
+      "سبتمبر": 9,
+      "أكتوبر": 10,
+      "نوفمبر": 11,
+      "ديسمبر": 12,
+    };
+
+
+    int month = monthMap[monthName] ?? 0;
+    DateTime date = DateTime(year, month, day);
+
+    List<String> dayNames = [
+      "الأحد",
+      "الاثنين",
+      "الثلاثاء",
+      "الأربعاء",
+      "الخميس",
+      "الجمعة",
+      "السبت"
+    ];
+
+
+    String dayName = dayNames[date.weekday % 7];
+
+    print("Booking Date: $bookingDate");
+    print("Day Name: $dayName");
+
 
     try {
       QuerySnapshot querySnapshot = await firestore.collection('booking')
@@ -743,19 +642,44 @@ class my_reservationState extends State<my_reservation>
         for (var doc in querySnapshot.docs) {
           print('Document ID: ${doc.id}');
           print('Selected Times: ${doc['selectedTimes']}');
+          DocumentSnapshot documentSnapshot = await firestore
+              .collection('PlayersChat')
+              .doc(a_id)
+              .get();
+          if (documentSnapshot.exists) {
+            var data = documentSnapshot.data() as Map<String, dynamic>;
+            print(data);
 
-          // Delete the document
+            adminoooken = data['FCMToken'];
+            print ("admintoken is $adminoooken");
+          }
+
           await firestore.collection('booking').doc(doc.id).delete();
-          print(
-              'Document with phone $userid, playgroundId $playgroundId, date $bookingDate, and selectedTime $selectedTime deleted successfully.');
+          if(selectedTime.contains("PM")){
+            String ms=" "+"تم إلغاء حجز ملعب "+" $g_name "+"يوم"+ " ${dayName} "+" ${selectedTime.substring(0,4)} "+"م";
+            print("message of delete is $ms");
+
+            String title = "الغاء حجز ";
+            await _sendnotificationtofirebase(2,playgroundId,dayName,selectedTime);
+            await sp(ms, title,
+                adminoooken);
+          }else{
+            String ms=" "+"تم إلغاء حجز ملعب "+" $g_name "+"يوم"+ " ${dayName} "+" ${selectedTime.substring(0,4)} "+"ص";
+            print("message of delete is $ms");
+            String title = "الغاء حجز ";
+            await sp(ms, title,
+                adminoooken);
+            await _sendnotificationtofirebase(2,playgroundId,dayName,selectedTime);
+          }
+
+          print('Document with phone $userid, playgroundId $playgroundId, dayName $dayName, and selectedTime $selectedTime deleted successfully.');
           documentDeleted = true;
 
-          // Navigate to HomePage
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => my_reservation()),
           );
-          return; // Exit after deletion
+          return;
         }
       }
 
@@ -767,30 +691,6 @@ class my_reservationState extends State<my_reservation>
     }
   }
 
-  // Future<void> updateCancelCount(String userPhone) async {
-  //   final firestore = FirebaseFirestore.instance;
-  //   final query = await firestore
-  //       .collection('cancel_book')
-  //       .where('user_phone', isEqualTo: userPhone)
-  //       .get();
-  //
-  //   if (query.docs.isNotEmpty) {
-  //     // Document exists, increment the numberofcancel field
-  //     final doc = query.docs.first;
-  //     final currentCount = doc['numberofcancel'] ?? 0;
-  //
-  //     await firestore
-  //         .collection('cancel_book')
-  //         .doc(doc.id)
-  //         .update({'numberofcancel': currentCount + 1});
-  //   } else {
-  //     // Document does not exist, create a new one with numberofcancel set to 1
-  //     await firestore.collection('cancel_book').add({
-  //       'user_phone': userPhone,
-  //       'numberofcancel': 1,
-  //     });
-  //   }
-  // }
   Future<void> updateCancelCount(String userPhone, String idAdmin,
       String idGround)
   async {
@@ -802,7 +702,6 @@ class my_reservationState extends State<my_reservation>
         .get();
 
     if (query.docs.isNotEmpty) {
-      // Document exists, increment the numberofcancel field
       final doc = query.docs.first;
       final currentCount = doc['numberofcancel'] ?? 0;
       await firestore
@@ -811,7 +710,7 @@ class my_reservationState extends State<my_reservation>
           .update({'numberofcancel': currentCount + 1});
       print("dooooc$doc");
     } else {
-      // Document does not exist, create a new one with numberofcancel set to 1
+
       await firestore.collection('cancel_book').add({
         'user_phone': userPhone,
         'numberofcancel': 1,
@@ -822,15 +721,14 @@ class my_reservationState extends State<my_reservation>
   }
 
   String getTimeRange(String startTime) {
-    DateTime start = DateFormat.jm().parse(startTime); // Parse the start time
-    DateTime end = start.add(Duration(hours: 1)); // Add 1 hour for the end time
+    DateTime start = DateFormat.jm().parse(startTime);
+    DateTime end = start.add(Duration(hours: 1));
 
-    // Format the time in Arabic but numbers in English
     String formattedStartTime = DateFormat('h:mm a', 'ar')
         .format(start)
         .replaceAllMapped(RegExp(r'\d+'), (match) {
       return NumberFormat('en').format(
-          int.parse(match.group(0)!)); // Ensure numbers are in English
+          int.parse(match.group(0)!));
     });
 
     String formattedEndTime = DateFormat('h:mm a', 'ar')
@@ -853,7 +751,7 @@ class my_reservationState extends State<my_reservation>
 
           Map<dynamic, dynamic>? arguments = ModalRoute.of(context)
               ?.settings
-              .arguments as Map<dynamic, dynamic>?; // Explicit casting
+              .arguments as Map<dynamic, dynamic>?;
           if (arguments != null && arguments['from'] == 'home') {
             Navigator.push(
               context,
@@ -874,10 +772,9 @@ class my_reservationState extends State<my_reservation>
       },
       child: Scaffold(
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
+          preferredSize: Size.fromHeight(70.0),
           child: Padding(
             padding: EdgeInsets.only(top: 25.0, right: 8, left: 8),
-            // Add padding to the top of the title
             child: AppBar(
               backgroundColor: Colors.white,
               surfaceTintColor: Colors.transparent,
@@ -890,12 +787,11 @@ class my_reservationState extends State<my_reservation>
                 ),
               ),
               centerTitle: true,
-              // Center the title horizontally
               leading: IconButton(
                 onPressed: () {
                   Map<dynamic, dynamic>? arguments = ModalRoute.of(context)
                       ?.settings
-                      .arguments as Map<dynamic, dynamic>?; // Explicit casting
+                      .arguments as Map<dynamic, dynamic>?;
                   if (arguments != null && arguments['from'] == 'home') {
                     Navigator.push(
                       context,
@@ -949,9 +845,7 @@ class my_reservationState extends State<my_reservation>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      // SizedBox(
-                      //   width: 12,
-                      // ),
+
                       Container(
                         height: 93,
                         width: 87,
@@ -964,7 +858,7 @@ class my_reservationState extends State<my_reservation>
                           ),
                           shape: BoxShape.rectangle,
                           color: Colors
-                              .black, // This color will be visible at the bottom
+                              .black,
                         ),
                         child: Column(
                           children: [
@@ -974,7 +868,7 @@ class my_reservationState extends State<my_reservation>
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
                                 color: Color(
-                                    0xFFF0F6FF), // Inner container color
+                                    0xFFF0F6FF),
                               ),
                               child: Column(
                                 children: [
@@ -1021,7 +915,7 @@ class my_reservationState extends State<my_reservation>
                           ),
                           shape: BoxShape.rectangle,
                           color: Colors.red
-                              .shade200, // This color will be visible at the bottom
+                              .shade200,
                         ),
                         child: Column(
                           children: [
@@ -1031,7 +925,7 @@ class my_reservationState extends State<my_reservation>
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
                                 color: Color(
-                                    0xFFF0F6FF), // Inner container color
+                                    0xFFF0F6FF),
                               ),
                               child: Column(
                                 children: [
@@ -1077,7 +971,7 @@ class my_reservationState extends State<my_reservation>
                           ),
                           shape: BoxShape.rectangle,
                           color: Colors.green
-                              .shade400, // This color will be visible at the bottom
+                              .shade400,
                         ),
                         child: Column(
                           children: [
@@ -1087,7 +981,7 @@ class my_reservationState extends State<my_reservation>
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
                                 color: Color(
-                                    0xFFF0F6FF), // Inner container color
+                                    0xFFF0F6FF),
                               ),
                               child: Column(
                                 children: [
@@ -1179,7 +1073,7 @@ class my_reservationState extends State<my_reservation>
                   ),
                 ),
               ),
-              for (var i = 0; i < playgroundAllData.length; i++) // Repeat the container 5 times
+              for (var i = 0; i < playgroundAllData.length; i++)
                 playgroundAllData.isNotEmpty ?
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12, top: 10,),
@@ -1197,14 +1091,11 @@ class my_reservationState extends State<my_reservation>
                         boxShadow: [
                           BoxShadow(
                             color: Colors.grey.withOpacity(0.7),
-                            // Increase opacity for a darker shadow
                             spreadRadius: 0,
-                            // Increase spread to make the shadow larger
                             blurRadius: 2,
-                            // Increase blur radius for a more diffused shadow
+
                             offset: Offset(0,
-                                0), // Increase offset for a more pronounced shadow effect
-                          ),
+                                0),  ),
                         ],
                       ),
                       child: playgroundbook.isNotEmpty ? Column(
@@ -1215,7 +1106,7 @@ class my_reservationState extends State<my_reservation>
                                 right: 12.0, left: 12, top: 11),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
-                              // Aligns the content to the right
+
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Column(
@@ -1245,7 +1136,6 @@ class my_reservationState extends State<my_reservation>
                                         ),
                                         Text(
                                           "${playgroundbook[i].totalcost!}",
-                                          // textDirection: TextDirection.RTL,  // Ensures the text direction is RTL
 
                                           style: TextStyle(
                                             fontFamily: 'Cairo',
@@ -1260,7 +1150,6 @@ class my_reservationState extends State<my_reservation>
                                             .width / 4.2,),
                                         Text(
                                           "${playgroundbook[i].UserPhone}",
-                                          // textDirection: TextDirection.RTL,  // Ensures the text direction is RTL
 
                                           style: TextStyle(
                                             fontFamily: 'Cairo',
@@ -1274,12 +1163,12 @@ class my_reservationState extends State<my_reservation>
                                   ],
                                 ),
                                 SizedBox(width: 10),
-                                // Adds space between the text and the image
+
                                 Image.asset(
                                   "assets/images/Wadi_Logo.png",
                                   height: 30,
                                   width: 30,
-                                  // Adjust size as needed
+
                                 ),
                               ],
                             ),
@@ -1320,8 +1209,6 @@ class my_reservationState extends State<my_reservation>
                                         color: Color(0xFF7D90AC),
                                       ),
                                     ),
-                                    // SizedBox(width: 5,),
-
 
                                   ],
                                 ),
@@ -1344,9 +1231,8 @@ class my_reservationState extends State<my_reservation>
                                           .selectedTimes!.isNotEmpty?     TextSpan(
                                         text: getTimeRange(
                                             playgroundbook[i]
-                                                .selectedTimes![0]), // Add formatted time range
-                                      ):TextSpan(
-                            text:"", // Add formatted time range
+                                                .selectedTimes![0]),   ):TextSpan(
+                            text:"",
                           ),
                                     ],
                                   ),
@@ -1376,6 +1262,8 @@ class my_reservationState extends State<my_reservation>
                                         playgroundbook[i].GroundId!);
                                     deleteCancelByPhoneAndPlaygroundId(
                                         playgroundbook[i].userID!,
+                                        playgroundbook[i].AdminId!,
+                                        playgroundbook[i].groundName!,
                                         playgroundbook[i].GroundId!,
                                         playgroundbook[i].selectedTimes!.first,
                                         playgroundbook[i].dateofBooking!);
@@ -1387,11 +1275,8 @@ class my_reservationState extends State<my_reservation>
                                       borderRadius: BorderRadius.circular(30.0),
                                       shape: BoxShape.rectangle,
                                       color: Color(
-                                          0xFFB3261E), // Background color of the container
-                                      // border: Border.all(
-                                      //   width: 1.0, // Border width
-                                      //   color: Colors.black
-                                      // ),
+                                          0xFFB3261E),
+
                                     ),
                                     child: Center(
                                       child: Text(
@@ -1400,7 +1285,7 @@ class my_reservationState extends State<my_reservation>
                                           fontFamily: 'Cairo',
                                           fontSize: 12.0,
                                           fontWeight: FontWeight.w500,
-                                          color: Colors.white, // Text color
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -1433,11 +1318,8 @@ class my_reservationState extends State<my_reservation>
                                       borderRadius: BorderRadius.circular(30.0),
                                       shape: BoxShape.rectangle,
                                       color: Color(
-                                          0xFF064821), // Background color of the container
-                                      // border: Border.all(
-                                      //   width: 1.0, // Border width
-                                      //   color: Colors.black
-                                      // ),
+                                          0xFF064821),
+
                                     ),
                                     child: Center(
                                       child: Text(
@@ -1446,7 +1328,7 @@ class my_reservationState extends State<my_reservation>
                                           fontFamily: 'Cairo',
                                           fontSize: 12.0,
                                           fontWeight: FontWeight.w500,
-                                          color: Colors.white, // Text color
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -1469,12 +1351,7 @@ class my_reservationState extends State<my_reservation>
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(30.0),
                                       shape: BoxShape.rectangle,
-                                      // color: Color(
-                                      //     0xFFB3261E), // Background color of the container
-                                      // border: Border.all(
-                                      //   width: 1.0, // Border width
-                                      //   color: Colors.black
-                                      // ),
+
                                     ),
                                     child: Center(
                                       child: Text(
@@ -1483,7 +1360,7 @@ class my_reservationState extends State<my_reservation>
                                           fontFamily: 'Cairo',
                                           fontSize: 12.0,
                                           fontWeight: FontWeight.w500,
-                                          color: Colors.white, // Text color
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -1500,13 +1377,7 @@ class my_reservationState extends State<my_reservation>
                                     width: 114,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(30.0),
-                                      // shape: BoxShape.rectangle,
-                                      // color: Color(
-                                      //     0xFF064821), // Background color of the container
-                                      // border: Border.all(
-                                      //   width: 1.0, // Border width
-                                      //   color: Colors.black
-                                      // ),
+
                                     ),
                                     child: Center(
                                       child: Text(
@@ -1515,7 +1386,7 @@ class my_reservationState extends State<my_reservation>
                                           fontFamily: 'Cairo',
                                           fontSize: 12.0,
                                           fontWeight: FontWeight.w500,
-                                          color: Colors.white, // Text color
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -1565,14 +1436,14 @@ class my_reservationState extends State<my_reservation>
                   ),
                 ),
               SizedBox(height: 55),
-              // Adds space between the text and the image
+
             ],
           ),
         ):_buildNoInternetUI(),
         bottomNavigationBar: CurvedNavigationBar(
           height: 60,
           index: 1,
-          // Use the dynamic index
+
           items: [
             Icon(Icons.more_horiz, color: Colors.white, size: 25),
 
@@ -1590,22 +1461,18 @@ class my_reservationState extends State<my_reservation>
           animationDuration: Duration(milliseconds: 600),
           onTap: (index) {
             navigationController
-                .updateIndex(index); // Update the index dynamically
-            // Handle navigation based on index
+                .updateIndex(index);
+
             switch (index) {
               case 0:
                 Get.to(() => menupage())?.then((_) {
                   navigationController
-                      .updateIndex(0); // Update index when navigating back
+                      .updateIndex(0);
                 });
                 break;
 
               case 1:
-              // Get.to(() => FavouritePage())?.then((_) {
-              //   navigationController
-              //       .updateIndex(1); // Update index when navigating back
-              // });
-              // break;
+
               case 2:
                 Get.to(() => AppBarandNavigationBTN())?.then((_) {
                   navigationController.updateIndex(2);
@@ -1639,7 +1506,7 @@ class my_reservationState extends State<my_reservation>
               height: 200,
               child: Image.asset(
                 'assets/images/wifirr.png',
-                // Adjust the height as needed
+
               ),
             ),
           ),

@@ -21,6 +21,7 @@ import '../../my_reservation/my_reservation.dart';
 import '../../notification/model/modelsendtodevice.dart';
 import '../../notification/notification_repo.dart';
 import '../../playground_model/AddPlaygroundModel.dart';
+import 'model/send_modelfirebase.dart';
 
 class Notification_page extends StatefulWidget {
 
@@ -33,13 +34,95 @@ class Notification_page extends StatefulWidget {
 class Notification_pageState extends State<Notification_page> with TickerProviderStateMixin {
 
   bool isLoading = false;
+  String useridddd="";
+  late List<User1> user1 = [];
+  late List<NotificationModel> notificationlist = [];
 
+  User? user = FirebaseAuth.instance.currentUser;
   int selectedIndex=3;
   double opacity = 1.0;
+  Future<void> getUserByPhone(String phoneNumber) async {
+    try {
+      String normalizedPhoneNumber = phoneNumber.replaceFirst('+20', '0');
+      CollectionReference playerchat =
+      FirebaseFirestore.instance.collection('Users');
 
+      QuerySnapshot querySnapshot = await playerchat
+          .where('phone', isEqualTo: normalizedPhoneNumber)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        var playerDoc = querySnapshot.docs.first;
+        useridddd = playerDoc.id; // Get the docId of the matching Phoone number
+        print("Document ID for the Phoone number: $useridddd");
+        await fetchnotificationdatabyid(useridddd);
+        Map<String, dynamic> userData =
+        querySnapshot.docs.first.data() as Map<String, dynamic>;
+        User1 user = User1.fromMap(userData);
+
+        // Update the list and UI inside setState
+        setState(() {
+          user1.add(user);
+        });
+
+        print("object${user1[0].name}");
+        print("User data: $userData");
+      } else {
+        print("User not found with phone number $phoneNumber");
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => SigninPage()),
+              (Route<dynamic> route) => false,
+        );
+      }
+    } catch (e) {
+      print("Error getting user: $e");
+    }
+  }
+  void _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? phoneValue = prefs.getString('phonev');
+    print("newphoneValue${phoneValue.toString()}");
+
+    if (phoneValue != null && phoneValue.isNotEmpty) {
+      await getUserByPhone(phoneValue);
+    }
+    else if (user?.phoneNumber != null) {
+      await getUserByPhone(user!.phoneNumber.toString());
+    } else {
+      print("No phone number available.");
+    }
+  }
   bool isConnected=false;
   final NavigationController navigationController = Get.put(NavigationController());
 
+  Future<void> fetchnotificationdatabyid(String userid) async {
+
+      CollectionReference notificationdata =
+      FirebaseFirestore.instance.collection("notification");
+
+      QuerySnapshot anotificationdataSnapshot = await notificationdata
+          .where('userid', isEqualTo: userid)
+          .get();
+
+      if (anotificationdataSnapshot.docs.isNotEmpty) {
+        for (int i = 0; i < anotificationdataSnapshot.docs.length; i++) {
+          var docData = anotificationdataSnapshot.docs[i].data() as Map<String, dynamic>;
+
+          NotificationModel notification = NotificationModel.fromMap(docData);
+if(notification.adminreply==true){
+  notificationlist.add(notification);
+  print("Notification data: ${docData}");
+}
+
+        }
+      } else {
+        print('No notifications found for this userid.');
+      }
+
+  }
   Future<void> checkInternetConnection() async {
 
     print("bvbbvbvbb$isConnected");
@@ -62,10 +145,11 @@ class Notification_pageState extends State<Notification_page> with TickerProvide
   }
   void initState() {
     checkInternetConnection();
+    _loadUserData();
     super.initState();
 
   }
-
+int x=0;
   @override
   Widget build(BuildContext context) {
 
@@ -81,7 +165,7 @@ class Notification_pageState extends State<Notification_page> with TickerProvide
             backgroundColor: Colors.white,
             surfaceTintColor: Colors.transparent,
             title: Text(
-              "حجز ملعب".tr,
+              "الأشعارات".tr,
               style: TextStyle(
                 fontSize: 16,
                 fontFamily: 'Cairo',
@@ -93,7 +177,7 @@ class Notification_pageState extends State<Notification_page> with TickerProvide
             leading: IconButton(
               onPressed: () {
                 Get.back();
-                // Navigator.of(context).pop(true); // Navigate back to the previous page
+
               },
               icon: Icon(
                 Directionality.of(context) == TextDirection
@@ -116,30 +200,95 @@ class Notification_pageState extends State<Notification_page> with TickerProvide
           ),
         ),
       ),
-      body:isConnected? Stack(
+      body:notificationlist.isNotEmpty?Stack(
         children: [
           SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.only(
                   right: 25.0, left: 25, top: 15, bottom: 12),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Container(
+              child: GestureDetector(
+                onTap: (){
+setState(() {
+  x=1;
+});
+                },
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
 
-                    child: Text('تم تأكيد الحجز بنجاح', style: TextStyle(
-                      fontSize: 16,
-                      fontFamily: 'Cairo',
-                      fontWeight: FontWeight.w700,
-                    ),)
-                    )
-                  ]
-            ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                        children: [
+                        x<1?  Visibility(
+                            child: Padding(
+                              padding:  EdgeInsets.only(left: 5,right: 5),
+                              child: Container(
+
+                                child: ClipOval(
+                                  child: Icon(
+                                    Icons.circle,
+                                    size: 15,
+                                    color: Color(0xFFEB5757),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ):Container(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+
+                              Text('تم تأكيد الحجز بنجاح', style: TextStyle(
+                                fontSize: 14,
+                                fontFamily: 'Cairo',
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF091C3F)
+                              ),),
+                              SizedBox(width: 12,),
+                              Image.asset(
+                                'assets/images/notification-bing.png.png',
+                                height: 18,
+                                width: 18,
+                                fit: BoxFit.cover,
+                              ),
+                              SizedBox(width: 6,)
+                            ],
+                          ),
+
+                        ],
+                      )
+                      ),
+                      Padding(
+                        padding:  EdgeInsets.only(right: 34.0,top: 5),
+                        child: Text('Aug 12, 2020 at 12:08 PM', style: TextStyle(
+                            fontSize: 13,
+                            fontFamily: 'Cairo',
+                            fontWeight: FontWeight.w400,
+                            color: Colors.grey
+                        ),),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            top: 0, bottom: 0),
+                        child: Divider(
+                          // color: Color(0xFF091C3F14),
+                          color: Colors.grey.shade300,
+
+                          // Adjust the color of the line as needed
+                          thickness:
+                          1, // Adjust the thickness of the line as needed
+                        ),
+                      ),
+                    ]
+                            ),
+              ),
           ),
           )
         ],
-      ):                        _buildNoInternetUI(),
+      ):Container(),
       bottomNavigationBar: CurvedNavigationBar(
         height: 60,
         index: 2,
@@ -170,12 +319,7 @@ class Notification_pageState extends State<Notification_page> with TickerProvide
             // Update opacity based on the selected index
             opacity= 0.5;
           });
-          // setState(() {
-          //   navigationController.updateIndex(index);
-          //   // Update opacity based on the selected index
-          //   opacity = index == 2 ? 0.9 : 1.0;
-          // });// Update the index dynamically
-          // Handle navigation based on index
+
           switch (index) {
             case 0:
               Get.to(() => menupage())?.then((_) {
@@ -191,9 +335,7 @@ class Notification_pageState extends State<Notification_page> with TickerProvide
               });
               break;
             case 2:
-            // Get.to(() => AppBarandNavigationBTN())?.then((_) {
-            //   navigationController.updateIndex(2);
-            // });
+
               break;
 
             case 3:
@@ -206,42 +348,7 @@ class Notification_pageState extends State<Notification_page> with TickerProvide
       ),
     );
   }
-  Widget _buildNoInternetUI() {
 
-    return Container(
-      color: Colors.white,
-      child: Column(
-        children: [
-          SizedBox(
-            height: MediaQuery.of(context).size.height/3,
-
-          ),
-          Center(
-            child: Container(
-              height: 200,
-              child: Image.asset(
-                'assets/images/wifirr.png',
-                // Adjust the height as needed
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          Text(
-            "لا يوجد اتصال بالانترنت".tr,
-            style: TextStyle(
-              fontSize: 14,
-              fontFamily: 'Cairo',
-              fontWeight: FontWeight.w400,
-              color: Colors.black,
-            ),
-          ),
-
-        ],
-      ),
-    );
-  }
 
 
 }
