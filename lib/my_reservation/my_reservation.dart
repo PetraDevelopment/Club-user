@@ -72,6 +72,7 @@ class my_reservationState extends State<my_reservation>
       userId: useridddd,
       adminreply:false,
       time: time,
+      click:false,
       date: daaate,
       day:day,
       bookingtime: booktime,
@@ -468,6 +469,7 @@ class my_reservationState extends State<my_reservation>
             Map<String, dynamic>? Grounddata =   await fetchgrounddatabyid(bookingData);
             bookingData.groundName = Grounddata!['groundName'];
             bookingData.groundphone = Grounddata['phone'];
+            bookingData.logoimage = Grounddata['LogoImg'];
             bookingData.groundImage = Grounddata['img'][0];
             playgroundbook.add(bookingData);
           }
@@ -521,6 +523,7 @@ class my_reservationState extends State<my_reservation>
             bookingData.groundName = Grounddata!['groundName'];
             bookingData.groundphone = Grounddata['phone'];
             bookingData.groundImage = Grounddata['img'][0];
+            bookingData.logoimage = Grounddata['LogoImg'];
 
             playgroundbook.add(bookingData);
           }
@@ -1164,12 +1167,18 @@ class my_reservationState extends State<my_reservation>
                                 ),
                                 SizedBox(width: 10),
 
-                                Image.asset(
-                                  "assets/images/Wadi_Logo.png",
-                                  height: 30,
-                                  width: 30,
+                                ClipOval(
+                                  child: Image(image:  NetworkImage(
+                                      playgroundbook[i].logoimage!,
 
-                                ),
+                                      // Adjust size as needed
+
+                                    ),
+                                    fit: BoxFit.fitWidth,
+                                    height: 30,
+                                    width: 30,
+                                  ),
+                                )
                               ],
                             ),
                           ),

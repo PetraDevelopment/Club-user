@@ -283,6 +283,7 @@ class HomePageState extends State<HomePage> {
             bookingData.groundName = Grounddata!['groundName'];
             bookingData.groundphone = Grounddata['phone'];
             bookingData.groundImage = Grounddata['img'][0];
+            bookingData.logoimage=Grounddata['LogoImg'];
             // Store the document ID in the model
             playgroundbook.add(bookingData); // Add playground to the list
             print("bookingData is equal $bookingData");
@@ -350,6 +351,7 @@ class HomePageState extends State<HomePage> {
             Map<String, dynamic>? Grounddata =   await fetchgrounddatabyid(bookingData);
             bookingData.groundName = Grounddata!['groundName'];
             bookingData.groundphone = Grounddata['phone'];
+            bookingData.logoimage=Grounddata['LogoImg'];
             bookingData.groundImage = Grounddata['img'][0];
             // Store the document ID in the model
             playgroundbook.add(bookingData); // Add playground to the list
@@ -678,8 +680,9 @@ String adminoooken="";
       adminreply:false,
       time: time,
       date: daaate,
+      click:false,
       day:day,
-      bookingtime: booktime,
+      bookingtime: booktime.toString(),
       notificationType: type,
     );
 
@@ -1660,12 +1663,17 @@ if(selectedTime.contains("PM")){
                                           ],
                                         ),
                                         SizedBox(width: 10), // Adds space between the text and the image
-                                        Image.asset(
-                                          "assets/images/Wadi_Logo.png",
-                                          height: 30,
-                                          width: 30,
-                                          // Adjust size as needed
-                                        ),
+                                        ClipOval(
+                                          child: Image(image:  NetworkImage(
+                                            playgroundbook [i].logoimage!,
+
+                                            // Adjust size as needed
+                                          ),
+                                            fit: BoxFit.fitWidth,
+                                            height: 30,
+                                            width: 30,
+                                          ),
+                                        )
                                       ],
                                     ),
                                   ),

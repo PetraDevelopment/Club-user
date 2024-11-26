@@ -1,20 +1,26 @@
 class NotificationModel {
   String adminId;
+  String? idd;
+  String?groundname;
   String date;
   int notificationType;
   String time;
   String userId;
   bool adminreply=false;
+  bool click=false;
   String day;
   String bookingtime;
   String groundid;
 
   NotificationModel({
     required this.day,
+   this.idd,
     required this.adminreply,
     required this.bookingtime,
     required this.adminId,
     required this.groundid,
+    this.groundname,
+    required  this.click,
     required this.date,
     required this.notificationType,
     required this.time,
@@ -25,8 +31,10 @@ class NotificationModel {
   factory NotificationModel.fromMap(Map<String, dynamic> map) {
     return NotificationModel(
       adminId: map['adminId'] ?? '',
+      idd: '',
+      groundname:'',
       adminreply:map['adminreply']??false,
-
+      click:map['click']??false,
       day:map['day']??'',
       bookingtime:map['bookingtime']??'',
       date:map['date']??'',
@@ -40,6 +48,8 @@ class NotificationModel {
   // Method to convert the model to a Map
   Map<String, dynamic> toMap() {
     return {
+      'groundmame':groundname,
+      'click':click,
       'adminid': adminId,
       'date': date,
       'day':day,

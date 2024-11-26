@@ -2,6 +2,7 @@ class AddPlayGroundModel {
   String? playgroundName;
   String? playType;
   String? address;
+  String? logoimge;
   String? location;
   String? phoneCommunication;
   String? length;
@@ -22,6 +23,7 @@ String? time2;
     this.playgroundName,
     this.playType,
     this.address,
+    this.logoimge,
     this.location,
     this.phoneCommunication,
     this.img,
@@ -45,6 +47,7 @@ String? time2;
       playType: map['playType'],
       address: map['address'],
       location: map['location'],
+      logoimge: map['LogoImg'],
       phoneCommunication: map['phone'],
       length: map['length'],
       width: map['width'],
@@ -60,6 +63,7 @@ String? time2;
 
   Map<String, dynamic> toMap() {
     return {
+      'LogoImg':logoimge,
       'groundName': playgroundName,
       'playType': playType,
       'address': address,
@@ -79,6 +83,6 @@ String? time2;
 
   @override
   String toString() {
-    return 'AddPlayGroundModel(playgroundName: $playgroundName, playType: $playType, address: $address, location: $location, phoneCommunication: $phoneCommunication, length: $length, width: $width, img: $img, bookTypes: $bookTypes, days: $days,  cost: $cost, availableFacilities: $availableFacilities, notes: $notes)';
+    return 'AddPlayGroundModel(playgroundName: $playgroundName, playType: $playType, address: $address, location: $location, phoneCommunication: $phoneCommunication, length: $length, width: $width, img: $img, bookTypes: $bookTypes, days: $days,  cost: $cost, availableFacilities: $availableFacilities, notes: $notes ,LogoImg:$logoimge)';
   }
 }

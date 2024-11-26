@@ -53,7 +53,7 @@ class ProfilepageState extends State<Profilepage>
   File? selectedImages;
   String previousName = '';
   String previousPhoneNumber = '';
-
+  String userid='';
   Future<void> takePhoto() async {
     final pickedFile =
     await ImagePicker().pickImage(source: ImageSource.camera);
@@ -128,14 +128,16 @@ class ProfilepageState extends State<Profilepage>
     FirebaseFirestore.instance.collection('Users');
 
     try {
-      // Query the Firestore database to find the user's document based on their phone number
-      QuerySnapshot querySnapshot =
-      await usersRef.where('phone', isEqualTo: phone).get();
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-      if (querySnapshot.docs.isNotEmpty) {
-        // Update the user's document with the new image URL
-        DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+      String? token = await messaging.getToken();
+      print("FCM Token: $token");
+      DocumentReference documentRef = usersRef.doc(userid);
+      DocumentSnapshot documentSnapshot = await documentRef.get();
+      if (documentSnapshot.exists) {
+
         await documentSnapshot.reference.update({
+          'fcm':token,
           'name': name,
           'phone': phone,
           'profile_image': profileImageUrl,
@@ -156,12 +158,8 @@ class ProfilepageState extends State<Profilepage>
         print('User  data updated successfully.');
       } else {
         // If the user's document is not found, create a new document
-        await usersRef.add({
-          'name': name,
-          'phone': phone,
-          'profile_image': profileImageUrl,
-        });
-        print('User  data added successfully.');
+
+        print('users document is not found');
       }
     } catch (e) {
       print('Error updating user data: $e');
@@ -180,20 +178,18 @@ class ProfilepageState extends State<Profilepage>
 
       String? token = await messaging.getToken();
       print("FCM Token: $token");
-      // Query the Firestore database to find the user's document based on their phone number
-      QuerySnapshot querySnapshot =
-      await usersRef.where('phone', isEqualTo: _phoneNumberController.text)
-          .get();
+      DocumentReference documentRef = usersRef.doc(userid);
+      DocumentSnapshot documentSnapshot = await documentRef.get();
+
       String existingName = user1[0].name!;
       if (name == existingName) {
         print("Name is already up to date");
       }
 
       else {
-        if (querySnapshot.docs.isNotEmpty) {
+        if (documentSnapshot.exists) {
 
-          // Update the user's document with the new image URL
-          DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+
           await documentSnapshot.reference.update({
             'fcm':token,
             'name': name,
@@ -220,13 +216,8 @@ class ProfilepageState extends State<Profilepage>
         }
 
         else {
-          // If the user's document is not found, create a new document
-          await usersRef.add({
-            'name': name,
-            'phone': _phoneNumberController.text,
-            'profile_image': img_profile,
-          });
-          print('User  data added successfully.');
+
+          print('users document is not found');
         }
       }
     }
@@ -260,6 +251,7 @@ class ProfilepageState extends State<Profilepage>
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
+        userid= querySnapshot.docs.first.id;
         Map<String, dynamic> userData =
         querySnapshot.docs.first.data() as Map<String, dynamic>;
         User1 user = User1.fromMap(userData);
@@ -299,8 +291,7 @@ class ProfilepageState extends State<Profilepage>
     checkInternetConnection();
     _loadUserData();
     _loadData();
-    // Now you can access the user1 list
-    // print('User data44444: ${user1[0].name}');
+
     setState(() {}); // Call setState to rebuild the widget tree
   }
 

@@ -14,10 +14,11 @@ class AddPlayGroundModel {
   List<BookTypeEntry>? bookTypes; // List of booking entries
   String? adminId;  // Renamed to follow Dart naming conventions
   String? cost;
-
+  String? logoimage;
   AddPlayGroundModel({
     this.playgroundName,
     this.id,
+    this.logoimage,
     this.favourite,
     this.playType,
     this.address,
@@ -37,6 +38,7 @@ class AddPlayGroundModel {
   factory AddPlayGroundModel.fromMap(Map<String, dynamic> map) {
     return AddPlayGroundModel(
       id: map['id'] ?? '',  // Fetch the ID from the map
+      logoimage:map['LogoImg']??'',
       adminId: map['AdminId'] ?? '',  // Get AdminId directly from the map
       playgroundName: map['groundName'],
       playType: map['playType'],
@@ -60,6 +62,7 @@ class AddPlayGroundModel {
   // Method to convert the model to a Map
   Map<String, dynamic> toMap() {
     return {
+      'LogoImg':logoimage,
       'id': id,  // Include id in the map if needed
       'AdminId': adminId,  // Add AdminId to the map
       'groundName': playgroundName,

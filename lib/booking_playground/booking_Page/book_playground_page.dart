@@ -447,19 +447,19 @@ class book_playground_pageState extends State<book_playground_page>
 
   String groundIiid2 = '';
 
-  Future<void> _handleSlotTap(String slot) async {
-    setState(() {
-      isLoading = true; // Start loading
-    });
-
-    // Simulate a delay for processing the selection
-    await Future.delayed(Duration(seconds: 2));
-
-    // Here you can perform your reservation logic
-    setState(() {
-      isLoading = false; // Stop loading
-    });
-  }
+  // Future<void> _handleSlotTap(String slot) async {
+  //   setState(() {
+  //     isLoading = true; // Start loading
+  //   });
+  //
+  //   // Simulate a delay for processing the selection
+  //   await Future.delayed(Duration(seconds: 2));
+  //
+  //   // Here you can perform your reservation logic
+  //   setState(() {
+  //     isLoading = false; // Stop loading
+  //   });
+  // }
 
   int cnt = 0;
   List<num> selectedCosts = [];
@@ -761,11 +761,12 @@ class book_playground_pageState extends State<book_playground_page>
       adminId: playgroundAllData[0].adminId!,
       groundid:Groundid,
       userId: useridddd,
+      click:false,
       adminreply:false,
       time: time,
       date: daaate,
       day:day,
-      bookingtime: booktime,
+      bookingtime: booktime.toString(),
       notificationType: type,
     );
 
@@ -1513,12 +1514,8 @@ String iddd=widget.IdData;
                           ),
                         ),
                         playgroundAllData.isNotEmpty &&
-                                playgroundAllData.any((data) => data.bookTypes!
-                                    .any((bt) => bt.day == selectedDayName))
-                            ? playgroundAllData.isNotEmpty &&
                                     playgroundAllData.any((data) => data
-                                        .bookTypes!
-                                        .any((bt) => bt.day == selectedDayName))
+                                        .bookTypes!.any((bt) => bt.day == selectedDayName))
                                 ? FutureBuilder<List<Widget>>(
                                     future: _generateRows(
                                         selectedTimes, selectedDayName),
@@ -1546,11 +1543,9 @@ String iddd=widget.IdData;
                                               snapshot.data!.map((slotWidget) {
                                             return GestureDetector(
                                               onTap: () {
-                                                _handleSlotTap(slotWidget
-                                                    .toString()); // Pass the slot value
+                                                // _handleSlotTap(slotWidget.toString()); // Pass the slot value
                                               },
-                                              child:
-                                                  slotWidget, // Use the slot widget
+                                              child: slotWidget, // Use the slot widget
                                             );
                                           }).toList(),
                                         );
@@ -1564,12 +1559,8 @@ String iddd=widget.IdData;
                                     child: Center(
                                         child: Text(
                                             "لا يوجد حجز متاح لهذا اليوم")),
-                                  )
-                            : Container(
-                                height: 99,
-                                child: Center(
-                                    child: Text("لا يوجد حجز متاح لهذا اليوم")),
-                              ),
+                                  ),
+
                         playgroundAllData.isNotEmpty &&
                                 playgroundAllData.any((data) => data.bookTypes!
                                     .any((bt) => bt.day == selectedDayName))
@@ -2328,6 +2319,7 @@ String iddd=widget.IdData;
             playground.id = docId; // Store the document ID in the model
 
             playgroundAllData.add(playground); // Add playground to the list
+
             print("Stored document ID in model: ${playground.id}");
           }
         });

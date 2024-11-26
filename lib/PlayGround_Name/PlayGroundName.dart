@@ -79,8 +79,6 @@ class PlaygroundNameState extends State<PlaygroundName>
   List<bool> isstared = [false, false, false, false, false];
 
   String idddddd = '';
-
-  // bool fetchfav = false;
   bool isFavorite = false;
 
   Future<void> _sendData() async {
@@ -153,12 +151,12 @@ class PlaygroundNameState extends State<PlaygroundName>
 
         if (isFavorite) {
           setState(() {
-            _isLoading = true; // set flag to false when data is loaded
+            _isLoading = true;
           });
-          // If the playground is already a favorite, update the existing record
-          await updateFavoritePlayground(widget.id!, favlist[0]);
+
+
         } else {
-          // If the playground is not a favorite, add it to the favorites collection
+
           if (phoneValue != null && phoneValue.isNotEmpty) {
             await FirebaseFirestore.instance.collection('Favourite').add({
               'playground_id': widget.id!,
@@ -191,7 +189,8 @@ class PlaygroundNameState extends State<PlaygroundName>
   }
 
   Future<bool> checkIfFavoriteExists(
-      String playgroundId, String u_id) async {
+      String playgroundId, String u_id)
+  async {
     try {
       print("kkkkk$u_id");
       // Query Firebase to check if the playground is already marked as a favorite
@@ -210,11 +209,7 @@ class PlaygroundNameState extends State<PlaygroundName>
     }
   }
 
-  Future<void> updateFavoritePlayground(
-      String playgroundId, Favouritemodel playground) async {
-    // Implement the logic to update the existing favorite playground in Firebase
-    // You can update the record based on the playgroundId
-  }
+
 
   Future<void> getfavdata(String iduser) async {
     try {
@@ -351,14 +346,13 @@ class PlaygroundNameState extends State<PlaygroundName>
                 "PlayGroung Id : ${document.id}"); // Print the latest playground
 
             print(
-                "allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
+                "allplaygrounds[i] : ${user.bookTypes}"); // Print the latest playground
 
             // Store the document ID in the AddPlayGroundModel object
             idddddd = document.id;
             allplaygrounds.last.favourite = favlist[0].isfav;
             print("init${favlist[0].isfav}");
-            // allplaygrounds[0].favourite=favlist[0].isfav;
-            // print("fav done ${ allplaygrounds[0].favourite}");
+
             print("Docummmmmm$idddddd");
           }
         }
@@ -447,9 +441,7 @@ class PlaygroundNameState extends State<PlaygroundName>
 
     _loadUserData();
     print("Docummmmmmentis${widget.id}");
-    // Now you can access the user1 list
-    // print('User data44444: ${user1[0].name}');
-    setState(() {}); // Call setState to rebuild the widget tree
+    setState(() {});
   }
 
   int _averageRating = 0;
@@ -576,78 +568,6 @@ class PlaygroundNameState extends State<PlaygroundName>
     }
   }
 
-  // Future<void> sendRating(List<bool> isstared) async {
-  //   try {
-  //    for(bool star in isstared){
-  //      if(star==true){
-  //        totalRating++;
-  //
-  //      }
-  //    }
-  //
-  //     print("Total rate for this playground is $totalRating");
-  //
-  //     SharedPreferences prefs = await SharedPreferences.getInstance();
-  //     String? phoneValue = prefs.getString('phonev');
-  //     print("new phoneValue ${phoneValue.toString()}");
-  //
-  //     if (phoneValue != null && phoneValue.isNotEmpty) {
-  //       CollectionReference playerchat = FirebaseFirestore.instance.collection("Playground_Rate");
-  //       QuerySnapshot querySnapshot = await playerchat
-  //           .where('phone', isEqualTo: phoneValue)
-  //           .where('playground_idstars', isEqualTo: widget.id)
-  //           .get();
-  //
-  //       if (querySnapshot.docs.isNotEmpty) {
-  //         // Document exists, update the rating
-  //         DocumentReference docRef = querySnapshot.docs.first.reference;
-  //         await docRef.update({
-  //           'rate': isstared,
-  //           'totalrating': totalRating
-  //         });
-  //       } else {
-  //         // Document doesn't exist, create a new one
-  //         await playerchat.add({
-  //           'rate': isstared,
-  //           'phone': phoneValue,
-  //           'playground_idstars': widget.id,
-  //           'img': allplaygrounds[0].img!,
-  //           'name': allplaygrounds[0].playgroundName!,
-  //           'totalrating': totalRating
-  //         });
-  //       }
-  //     } else if (user?.phoneNumber != null) {
-  //       CollectionReference playerchat = FirebaseFirestore.instance.collection("Playground_Rate");
-  //       QuerySnapshot querySnapshot = await playerchat
-  //           .where('phone', isEqualTo: user?.phoneNumber)
-  //           .where('playground_idstars', isEqualTo: widget.id)
-  //           .get();
-  //
-  //       if (querySnapshot.docs.isNotEmpty) {
-  //         // Document exists, update the rating
-  //         DocumentReference docRef = querySnapshot.docs.first.reference;
-  //         await docRef.update({
-  //           'rate': isstared,
-  //           'totalrating': totalRating
-  //         });
-  //       } else {
-  //         // Document doesn't exist, create a new one
-  //         await playerchat.add({
-  //           'rate': isstared,
-  //           'phone': user?.phoneNumber,
-  //           'playground_idstars': widget.id,
-  //           'img': allplaygrounds[0].img!,
-  //           'name': allplaygrounds[0].playgroundName!,
-  //           'totalrating': totalRating
-  //         });
-  //       }
-  //     } else {
-  //       print("No phone number available.");
-  //     }
-  //   } catch (e) {
-  //     print('Error updating rating: $e');
-  //   }
-  // }
 
   Future<void> fetchRatings() async {
     try {
@@ -893,11 +813,18 @@ class PlaygroundNameState extends State<PlaygroundName>
                           SizedBox(
                             width: 10,
                           ),
-                          Image.asset(
-                            "assets/images/Wadi_Logo.png",
-                            height: 30,
-                            width: 30,
+                          ClipOval(
+                        child: Image(image:  NetworkImage(
+                            allplaygrounds[0].logoimage!,
+
+                            // Adjust size as needed
+
                           ),
+                          fit: BoxFit.fitWidth,
+                          height: 30,
+                          width: 30,
+                        ),
+                      )
                         ],
                       ),
                     )

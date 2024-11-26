@@ -1,5 +1,7 @@
 class AddbookingModel {
   String? iid;
+  String? logoimage;
+
   bool?acceptorcancle;
   int?totalcost;
   String? dateofBooking ;
@@ -19,6 +21,7 @@ class AddbookingModel {
     this.dateofBooking,
     this.rentTheBall,
     this.acceptorcancle,
+    this.logoimage,
     this.Day_of_booking,
     this.selectedTimes,
     this.iid,
@@ -37,6 +40,7 @@ class AddbookingModel {
   factory AddbookingModel.fromMap(Map<String, dynamic> map) {
     return AddbookingModel(
       iid: '',
+      logoimage:'',
       UserImg: '',
       UserName: '',
       UserPhone: '',

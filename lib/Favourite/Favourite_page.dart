@@ -61,7 +61,7 @@ class FavouritePageState extends State<FavouritePage> {
 
 
         if (data != null ) {
-          print("grounddaaaaaaaaaaaaata$data");
+          print("grounddaaaaaaaaaaaaatafav$data");
           return data;
 // userid.UserName= data['name'];
 // userid.UserPhone = data['phone'];
@@ -117,7 +117,7 @@ class FavouritePageState extends State<FavouritePage> {
                   favlist.add(favourite);
                   print("Fav Id : ${document.id}"); // Print the playground ID
                   print('Fav list: $favlist');
-                  print("allplaygrounds[i] : ${favourite}"); // Print the playground
+                  print("allplaygrounds[i]fff : ${favourite.playground_name}"); // Print the playground
                   // Store the document ID in the AddPlayGroundModel object
                   favourite.id = document.id;
                   print("favouriteid${favourite.id}");
@@ -181,6 +181,33 @@ class FavouritePageState extends State<FavouritePage> {
     super.initState();
     checkInternetConnection();
     getPlaygroundbyname();
+  }
+  fetchrateofgrounddatabyid(Favouritemodel ground) async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot docSnapshot =
+      await firestore.collection('AddPlayground').doc(ground.playground_id).get();
+
+      if (docSnapshot.exists) {
+        // Cast data to Map<String, dynamic>
+        Map<String, dynamic>? data = docSnapshot.data() as Map<String, dynamic>?;
+// for(int ii = 0; ii <playgroundbook.length ;ii++){
+
+
+        if (data != null ) {
+          print("grounddaaaaaaaaaaaaata$data");
+          return data;
+
+        }
+        else {
+          print('FCMToken field is missing for this admin.');
+        }
+      } else {
+        print('No document found with ID: $ground');
+      }
+    } catch (e) {
+      print('Error fetching document: $e');
+    }
   }
   Future<void> getPlaygroundbyname() async {
     try {
