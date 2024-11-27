@@ -183,22 +183,9 @@ class my_reservationState extends State<my_reservation>
   }
 
   void _load_cancel_book() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? phoneValue = prefs.getString('phonev');
-    print("newphoneValue${phoneValue.toString()}");
-
-    if (phoneValue != null && phoneValue.isNotEmpty) {
-      String? normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
-
-      getcancel_bookDataByPhone(normalizedPhoneNumber);
+      getcancel_bookDataByPhone( docId);
     }
-    else if (user?.phoneNumber != null) {
-      String? normalizedPhoneNumber = user?.phoneNumber !.replaceFirst(
-          '+20', '0');
 
-      getcancel_bookDataByPhone(normalizedPhoneNumber!);
-    }
-  }
 
   int wait = 0;
 
@@ -246,7 +233,7 @@ class my_reservationState extends State<my_reservation>
 
       final querySnapshot = await firestore
           .collection('cancel_book')
-          .where('user_phone', isEqualTo: userPhone)
+          .where('userid', isEqualTo:  docId)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
@@ -256,7 +243,7 @@ class my_reservationState extends State<my_reservation>
           Map<String, dynamic> data = doc.data();
           int numberOfCancel = data['numberofcancel'] ?? 0;
 
-          print('User Phone: ${data['user_phone']}');
+          print('User Phone: ${data['userid']}');
           print('Number of Cancels: $numberOfCancel');
           numbercanceled = numberOfCancel;
         });
@@ -694,13 +681,12 @@ class my_reservationState extends State<my_reservation>
     }
   }
 
-  Future<void> updateCancelCount(String userPhone, String idAdmin,
-      String idGround)
+  Future<void> updateCancelCount(String userid)
   async {
     final firestore = FirebaseFirestore.instance;
     final query = await firestore
         .collection('cancel_book')
-        .where('user_phone', isEqualTo: userPhone)
+        .where('userid', isEqualTo: docId)
 
         .get();
 
@@ -715,10 +701,9 @@ class my_reservationState extends State<my_reservation>
     } else {
 
       await firestore.collection('cancel_book').add({
-        'user_phone': userPhone,
+        'userid': docId,
         'numberofcancel': 1,
-        'playgroundId': idGround,
-        'adminid': idAdmin,
+
       });
     }
   }
@@ -1266,9 +1251,7 @@ class my_reservationState extends State<my_reservation>
 
                                     }");
                                     updateCancelCount(
-                                        playgroundbook[i].UserPhone!,
-                                        playgroundbook[i].AdminId!,
-                                        playgroundbook[i].GroundId!);
+                                        playgroundbook[i].iid!);
                                     deleteCancelByPhoneAndPlaygroundId(
                                         playgroundbook[i].userID!,
                                         playgroundbook[i].AdminId!,

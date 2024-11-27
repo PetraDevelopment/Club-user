@@ -10,7 +10,7 @@ class NavigationController extends GetxController {
   RxInt currentIndex = 3.obs;
   User? user = FirebaseAuth.instance.currentUser;
   final RxList<User1> user1 = <User1>[].obs;
-
+String docid='';
   Future<void> getUserByPhone(String phoneNumber) async {
     try {
       String normalizedPhoneNumber = phoneNumber.replaceFirst('+20', '0');
@@ -23,7 +23,7 @@ class NavigationController extends GetxController {
       if (querySnapshot.docs.isNotEmpty) {
         Map<String, dynamic> userData = querySnapshot.docs.first.data() as Map<String, dynamic>;
         User1 user = User1.fromMap(userData);
-
+        docid=querySnapshot.docs.first.id;
         user1.add(user);
         print("User data: $userData");
       } else {

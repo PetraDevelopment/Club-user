@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../Controller/NavigationController.dart';
 import '../../Home/HomePage.dart';
+import 'package:http/http.dart' as http;
 import '../../Register/SignInPage.dart';
 import '../../Register/SignUp.dart';
 import '../../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
@@ -18,6 +19,8 @@ import '../My_group/my_group.dart';
 import '../my_reservation/my_reservation.dart';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import '../notification/model/modelsendtodevice.dart';
+import '../notification/model/send_modelfirebase.dart';
 import '../notification/notification_page.dart';
 import '../profile/profile_page.dart';
 class menupage extends StatefulWidget {
@@ -29,131 +32,91 @@ class menupage extends StatefulWidget {
 class menupageState extends State<menupage> with SingleTickerProviderStateMixin {
   User? user = FirebaseAuth.instance.currentUser;
 
+  String adminoooken="";
+  String convertTo12HourFormat(DateTime dateTime) {
+    int hour = dateTime.hour;
+    String period = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12;
+    hour = hour == 0 ? 12 : hour;
+    return '$hour:${dateTime.minute.toString().padLeft(2, '0')} $period';
+  }
+
   final NavigationController navigationController = Get.put(NavigationController());
-  Future<void> deleteCancelByPhoneAndPlaygroundId(
-      String normalizedPhoneNumber,
 
-      )
-  async {
-    final firestore = FirebaseFirestore.instance;
-    bool documentDeleted = false;
-    print("phoneee$normalizedPhoneNumber");
-    try {
-      // Get all documents from the booking collection
-      QuerySnapshot querySnapshot = await firestore.collection('booking').get();
+  String apiEndpoint = 'http://192.168.0.42/notificaions/send_notification.php';
+  Future<http.Response> sendNotification(NotificationData data) async {
+    final uri = Uri.parse(apiEndpoint);
+    final response = await http.post(uri, body: data.toMap());
+    return response;
+  }
+  Future<void> sp(String ms,title,d_token) async {
+    final notificationData = NotificationData(
+        message: ms,
+        title: title,
+        deviceToken: d_token);
+    final response = await sendNotification(notificationData);
 
-      for (var doc in querySnapshot.docs) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-
-        // Retrieve user data list
-        var userDataList = data['AlluserData']?['UserData'] as List?;
-        var groundDataList = data['NeededGroundData']?['GroundData'] as List?;
-
-        // Debugging output
-        print('User  Data List: $userDataList');
-        print('Ground Data List: $groundDataList');
-        print('Document dateofBooking: ${data['dateofBooking']}');
-        print('Document selectedTimes: ${data['selectedTimes']}');
-
-        // Check if userDataList is not null
-        if (userDataList != null) {
-          bool userMatch = userDataList.any((userData) =>
-          userData['UserPhone'] == normalizedPhoneNumber
-          );
-
-          // Check if document-level dateofBooking and selectedTimes match
-
-            await firestore.collection('booking').doc(doc.id).delete();
-             documentDeleted = true;
-
-            // Navigate to HomePage after successful deletion
-
-            return; // Exit the function after deletion
-
-        }
-      }
-
-      if (!documentDeleted) {
-        print('No document found matching the specified phone, playgroundId, date, and selectedTime.');
-      }
-
-    }
-    catch (e) {
-      print('Error deleting document: $e');
+    if (response.statusCode == 200) {
+      print('Notification sent successfully!');
+    } else {
+      print('Error sending notification: ${response.statusCode}');
+      print(response.body);
     }
   }
-  Future<void> deleteUser(String phoneNumber) async {
+
+
+  Future<void> deleteUser(String useridd) async {
     try {
-      // Get the current user from FirebaseAuth
-      User? user = FirebaseAuth.instance.currentUser;
-
-      // Get the SharedPreferences instance
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? phoneValue = prefs.getString('phonev');
-      print("newphoneValue${phoneValue.toString()}");
-
-      // Decide which phone number to use (SharedPreferences or FirebaseAuth user)
-      String? normalizedPhoneNumber;
-
-      if (phoneValue != null && phoneValue.isNotEmpty) {
-        normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
-      } else if (user != null && user.phoneNumber != null) {
-        normalizedPhoneNumber = user.phoneNumber!.replaceFirst('+20', '0');
-      }
-
-      // Proceed if we have a phone number
-      if (normalizedPhoneNumber != null) {
-        deleteCancelByPhoneAndPlaygroundId(normalizedPhoneNumber);
-        // Reference to the Firestore collection
-        CollectionReference playerchat = FirebaseFirestore.instance.collection('Users');
+      if ( useridd!= null) {
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
+        QuerySnapshot querySnapshotbook = await firestore.collection('booking')
+            .where('userID', isEqualTo: docId)
+            .get();
         CollectionReference fav = FirebaseFirestore.instance.collection('Favourite');
-
         CollectionReference teamData = FirebaseFirestore.instance.collection('teamData');
         CollectionReference accepted = FirebaseFirestore.instance.collection('accepted');
+        DocumentSnapshot documentSnapshot = await firestore.collection('Users').doc(useridd).get();
+        QuerySnapshot querySnapshotfav = await fav.where('userid', isEqualTo: useridd).get();
+        QuerySnapshot querySnapshotteamData = await teamData.where('userId', isEqualTo: useridd).get();
+        QuerySnapshot querySnapshotaccepted = await accepted.where('userId', isEqualTo: useridd).get();
+        if (documentSnapshot.exists) {
 
-        // Get documents where phone number matches
-        QuerySnapshot querySnapshot = await playerchat.where('phone', isEqualTo: normalizedPhoneNumber).get();
-        QuerySnapshot querySnapshotfav = await fav.where('user_phone', isEqualTo: normalizedPhoneNumber).get();
-        QuerySnapshot querySnapshotteamData = await teamData.where('phone', isEqualTo: normalizedPhoneNumber).get();
-        QuerySnapshot querySnapshotaccepted = await accepted.where('phone_number', isEqualTo: normalizedPhoneNumber).get();
-        // Check if a document is found
-        if (querySnapshot.docs.isNotEmpty) {
-          // Iterate over the documents and delete them
-          for (var doc in querySnapshot.docs) {
-            await doc.reference.delete();
+            await documentSnapshot.reference.delete();
+            if(querySnapshotbook.docs.isNotEmpty){
+              for (var doc in querySnapshotbook.docs){
+                await doc.reference.delete();
+                print("querySnapshotbook data with user id $useridd deleted successfully.");
+
+              }
+            }
             if(querySnapshotaccepted.docs.isNotEmpty){
               for (var doc in querySnapshotaccepted.docs){
                 await doc.reference.delete();
-                print("Favorite data with phone number $normalizedPhoneNumber deleted successfully.");
+                print("Favorite data with phone number $useridd deleted successfully.");
 
               }
             }
             if(querySnapshotfav.docs.isNotEmpty){
               for (var doc in querySnapshotfav.docs){
                 await doc.reference.delete();
-                print("Favorite data with phone number $normalizedPhoneNumber deleted successfully.");
+                print("Favorite data with phone number $useridd deleted successfully.");
 
               }
             }
             if(querySnapshotteamData.docs.isNotEmpty){
               for (var doc in querySnapshotteamData.docs){
                 await doc.reference.delete();
-                print("teamData data with phone number $normalizedPhoneNumber deleted successfully.");
+                print("teamData data with phone number $useridd deleted successfully.");
 
               }
             }
 
-            print("Document with phone number $normalizedPhoneNumber deleted successfully.");
-          }
+            print("Document with phone number $useridd deleted successfully.");
 
-          // Clear SharedPreferences after deletion
           await prefs.clear();
           print("SharedPreferences cleared.");
-
-          // Sign the user out (optional)
           await FirebaseAuth.instance.signOut();
-
-          // Navigate to SignUpPage after deletion
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => SignUpPage()),
@@ -163,27 +126,6 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
         else {
           print("No matching document found in Firestore.");
         }
-        // Delete favorite data of the user
-        if (phoneValue != null && phoneValue.isNotEmpty) {
-          CollectionReference fav = FirebaseFirestore.instance.collection("Favourite");
-          QuerySnapshot querySnapshotfav = await fav.where('user_phone', isEqualTo: phoneValue).get();
-          if (querySnapshotfav.docs.isNotEmpty) {
-            for (var doc in querySnapshotfav.docs) {
-              await doc.reference.delete();
-              print("Favorite data with phone number $normalizedPhoneNumber deleted successfully.");
-            }
-          }
-        }
-        else if (user != null && user.phoneNumber != null){
-          CollectionReference fav = FirebaseFirestore.instance.collection("Favourite");
-          QuerySnapshot querySnapshotfav = await fav.where('user_phone', isEqualTo: user.phoneNumber).get();
-          if (querySnapshotfav.docs.isNotEmpty) {
-            for (var doc in querySnapshotfav.docs) {
-              await doc.reference.delete();
-              print("Favorite data with phone number $normalizedPhoneNumber deleted successfully.");
-            }
-          }
-        }
 
       } else {
         print("No valid phone number available.");
@@ -192,12 +134,11 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
       print("Error deleting user: $e");
     }
   }
-  bool _isLoading = true; // flag to control shimmer effect
+  bool _isLoading = true;
   Future<void> _loadData() async {
-    // load data here
-    await Future.delayed(Duration(seconds: 2)); // simulate data loading
+    await Future.delayed(Duration(seconds: 2));
     setState(() {
-      _isLoading = false; // set flag to false when data is loaded
+      _isLoading = false;
     });
   }
   late List<User1> user1 = [];
@@ -235,19 +176,24 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
       print("No phone number available.");
     }
   }
-
+  String docId='';
   Future<void> getUserByPhone(String phoneNumber) async {
     try {
       String normalizedPhoneNumber = phoneNumber.replaceFirst('+20', '0');
-      CollectionReference playerchat = FirebaseFirestore.instance.collection('Users');
+      CollectionReference playerchat =
+      FirebaseFirestore.instance.collection('Users');
 
-      QuerySnapshot querySnapshot = await playerchat.where('phone', isEqualTo: normalizedPhoneNumber).get();
+      QuerySnapshot querySnapshot = await playerchat
+          .where('phone', isEqualTo: normalizedPhoneNumber)
+          .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        Map<String, dynamic> userData = querySnapshot.docs.first.data() as Map<String, dynamic>;
+        var playerDoc = querySnapshot.docs.first;
+        docId = playerDoc.id;
+        print("Document ID for the Phoone number: $docId");
+        Map<String, dynamic> userData =
+        querySnapshot.docs.first.data() as Map<String, dynamic>;
         User1 user = User1.fromMap(userData);
-
-        // Update the list and UI inside setState
         setState(() {
           user1.add(user);
         });
@@ -274,24 +220,22 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
     _loadUserData();
     checkInternetConnection();
     _loadData();
-    // Now you can access the user1 list
-    // print('User data44444: ${user1[0].name}');
-    setState(() {}); // Call setState to rebuild the widget tree
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        Get.off(HomePage()); // Navigate to HomePage
+        Get.off(HomePage());
         return false;
       },
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
+          preferredSize: Size.fromHeight(70.0),
           child: Padding(
-            padding: EdgeInsets.only(top: 25.0,right: 8,left: 8), // Add padding to the top of the title
+            padding: EdgeInsets.only(top: 25.0,right: 8,left: 8),
             child: AppBar(
               backgroundColor: Colors.white,
               surfaceTintColor: Colors.transparent,
@@ -303,11 +247,10 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              centerTitle: true, // Center the title horizontally
+              centerTitle: true,
               leading: IconButton(
                 onPressed: () {
-                  Get.off(HomePage()); // Navigate to HomePage
-                  // Navigator.of(context).pop(true); // Navigate back to the previous page
+                  Get.off(HomePage());
                 },
                 icon: Icon(
                   Directionality.of(context) == TextDirection.rtl
@@ -346,16 +289,15 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                         baseColor: Colors.grey[300]!,
                         highlightColor: Colors.grey[100]!,
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start, // Aligns the content to the right
+                          mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Image.asset(
                               "assets/images/profile.png",
                               width: 35,
                               height: 35,
-                              // Adjust size as needed
                             ),
-                            SizedBox(width: 10), // Adds space between the text and the image
+                            SizedBox(width: 10),
                             _isLoading?ShimmerLoadingbig():
                             Padding(
                               padding: const EdgeInsets.all(4.0),
@@ -395,7 +337,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                           ],
                         ),
                       ):Row(
-                        mainAxisAlignment: MainAxisAlignment.start, // Aligns the content to the right
+                        mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           user1.isNotEmpty && user1[0].img!=null &&user1[0].img!=""? Padding(
@@ -403,8 +345,6 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                             child: ClipOval(
                               child: Image(image:  NetworkImage(
                                 user1[0].img!,
-
-                                // Adjust size as needed
                               ),    width: 63,
                                 height: 63,
                                 fit: BoxFit.fitWidth,),
@@ -416,10 +356,9 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                               "assets/images/profile.png",
                               width: 60,
                               height: 50,
-                              // Adjust size as needed
                             ),
                           ),
-                          SizedBox(width: 10), // Adds space between the text and the image
+                          SizedBox(width: 10),
 
                           Padding(
                             padding: const EdgeInsets.all(4.0),
@@ -464,7 +403,6 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                         "assets/images/profile.png",
                         width: 60,
                         height: 50,
-                        // Adjust size as needed
                       ),
                     ),
                   ],
@@ -525,10 +463,8 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                       right: 22.0, left: 22, top: 0, bottom: 0),
                   child: Divider(
                     color: Colors.grey.shade300,
-
-                    // Adjust the color of the line as needed
                     thickness:
-                    1, // Adjust the thickness of the line as needed
+                    1,
                   ),
                 ),
 
@@ -542,8 +478,8 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                     );
                   },
                   child: Center(
-                    child: Container(  // Wrap entire area with Container
-                      color: Colors.transparent, // Add a background color to make the entire container tappable
+                    child: Container(
+                      color: Colors.transparent,
                       padding: const EdgeInsets.only(right: 22.0, left: 22, top: 5, bottom: 5),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -586,9 +522,8 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                   child: Divider(
                     color: Colors.grey.shade300,
 
-                    // Adjust the color of the line as needed
                     thickness:
-                    1, // Adjust the thickness of the line as needed
+                    1,
                   ),
                 ),
 
@@ -602,8 +537,8 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                     );
                   },
                   child: Center(
-                    child: Container(  // Wrap entire area with Container
-                      color: Colors.transparent, // Add a background color to make the entire container tappable
+                    child: Container(
+                      color: Colors.transparent,
                       padding: const EdgeInsets.only(right: 22.0, left: 22, top: 5, bottom: 5),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -650,9 +585,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                   ),
                   child: Divider(
                     color: Colors.grey.shade300,
-
-                    // Adjust the color of the line as needed
-                    thickness: 1, // Adjust the thickness of the line as needed
+                    thickness: 1,
                   ),
                 ),
 
@@ -665,8 +598,8 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                       ),
                     );
                   },
-                  child: Container(  // Wrap entire area with Container
-                    color: Colors.transparent, // Add a background color to make the entire container tappable
+                  child: Container(
+                    color: Colors.transparent,
                     padding: const EdgeInsets.only(right: 22.0, left: 22, top: 5, bottom: 5),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -707,10 +640,8 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                       right: 22.0, left: 22, top: 0, bottom: 0),
                   child: Divider(
                     color: Colors.grey.shade300,
-
-                    // Adjust the color of the line as needed
                     thickness:
-                    1, // Adjust the thickness of the line as needed
+                    1,
                   ),
                 ),
 
@@ -723,8 +654,8 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                       ),
                     );
                   },
-                  child: Container(  // Wrap entire area with Container
-                    color: Colors.transparent, // Add a background color to make the entire container tappable
+                  child: Container(
+                    color: Colors.transparent,
                     padding: const EdgeInsets.only(right: 22.0, left: 22, top: 5, bottom: 5),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -732,7 +663,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            // Image.asset('assets/images/active.png', height: 22, width: 22, color: Color(0xFF064821)),
+
                             Icon(Icons.favorite_border, color: Color(0xFF064821), size: 22),
 
                             Padding(
@@ -768,10 +699,8 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                       right: 22.0, left: 22, top: 0, bottom: 0),
                   child: Divider(
                     color: Colors.grey.shade300,
-
-                    // Adjust the color of the line as needed
                     thickness:
-                    1, // Adjust the thickness of the line as needed
+                    1,
                   ),
                 ),
 
@@ -828,12 +757,10 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                   padding: const EdgeInsets.only(
                       right: 22.0, left: 22, top: 0, bottom: 0),
                   child: Divider(
-                    // color: Color(0xFF091C3F14),
-                    color: Colors.grey.shade300,
 
-                    // Adjust the color of the line as needed
+                    color: Colors.grey.shade300,
                     thickness:
-                    1, // Adjust the thickness of the line as needed
+                    1,
                   ),
                 ),
 
@@ -976,12 +903,9 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                   padding: const EdgeInsets.only(
                       right: 22.0, left: 22, top: 0, bottom: 0),
                   child: Divider(
-                    // color: Color(0xFF091C3F14),
                     color: Colors.grey.shade300,
-
-                    // Adjust the color of the line as needed
                     thickness:
-                    1, // Adjust the thickness of the line as needed
+                    1,
                   ),
                 ),
 
@@ -1020,13 +944,9 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                                   ElevatedButton(
                                     onPressed: () async {
 
-                                      if ( user1.isNotEmpty && user1[0].phoneNumber!.isNotEmpty) {
-                                        await deleteUser(user1[0].phoneNumber.toString());
-                                      }
-                                      else {
-                                        print("No phone number found for the user.");
-                                        // You could handle cases where the phone number or user is null here.
-                                      }
+                                      await deleteUser(docId);
+
+
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor:
@@ -1093,8 +1013,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
 
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              // Image.asset('assets/images/logout.png', height: 22, width: 22, color:Color(0xFF064821)),
-                              Icon(Icons.delete_outline, color: Color(0xFFB3261E), size: 25),
+                             Icon(Icons.delete_outline, color: Color(0xFFB3261E), size: 25),
 
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
@@ -1125,7 +1044,6 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
         bottomNavigationBar: CurvedNavigationBar(
           height: 60,
           index: 0,
-          // Use the dynamic index
           items: [
             Icon(Icons.more_horiz, color: Colors.white, size: 25),
 
@@ -1143,19 +1061,15 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
           animationDuration: Duration(milliseconds: 600),
           onTap: (index) {
             navigationController
-                .updateIndex(index); // Update the index dynamically
-            // Handle navigation based on index
+                .updateIndex(index);
             switch (index) {
               case 0:
-              // Get.to(() => menupage())?.then((_) {
-              //   navigationController
-              //       .updateIndex(0); // Update index when navigating back
-              // });
+
                 break;
               case 1:
                 Get.to(() => my_reservation())?.then((_) {
                   navigationController
-                      .updateIndex(1); // Update index when navigating back
+                      .updateIndex(1);
                 });
 
                 break;
@@ -1180,13 +1094,11 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
     int currentIndex = NavigationController().currentIndex.value;
 
     if (currentIndex == 3) {
-      // If already on Home page, simply pop the route
       return true;
     } else {
-      // Update index and navigate back correctly
-      NavigationController().updateIndex(3); // Set index to Home
-      Get.off(HomePage()); // Navigate to HomePage manually
-      return false; // Prevent default pop behavior
+      NavigationController().updateIndex(3);
+      Get.off(HomePage());
+      return false;
     }
   }
   Widget _buildNoInternetUI() {
@@ -1204,7 +1116,6 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
               height: 200,
               child: Image.asset(
                 'assets/images/wifirr.png',
-                // Adjust the height as needed
               ),
             ),
           ),

@@ -55,22 +55,11 @@ class FavouritePageState extends State<FavouritePage> {
       await firestore.collection('AddPlayground').doc(ground.playground_id).get();
 
       if (docSnapshot.exists) {
-        // Cast data to Map<String, dynamic>
         Map<String, dynamic>? data = docSnapshot.data() as Map<String, dynamic>?;
-// for(int ii = 0; ii <playgroundbook.length ;ii++){
-
-
         if (data != null ) {
           print("grounddaaaaaaaaaaaaatafav$data");
           return data;
-// userid.UserName= data['name'];
-// userid.UserPhone = data['phone'];
-// userid.UserImg = data['profile_image'];
-//
-// print("playgroundbook[0].UserName ${userid.UserName }");
-// print("playgroundbook[0].UserPhonee${userid.UserPhone }");
-// print("playgroundbook[0].UserImg ${userid.UserImg }");
-//           print('Data for this daaata: $data');
+
         }
         else {
           print('FCMToken field is missing for this admin.');
@@ -103,7 +92,7 @@ class FavouritePageState extends State<FavouritePage> {
             print('shared phooone ${Phone011.toString()}');
             if(adminSnapshot.docs.isNotEmpty){
               var adminDoc = adminSnapshot.docs.first;
-              String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+              String docId = adminDoc.id;
               print("Matched user docId: $docId");
               useridddd=docId;
               Map<String, dynamic>? user =   await fetchfavofgrounddatabyid(favourite);
@@ -112,13 +101,12 @@ class FavouritePageState extends State<FavouritePage> {
               print("image of rate ${user['img'][0]}");
               if (favourite.userid ==useridddd) {
                 if(favlist.contains(playgroundid)){
-                  print("this id already added to favourite list"); // Print the playground
+                  print("this id already added to favourite list");
                 }else{
                   favlist.add(favourite);
-                  print("Fav Id : ${document.id}"); // Print the playground ID
+                  print("Fav Id : ${document.id}");
                   print('Fav list: $favlist');
-                  print("allplaygrounds[i]fff : ${favourite.playground_name}"); // Print the playground
-                  // Store the document ID in the AddPlayGroundModel object
+                  print("allplaygrounds[i]fff : ${favourite.playground_name}");
                   favourite.id = document.id;
                   print("favouriteid${favourite.id}");
                   print("favourite${favourite.playground_id}");
@@ -133,12 +121,11 @@ class FavouritePageState extends State<FavouritePage> {
             print("user${user?.phoneNumber}");
             CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
             String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
-// Query the PlayersChat collection to find the document where phone number matches
             QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo:normalizedPhoneNumber).get();
             print('shared phooone ${normalizedPhoneNumber}');
             if(adminSnapshot.docs.isNotEmpty){
               var adminDoc = adminSnapshot.docs.first;
-              String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+              String docId = adminDoc.id;
               print("Matched user docId: $docId");
               useridddd=docId;
               Map<String, dynamic>? user =   await fetchfavofgrounddatabyid(favourite);
@@ -147,13 +134,12 @@ class FavouritePageState extends State<FavouritePage> {
               print("image of rate ${user['img'][0]}");
               if (favourite.userid ==useridddd) {
                 if(favlist.contains(playgroundid)){
-                  print("this id already added to favourite list"); // Print the playground
+                  print("this id already added to favourite list");
                 }else{
                   favlist.add(favourite);
-                  print("Fav Id : ${document.id}"); // Print the playground ID
+                  print("Fav Id : ${document.id}");
                   print('Fav list: $favlist');
-                  print("allplaygrounds[i] : ${favourite}"); // Print the playground
-                  // Store the document ID in the AddPlayGroundModel object
+                  print("allplaygrounds[i] : ${favourite}");
                   favourite.id = document.id;
                   print("favouriteid${favourite.id}");
                   print("favourite${favourite.playground_id}");
@@ -166,7 +152,7 @@ class FavouritePageState extends State<FavouritePage> {
           }
 
         }
-        print("All Fav list: $favlist"); // Print all playgrounds
+        print("All Fav list: $favlist");
       }
     } catch (e) {
       print("Error getting playground: $e");
@@ -189,11 +175,7 @@ class FavouritePageState extends State<FavouritePage> {
       await firestore.collection('AddPlayground').doc(ground.playground_id).get();
 
       if (docSnapshot.exists) {
-        // Cast data to Map<String, dynamic>
         Map<String, dynamic>? data = docSnapshot.data() as Map<String, dynamic>?;
-// for(int ii = 0; ii <playgroundbook.length ;ii++){
-
-
         if (data != null ) {
           print("grounddaaaaaaaaaaaaata$data");
           return data;
@@ -222,17 +204,13 @@ class FavouritePageState extends State<FavouritePage> {
           AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
 
           allplaygrounds.add(user);
-          print("PlayGroung Id : ${document.id}"); // Print the latest playground
+          print("PlayGroung Id : ${document.id}");
 
-          print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
+          print("allplaygrounds[i] : ${allplaygrounds.last}");
 
-          // Store the document ID in the AddPlayGroundModel object
           user.id = document.id;
           getfavdata(user.id!);
 
-          // for(int x=0;x<allplaygrounds.length;x++){
-          //   // print("objectfavvvvvvvvvv${allplaygrounds[x].id!}");
-          // }
         }
       }
     } catch (e) {
@@ -247,9 +225,9 @@ class FavouritePageState extends State<FavouritePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
+        preferredSize: Size.fromHeight(70.0),
         child: Padding(
-          padding: EdgeInsets.only(top: 25.0,right: 8,left: 8), // Add padding to the top of the title
+          padding: EdgeInsets.only(top: 25.0,right: 8,left: 8),
           child: AppBar(
             backgroundColor: Colors.white,
             surfaceTintColor: Colors.transparent,
@@ -263,15 +241,14 @@ class FavouritePageState extends State<FavouritePage> {
                 fontWeight: FontWeight.w700,
                 height: 29.98 / 16,
                 letterSpacing: 0.04,
-                color:  Color(0xFF334154), // Add this line
+                color:  Color(0xFF334154),
               ),
             ),
-            centerTitle: true, // Center the title horizontally
+            centerTitle: true,
             leading: IconButton(
               onPressed: () {
-                // Get.back();
                 Get.back();
-                // Navigator.of(context).pop(true); // Navigate back to the previous page
+
               },
               icon: Icon(
                 Directionality.of(context) == TextDirection.rtl
@@ -294,7 +271,6 @@ class FavouritePageState extends State<FavouritePage> {
       bottomNavigationBar: CurvedNavigationBar(
         height: 60,
         index: 3,
-        // Use the dynamic index
         items: [
           Icon(Icons.more_horiz, color: Colors.white, size: 25),
 
@@ -312,19 +288,18 @@ class FavouritePageState extends State<FavouritePage> {
         animationDuration: Duration(milliseconds: 600),
         onTap: (index) {
           navigationController
-              .updateIndex(index); // Update the index dynamically
-          // Handle navigation based on index
+              .updateIndex(index);
           switch (index) {
             case 0:
               Get.to(() => menupage())?.then((_) {
                 navigationController
-                    .updateIndex(0); // Update index when navigating back
+                    .updateIndex(0);
               });
               break;
             case 1:
               Get.to(() => my_reservation())?.then((_) {
                 navigationController
-                    .updateIndex(1); // Update index when navigating back
+                    .updateIndex(1);
               });
 
               break;
@@ -334,9 +309,6 @@ class FavouritePageState extends State<FavouritePage> {
               });
               break;
             case 3:
-            // Get.to(() => HomePage())?.then((_) {
-            //   navigationController.updateIndex(3);
-            // });
               break;
           }
         },
@@ -367,29 +339,27 @@ class FavouritePageState extends State<FavouritePage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20.0),
                         ),
-                        elevation: 4, // Adjust elevation to control the shadow
-                        // margin: EdgeInsets.all(8), // Adjust margin as needed
+                        elevation: 4,
                         child: Stack(
                           children: [
                             Container(
-                              // height: 163,
-                              // width: 274,
+
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20.0),
                                 shape: BoxShape.rectangle,
                               ),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
+                                borderRadius: BorderRadius.circular(20.0),
                                 child:Image.network(
                                   favlist[i].img!,
                                   height: 163,
                                   width: MediaQuery.of(context).size.width,
-                                  fit: BoxFit.cover, // Ensure image covers the container
+                                  fit: BoxFit.cover,
                                 ),
                               ),
                             ),
                             Positioned(
-                              top: 6, // Match the top position of the text
+                              top: 6,
                               right: 0,
                               left: 0,
                               bottom: 0,
@@ -397,9 +367,9 @@ class FavouritePageState extends State<FavouritePage> {
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
-                                      Colors.transparent, // Start with transparent
-                                      Color(0x1F8C4B).withOpacity(0.0), // Start with #1F8C4B at 0% opacity (fully transparent)
-                                      Color(0x1F8C4B).withOpacity(1.0), // End with #1F8C4B at 100% opacity (fully opaque)
+                                      Colors.transparent,
+                                      Color(0x1F8C4B).withOpacity(0.0),
+                                      Color(0x1F8C4B).withOpacity(1.0),
                                     ],
                                     begin: Alignment.topCenter,
                                     end: Alignment.bottomCenter,
@@ -412,7 +382,7 @@ class FavouritePageState extends State<FavouritePage> {
                               ),
                             ),
                             Positioned(
-                              top: 113, // Adjust the top position
+                              top: 113,
                               right: 40,
                               left: 55,
                               child: Text(
@@ -423,7 +393,7 @@ class FavouritePageState extends State<FavouritePage> {
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white,
                                 ),
-                                textAlign: TextAlign.center, // Center text alignment
+                                textAlign: TextAlign.center,
                               ),
                             ),
                           ],
@@ -477,7 +447,6 @@ class FavouritePageState extends State<FavouritePage> {
     );
   }
   Widget _buildNoInternetUI() {
-    // Your UI design when there's no internet connection
     return Container(
       color: Colors.white,
       child: Column(
@@ -491,7 +460,6 @@ class FavouritePageState extends State<FavouritePage> {
               height: 200,
               child: Image.asset(
                 'assets/images/wifirr.png',
-                // Adjust the height as needed
               ),
             ),
           ),

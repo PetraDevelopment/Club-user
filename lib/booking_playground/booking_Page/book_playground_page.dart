@@ -48,7 +48,7 @@ class book_playground_pageState extends State<book_playground_page>
   String date2 = '';
 
   List<DateTime> datees = [];
-  int _currentIndex = 0; // Add this state variable to track the current page
+  int _currentIndex = 0;
 
   late List<AddbookingModel> playgroundbook = [];
   List<AddbookingModel> matchedPlaygrounds = [];
@@ -76,7 +76,6 @@ class book_playground_pageState extends State<book_playground_page>
         playgroundbook[index].dateofBooking = date;
       }
     }
-//loop in date to convert every en number to ar
 
     date = date.replaceAllMapped(RegExp(r'\d'), (match) {
       const englishToArabicNumbers = [
@@ -122,11 +121,8 @@ class book_playground_pageState extends State<book_playground_page>
       if (date2.contains(months[k])) {
         date2 = date2.replaceAll(months[k], '-${k + 1}-');
         print("updated matchedPlaygrounds done with ${date2}");
-        // matchedPlaygrounds[index].dateofBooking=date2;
-// print("shokaaaa matchedPlaygrounds[index].dateofBooking${ matchedPlaygrounds[index].dateofBooking!}");
-      }
+       }
     }
-//loop in date to convert every en number to ar
 
     date2 = date2.replaceAllMapped(RegExp(r'\d'), (match) {
       const englishToArabicNumbers = [
@@ -165,7 +161,6 @@ class book_playground_pageState extends State<book_playground_page>
       '٩'
     ];
 
-    // Convert the number to a string for processing
     String numberString = number.toString();
 
     String convertedNumber =
@@ -174,7 +169,7 @@ class book_playground_pageState extends State<book_playground_page>
     });
     print("kkkkkkknum$convertedNumber");
     print("number equal $convertedNumber");
-    return convertedNumber; // Return the converted number
+    return convertedNumber;
   }
 
   late DateTime Day1;
@@ -198,19 +193,17 @@ class book_playground_pageState extends State<book_playground_page>
   late AnimationController _animationController;
 
   String normalizeText(String text) {
-    return text.trim(); // Trims any leading or trailing spaces
+    return text.trim();
   }
 
   String getTimeRange(String startTime) {
-    DateTime start = DateFormat.jm().parse(startTime); // Parse the start time
-    DateTime end = start.add(Duration(hours: 1)); // Add 1 hour for the end time
-
-    // Format the time in Arabic but numbers in English
+    DateTime start = DateFormat.jm().parse(startTime);
+    DateTime end = start.add(Duration(hours: 1));
     String formattedStartTime = DateFormat('h:mm a', 'ar')
         .format(start)
         .replaceAllMapped(RegExp(r'\d+'), (match) {
       return NumberFormat('en')
-          .format(int.parse(match.group(0)!)); // Ensure numbers are in English
+          .format(int.parse(match.group(0)!));
     });
 
     String formattedEndTime = DateFormat('h:mm a', 'ar')
@@ -231,21 +224,12 @@ class book_playground_pageState extends State<book_playground_page>
           await firestore.collection('Users').doc(userid.userID).get();
 
       if (docSnapshot.exists) {
-        // Cast data to Map<String, dynamic>
         Map<String, dynamic>? data =
             docSnapshot.data() as Map<String, dynamic>?;
-// for(int ii = 0; ii <playgroundbook.length ;ii++){
 
         if (data != null) {
           return data;
-// userid.UserName= data['name'];
-// userid.UserPhone = data['phone'];
-// userid.UserImg = data['profile_image'];
-//
-// print("playgroundbook[0].UserName ${userid.UserName }");
-// print("playgroundbook[0].UserPhonee${userid.UserPhone }");
-// print("playgroundbook[0].UserImg ${userid.UserImg }");
-//           print('Data for this daaata: $data');
+
         } else {
           print('FCMToken field is missing for this admin.');
         }
@@ -266,7 +250,6 @@ class book_playground_pageState extends State<book_playground_page>
           .get();
 
       if (docSnapshot.exists) {
-        // Cast data to Map<String, dynamic>
         Map<String, dynamic>? data =
             docSnapshot.data() as Map<String, dynamic>?;
 
@@ -297,8 +280,6 @@ class book_playground_pageState extends State<book_playground_page>
         String normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
         CollectionReference uuuserData =
             FirebaseFirestore.instance.collection('Users');
-
-// Query the PlayersChat collection to find the document where phone number matches
         QuerySnapshot adminSnapshot = await uuuserData
             .where('phone', isEqualTo: normalizedPhoneNumber)
             .get();
@@ -306,7 +287,7 @@ class book_playground_pageState extends State<book_playground_page>
         if (adminSnapshot.docs.isNotEmpty) {
           var adminDoc = adminSnapshot.docs.first;
           String docId = adminDoc
-              .id; // Get the document ID (this will be the AdminId for playgrounds)
+              .id;
           print("Matched user docId: $docId");
           useridddd = docId;
         }
@@ -316,7 +297,7 @@ class book_playground_pageState extends State<book_playground_page>
             .get();
 
         if (bookingSnapshot.docs.isNotEmpty) {
-          playgroundbook = []; // Initialize as an empty list
+          playgroundbook = [];
           for (var document in bookingSnapshot.docs) {
             Map<String, dynamic> userData =
                 document.data() as Map<String, dynamic>;
@@ -331,18 +312,13 @@ class book_playground_pageState extends State<book_playground_page>
             bookingData.groundName = Grounddata!['groundName'];
             bookingData.groundphone = Grounddata['phone'];
             bookingData.groundImage = Grounddata['img'][0];
-            // Store the document ID in the model
-            playgroundbook.add(bookingData); // Add playground to the list
-
-            // print("Stored document ID in model: ${user.id}");
+            playgroundbook.add(bookingData);
           }
           setState(() {});
         }
 
         if (playgroundbook.isNotEmpty) {
-          // Print and access specific fields for each booking
           for (int i = 0; i < playgroundbook.length; i++) {
-            // formatDate(playgroundbook[i].dateofBooking!);
 
             print('AdminId: ${playgroundbook[i].AdminId}');
             print('Day_of_booking: ${playgroundbook[i].Day_of_booking}');
@@ -358,8 +334,6 @@ class book_playground_pageState extends State<book_playground_page>
             user?.phoneNumber!.replaceFirst('+20', '0');
         CollectionReference uuuserData =
             FirebaseFirestore.instance.collection('Users');
-
-// Query the PlayersChat collection to find the document where phone number matches
         QuerySnapshot adminSnapshot = await uuuserData
             .where('phone', isEqualTo: normalizedPhoneNumber)
             .get();
@@ -367,7 +341,7 @@ class book_playground_pageState extends State<book_playground_page>
         if (adminSnapshot.docs.isNotEmpty) {
           var adminDoc = adminSnapshot.docs.first;
           String docId = adminDoc
-              .id; // Get the document ID (this will be the AdminId for playgrounds)
+              .id;
           print("Matched user docId: $docId");
           useridddd = docId;
         }
@@ -377,7 +351,7 @@ class book_playground_pageState extends State<book_playground_page>
             .get();
 
         if (bookingSnapshot.docs.isNotEmpty) {
-          playgroundbook = []; // Initialize as an empty list
+          playgroundbook = [];
           for (var document in bookingSnapshot.docs) {
             Map<String, dynamic> userData =
                 document.data() as Map<String, dynamic>;
@@ -392,10 +366,7 @@ class book_playground_pageState extends State<book_playground_page>
             bookingData.groundName = Grounddata!['groundName'];
             bookingData.groundphone = Grounddata['phone'];
             bookingData.groundImage = Grounddata['img'][0];
-            // Store the document ID in the model
-            playgroundbook.add(bookingData); // Add playground to the list
-
-            // print("Stored document ID in model: ${user.id}");
+            playgroundbook.add(bookingData);
           }
           setState(() {});
         }
@@ -416,7 +387,6 @@ class book_playground_pageState extends State<book_playground_page>
               });
             }
             print('AdminId: ${playgroundbook[i].AdminId}');
-            // formatDate(playgroundbook[i].dateofBooking!);
             print('Day_of_booking: ${playgroundbook[i].Day_of_booking}');
             print('Rent_the_ball: ${playgroundbook[i].rentTheBall}');
             print('phoneshoka: ${playgroundbook[i].UserPhone!}');
@@ -446,21 +416,32 @@ class book_playground_pageState extends State<book_playground_page>
   String sellll = '';
 
   String groundIiid2 = '';
+  Future<void> updateCancelCount(String userid)
+  async {
+    final firestore = FirebaseFirestore.instance;
+    final query = await firestore
+        .collection('cancel_book')
+        .where('userid', isEqualTo: useridddd)
 
-  // Future<void> _handleSlotTap(String slot) async {
-  //   setState(() {
-  //     isLoading = true; // Start loading
-  //   });
-  //
-  //   // Simulate a delay for processing the selection
-  //   await Future.delayed(Duration(seconds: 2));
-  //
-  //   // Here you can perform your reservation logic
-  //   setState(() {
-  //     isLoading = false; // Stop loading
-  //   });
-  // }
+        .get();
 
+    if (query.docs.isNotEmpty) {
+      final doc = query.docs.first;
+      final currentCount = doc['numberofcancel'] ?? 0;
+      await firestore
+          .collection('cancel_book')
+          .doc(doc.id)
+          .update({'numberofcancel': currentCount + 1});
+      print("dooooc$doc");
+    } else {
+
+      await firestore.collection('cancel_book').add({
+        'userid': useridddd,
+        'numberofcancel': 1,
+
+      });
+    }
+  }
   int cnt = 0;
   List<num> selectedCosts = [];
   List<num> selectedCostsperhour = [];
@@ -472,7 +453,6 @@ class book_playground_pageState extends State<book_playground_page>
           await firestore.collection('PlayersChat').doc(adminId).get();
 
       if (docSnapshot.exists) {
-        // Cast data to Map<String, dynamic>
         Map<String, dynamic>? data =
             docSnapshot.data() as Map<String, dynamic>?;
 
@@ -508,8 +488,6 @@ class book_playground_pageState extends State<book_playground_page>
 
             String timeofAddedPlayground = bookType ?? '';
             print("timeofAddedPlayground: $timeofAddedPlayground");
-
-            // Splitting time into startTime and endTime based on '-'
             List<String> times = timeofAddedPlayground.split(' - ');
             if (times.length == 2) {
               String startTime = times[0];
@@ -517,17 +495,10 @@ class book_playground_pageState extends State<book_playground_page>
 
               print("Start Time: $startTime");
               print("End Time: $endTime");
-              String adminId = playgroundAllData[0]
-                  .adminId!; // Fetch AdminId directly from userData
               groundPhoneee = playgroundAllData[0].phoneCommunication!;
               groundNamee = playgroundAllData[0].playgroundName!;
-
-              // You can use these times to update the UI or for other logic
-              timeSlots.add(startTime); // Add start time to the list
-              timeSlots.add(endTime); // Add end time to the list
-              num ttt = 0;
-              // You could directly update your UI here or save this data for later
-              // For example, show the start and end time in the UI
+              timeSlots.add(startTime);
+              timeSlots.add(endTime);
               for (var bookType in playgroundAllData[0].bookTypes!) {
                 print("hhhselectedDayName$selectedDayName");
                 if (bookType.day == selectedDayName) {
@@ -540,9 +511,9 @@ class book_playground_pageState extends State<book_playground_page>
                 }
               }
               setState(() {
-                // Update any UI components with the start and end times
+
                 startTimeStr =
-                    startTime; // Assuming you have a state variable to store this
+                    startTime;
                 endTimeStr = endTime;
               });
 
@@ -550,17 +521,11 @@ class book_playground_pageState extends State<book_playground_page>
             } else {
               print("Invalid time format: $timeofAddedPlayground");
             }
-            // }
-// الوقت  هو سبب المشكله
             print(
-                "PlayGroungboook Iiid : ${document.id}"); // Print the latest playground
+                "PlayGroungboook Iiid : ${document.id}");
             groundIiid = document.id;
             print("Docummmmmmbook$groundIiid");
-            // Normalize playType before comparing
-            String playType = user.playType!.trim();
           }
-
-          // Store the document ID in the AddPlayGroundModel object
           user.id = document.id;
         }
       }
@@ -585,11 +550,9 @@ class book_playground_pageState extends State<book_playground_page>
             matchedplaygroundAllData.add(user);
 
             String? bookType = matchedplaygroundAllData[0].bookTypes![0].time;
-            // Assuming 'time' is the field you want to split into start and end time
+
             String timeofAddedPlayground = bookType ?? '';
             print("timeofAddedPlayground: $timeofAddedPlayground");
-
-            // Splitting time into startTime and endTime based on '-'
             List<String> times = timeofAddedPlayground.split(' - ');
             if (times.length == 2) {
               String startTime = times[0];
@@ -597,38 +560,28 @@ class book_playground_pageState extends State<book_playground_page>
 
               print("Start Time: $startTime");
               print("End Time: $endTime");
-              String adminId = matchedplaygroundAllData[0]
-                  .adminId!; // Fetch AdminId directly from userData
 
-              // You can use these times to update the UI or for other logic
-              timeSlots.add(startTime); // Add start time to the list
-              timeSlots.add(endTime); // Add end time to the list
+              timeSlots.add(startTime);
+              timeSlots.add(endTime);
 
-              // You could directly update your UI here or save this data for later
-              // For example, show the start and end time in the UI
               setState(() {
-                // Update any UI components with the start and end times
                 startTimeStr =
-                    startTime; // Assuming you have a state variable to store this
+                    startTime;
                 endTimeStr =
-                    endTime; // Assuming you have a state variable to store this
+                    endTime;
               });
 
               print("Time slots: ${timeSlots}");
             } else {
               print("Invalid time format: $timeofAddedPlayground");
             }
-            // }
-// الوقت  هو سبب المشكله
+
             print(
-                "PlayGroungboook Iiid : ${document.id}"); // Print the latest playground
+                "PlayGroungboook Iiid : ${document.id}");
             groundIiid2 = document.id;
             print("Docummmmmmbook$groundIiid2");
-            // Normalize playType before comparing
-            String playType = user.playType!.trim();
-          }
 
-          // Store the document ID in the AddPlayGroundModel object
+          }
           user.id = document.id;
         }
       }
@@ -652,41 +605,24 @@ class book_playground_pageState extends State<book_playground_page>
     List<AddbookingModel> bookings = playgrounddata.docs.map((doc) {
       return AddbookingModel.fromMap(doc.data() as Map<String, dynamic>);
     }).toList();
-
-    // Initialize the map to store selected times per day
-
-    // Loop through each booking and add its selected times to the correct day
     for (var booking in bookings) {
       String day =
-          booking.Day_of_booking ?? ''; // Replace with correct day field
+          booking.Day_of_booking ?? '';
       Set<String> selectedTimes = booking.selectedTimes?.toSet() ?? {};
-
-      // Ensure the times are in a standard format (e.g., "9:00 PM", "5:00 PM")
       Set<String> formattedTimes = selectedTimes.map((time) {
-        // Here you can format time if necessary, for example using DateFormat or custom formatting
         return time
-            .trim(); // For simplicity, just trimming extra spaces in this example
+            .trim();
       }).toSet();
-
-      // If the day already exists in the map, add the times to the set
       if (fetchedSelectedTimesPerDay.containsKey(day)) {
         fetchedSelectedTimesPerDay[day]!.addAll(formattedTimes);
         print("fetchbooking${formattedTimes}");
       } else {
-        // Otherwise, create a new entry for that day
         fetchedSelectedTimesPerDay[day] = formattedTimes;
         print("fetchbooking${formattedTimes}");
       }
     }
-
-    // Optionally, you can print out the fetched data to verify
     print("Fetched times per day: $fetchedSelectedTimesPerDay");
-
-    // Update the state with the fetched data
     setState(() {
-      // Update state variables if needed
-      // alreadySelectedTimesPerDay = fetchedSelectedTimesPerDay;
-      // print("alllllldata ${playgroundbook.length}");
     });
   }
 
@@ -702,22 +638,12 @@ class book_playground_pageState extends State<book_playground_page>
           await firestore.collection('PlayersChat').doc(admin).get();
 
       if (docSnapshot.exists) {
-        // Cast data to Map<String, dynamic>
         Map<String, dynamic>? data =
             docSnapshot.data() as Map<String, dynamic>?;
-// for(int ii = 0; ii <playgroundbook.length ;ii++){
 
         if (data != null) {
           print("PlayersChat data is $data");
           return data;
-// userid.UserName= data['name'];
-// userid.UserPhone = data['phone'];
-// userid.UserImg = data['profile_image'];
-//
-// print("playgroundbook[0].UserName ${userid.UserName }");
-// print("playgroundbook[0].UserPhonee${userid.UserPhone }");
-// print("playgroundbook[0].UserImg ${userid.UserImg }");
-//           print('Data for this daaata: $data');
         } else {
           print('FCMToken field is missing for this admin.');
         }
@@ -733,13 +659,13 @@ class book_playground_pageState extends State<book_playground_page>
     int hour = dateTime.hour;
     String period = hour >= 12 ? 'PM' : 'AM';
     hour = hour % 12;
-    hour = hour == 0 ? 12 : hour; // Convert hour '0' to '12'
+    hour = hour == 0 ? 12 : hour;
     return '$hour:${dateTime.minute.toString().padLeft(2, '0')} $period';
   }
 
   Future<void> _sendnotificationtofirebase(int type,String Groundid,day,booktime) async {
     setState(() {
-      _isLoading = true; // Set loading to true when starting the operation
+      _isLoading = true;
     });
 
     DateTime now = DateTime.now();
@@ -769,8 +695,6 @@ class book_playground_pageState extends State<book_playground_page>
       bookingtime: booktime.toString(),
       notificationType: type,
     );
-
-    // Add booking to Firestore
     await FirebaseFirestore.instance
         .collection('notification')
         .add(notificationModel.toMap());
@@ -778,34 +702,27 @@ class book_playground_pageState extends State<book_playground_page>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'تم ارسال البيانات بنجاح', // "Data registered successfully"
+          'تم ارسال البيانات بنجاح',
           textAlign: TextAlign.center,
         ),
         backgroundColor: Color(0xFF1F8C4B),
       ),
     );
 
-    // Clear inputs after successful booking
-
     setState(() {
-      _isLoading = false; // Set loading to false when operation is complete
+      _isLoading = false;
     });
   }
 
   Future<void> _sendData(BuildContext context, bool x) async {
     setState(() {
-      _isLoading = true; // Set loading to true when starting the operation
+      _isLoading = true;
     });
     final name = user1[0].name!;
     final phooneNumber = user1[0].phoneNumber!;
-    num cooooooooooost = playgroundAllData[0].bookTypes![0].cost!;
-    final selectedDay = selectedDayName; // The day the user selects for booking
 
-    // Step 1: Initialize total cost
+    final selectedDay = selectedDayName;
     num totalCost = 0;
-
-    // Step 2: Calculate the total cost based on the selected day and time
-    // Loop through each selected time and match with the costs in playgroundAllData
     for (var selectedTime in selectedTimes) {
       print("shokddddddddda${selectedTime}");
       print("shokddddddddda${selectedDay}");
@@ -827,18 +744,15 @@ class book_playground_pageState extends State<book_playground_page>
     print("Total cost test: $totalCost");
 
     print("Checking phone number: $phooneNumber");
-
-    // Check for empty fields
     if (name.isNotEmpty &&
         phooneNumber.isNotEmpty &&
         selectedTimes.isNotEmpty) {
       print("Selected date: $storeDate");
-      // Query the 'booking' collection for documents that match date, day, and any overlapping times
-      final bookingQuery = await FirebaseFirestore.instance
+       final bookingQuery = await FirebaseFirestore.instance
           .collection('booking')
           .where('GroundId', isEqualTo: widget.IdData)
-          .where('dateofBooking', isEqualTo: storeDate) // Check date
-          .where('Day_of_booking', isEqualTo: selectedDayName) // Check day
+          .where('dateofBooking', isEqualTo: storeDate)
+          .where('Day_of_booking', isEqualTo: selectedDayName)
           .where('selectedTimes', arrayContainsAny: selectedTimes)
           .get();
 
@@ -846,7 +760,7 @@ class book_playground_pageState extends State<book_playground_page>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'هذا الحجز موجود بالفعل', // "This booking already exists"
+              'هذا الحجز موجود بالفعل',
               textAlign: TextAlign.center,
             ),
             backgroundColor: Colors.red.shade800,
@@ -867,8 +781,6 @@ class book_playground_pageState extends State<book_playground_page>
             AdminId: playgroundAllData[0].adminId,
             acceptorcancle: false,
             userID: useridd);
-
-        // Add booking to Firestore
         await FirebaseFirestore.instance
             .collection('booking')
             .add(bookingModel.toMap());
@@ -881,33 +793,29 @@ class book_playground_pageState extends State<book_playground_page>
         print("toooooooooook$token");
         await _sendnotificationtofirebase(1,groundIiid,selectedDayName,selectedTimes);
         await sp(ms, title,
-            token); // await sendnotfication(playgroundAllData[0].adminId!);
-        // Show success message
+            token);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'تم تسجيل البيانات بنجاح', // "Data registered successfully"
+              'تم تسجيل البيانات بنجاح',
               textAlign: TextAlign.center,
             ),
             backgroundColor: Color(0xFF1F8C4B),
           ),
         );
-
-        // Clear inputs after successful booking
         selectedTimes.clear();
 
         _isCheckedList[0] = false;
         setState(() {
-          matchedPlaygrounds.clear(); // Clear previous entries
+          matchedPlaygrounds.clear();
         });
         fetchBookingData();
       }
     } else {
-      // Show message if required fields are empty
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'يرجى ملء جميع البيانات', // "Please fill in all fields"
+            'يرجى ملء جميع البيانات',
             textAlign: TextAlign.center,
           ),
           backgroundColor: Colors.red.shade800,
@@ -915,7 +823,7 @@ class book_playground_pageState extends State<book_playground_page>
       );
     }
     setState(() {
-      _isLoading = false; // Set loading to false when operation is complete
+      _isLoading = false;
     });
   }
 
@@ -982,7 +890,6 @@ class book_playground_pageState extends State<book_playground_page>
             querySnapshot.docs.first.data() as Map<String, dynamic>;
         User1 user = User1.fromMap(userData);
 
-        // Update the list and UI inside setState
         setState(() {
           user1.add(user);
         });
@@ -1011,13 +918,12 @@ class book_playground_pageState extends State<book_playground_page>
       });
     } else {
       setState(() {
-        SelectedTimeErrorText = ''; // No error message if time is selected
+        SelectedTimeErrorText = '';
       });
     }
   }
 
   List<String> startendtime(String startTimeStr, String endTimeStr) {
-    // Clean up non-standard spaces
     startTimeStr = startTimeStr.replaceAll(RegExp(r'\u202F'), ' ').trim();
     endTimeStr = endTimeStr.replaceAll(RegExp(r'\u202F'), ' ').trim();
 
@@ -1136,7 +1042,7 @@ class book_playground_pageState extends State<book_playground_page>
           print('Selected Times: ${doc['selectedTimes']}');
           DocumentSnapshot documentSnapshot = await firestore
               .collection('PlayersChat')
-              .doc(a_id) // Use adminid as the document ID
+              .doc(a_id)
               .get();
           if (documentSnapshot.exists) {
             var data = documentSnapshot.data() as Map<String, dynamic>;
@@ -1145,7 +1051,6 @@ class book_playground_pageState extends State<book_playground_page>
             adminoooken = data['FCMToken'];
             print ("admintoken is $adminoooken");
           }
-          // Delete the document
           await firestore.collection('booking').doc(doc.id).delete();
           if(selectedTime.contains("PM")){
             String ms=" "+"تم إلغاء حجز ملعب "+" $g_name "+"يوم"+ " ${dayName} "+" ${selectedTime.substring(0,4)} "+"م";
@@ -1167,12 +1072,11 @@ class book_playground_pageState extends State<book_playground_page>
           print('Document with phone $userid, playgroundId $playgroundId, dayName $dayName, and selectedTime $selectedTime deleted successfully.');
           documentDeleted = true;
 String iddd=widget.IdData;
-          // Navigate to HomePage
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => book_playground_page(iddd)),
           );
-          return; // Exit after deletion
+          return;
         }
       }
 
@@ -1206,37 +1110,25 @@ String iddd=widget.IdData;
 
   @override
   Widget build(BuildContext context) {
-    // Get today's date
     DateTime today = DateTime.now();
-
-    // List to store days and their corresponding dates
     List<Map<String, String>> daysOfWeek = [];
-
-    // Loop to get the next 7 days (including today)
     for (int i = 0; i < 7; i++) {
       DateTime day = today.add(Duration(days: i));
-
-      // Format day name and date
       String dayName =
-          DateFormat('EEEE', 'ar').format(day); // Full day name, e.g., Monday
+          DateFormat('EEEE', 'ar').format(day);
       String dayDate = DateFormat('dd MMMM yyyy').format(day);
-
-      // Add to the list as a map
       daysOfWeek.add({'dayName': dayName, 'dayDate': dayDate});
 
-      // Store the day name and date in the selectedDates list as a Map<String, DateTime>
       selectedDates.add({dayName: day});
 
-      // print("Selected Dates: $selectedDates");
     }
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
+        preferredSize: Size.fromHeight(70.0),
         child: Padding(
           padding: EdgeInsets.only(top: 25.0, right: 12, left: 12),
-          // Add padding to the top of the title
           child: AppBar(
             backgroundColor: Colors.white,
             surfaceTintColor: Colors.transparent,
@@ -1249,11 +1141,10 @@ String iddd=widget.IdData;
               ),
             ),
             centerTitle: true,
-            // Center the title horizontally
+
             leading: IconButton(
               onPressed: () {
                 Get.back();
-                // Navigator.of(context).pop(true); // Navigate back to the previous page
               },
               icon: Icon(
                 Directionality.of(context) == TextDirection
@@ -1293,12 +1184,11 @@ String iddd=widget.IdData;
                             style: TextStyle(
                               fontSize: 15,
                               fontFamily: 'Cairo',
-                              color: Color(0xFF495A71), // اللون الأساسي
+                              color: Color(0xFF495A71),
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
-                        //show day with date
                         playgroundAllData.isNotEmpty
                             ? LayoutBuilder(
                                 builder: (context, constraints) {
@@ -1309,20 +1199,18 @@ String iddd=widget.IdData;
                                           options: CarouselOptions(
                                             height: 125,
                                             viewportFraction: 0.2,
-                                            // Adjust this value as needed
                                             initialPage: _currentIndex,
-                                            // Start with the center item
                                             enableInfiniteScroll: false,
                                             autoPlay: false,
                                             enlargeCenterPage: true,
-                                            // Ensure the center item is enlarged
+
                                             onPageChanged: (index, reason) {
                                               setState(() {
                                                 _currentIndex =
-                                                    index; // Update the current index on page change
+                                                    index;
                                                 selectedDayName = daysOfWeek[
                                                         index][
-                                                    'dayName']!; // Update the selected day name
+                                                    'dayName']!;
                                                 storeDate = daysOfWeek[index]
                                                     ['dayDate'];
                                               });
@@ -1331,7 +1219,7 @@ String iddd=widget.IdData;
                                           ),
                                           items: daysOfWeek.map((dayInfo) {
                                             int itemIndex = daysOfWeek.indexOf(
-                                                dayInfo); // Get the index of the item
+                                                dayInfo);
 
                                             return GestureDetector(
                                               onTap: () {
@@ -1342,12 +1230,11 @@ String iddd=widget.IdData;
                                                     "objectstoreDate$storeDate");
                                                 setState(() {
                                                   _currentIndex =
-                                                      itemIndex; // Update the current index when an item is tapped
+                                                      itemIndex;
                                                   selectedDayName =
                                                       dayInfo['dayName']!;
                                                   print(
                                                       "objectselectedDayName$selectedDayName");
-                                                  // Save the selected day name
                                                   getPlaygroundbyname(
                                                       widget.IdData);
                                                   selectedTimes = {};
@@ -1357,7 +1244,6 @@ String iddd=widget.IdData;
                                                 child: AnimatedContainer(
                                                   duration: Duration(
                                                       milliseconds: 300),
-                                                  // Add smooth transition for color changes
                                                   width: 87,
                                                   decoration: BoxDecoration(
                                                     borderRadius:
@@ -1371,7 +1257,6 @@ String iddd=widget.IdData;
                                                       topLeft:
                                                           Radius.circular(22),
                                                     ),
-                                                    // Highlight with green if it is the center item (current index)
                                                     color: _currentIndex ==
                                                             itemIndex
                                                         ? Colors.green.shade500
@@ -1391,7 +1276,7 @@ String iddd=widget.IdData;
                                                                       .circular(
                                                                           20),
                                                               color: Color(
-                                                                  0xFFF0F6FF), // Inner container color
+                                                                  0xFFF0F6FF),
                                                             ),
                                                             child: Padding(
                                                               padding:
@@ -1402,12 +1287,10 @@ String iddd=widget.IdData;
                                                                 mainAxisAlignment:
                                                                     MainAxisAlignment
                                                                         .center,
-                                                                // Center the content
                                                                 children: [
                                                                   Text(
                                                                     dayInfo[
                                                                         'dayName']!,
-                                                                    // Display day name
                                                                     textAlign:
                                                                         TextAlign
                                                                             .center,
@@ -1431,7 +1314,7 @@ String iddd=widget.IdData;
                                                                     DateFormat(
                                                                             'dd')
                                                                         .format(
-                                                                            DateFormat('dd MMMM yyyy').parse(dayInfo['dayDate']!) // Parse the date
+                                                                            DateFormat('dd MMMM yyyy').parse(dayInfo['dayDate']!)
                                                                             ),
                                                                     style:
                                                                         TextStyle(
@@ -1459,7 +1342,6 @@ String iddd=widget.IdData;
                                                                   left: 12),
                                                           child: Container(
                                                             height: 2.5,
-                                                            // Height of the green color section
                                                             decoration:
                                                                 BoxDecoration(
                                                               borderRadius:
@@ -1473,7 +1355,6 @@ String iddd=widget.IdData;
                                                                     .circular(
                                                                         22),
                                                               ),
-                                                              // Green color for the selected (centered) day
                                                               color: _currentIndex ==
                                                                       itemIndex
                                                                   ? Colors.green
@@ -1508,7 +1389,7 @@ String iddd=widget.IdData;
                             style: TextStyle(
                               fontSize: 15,
                               fontFamily: 'Cairo',
-                              color: Color(0xFF495A71), // اللون الأساسي
+                              color: Color(0xFF495A71),
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -1526,8 +1407,8 @@ String iddd=widget.IdData;
                                           child: _isLoading
                                               ? CircularProgressIndicator(
                                                   color: Colors.green,
-                                                ) // Show a loading indicator
-                                              : Container(), // Show an empty container or other content
+                                                )
+                                              : Container(),
                                         );
                                       }
                                       if (snapshot.hasError) {
@@ -1543,9 +1424,9 @@ String iddd=widget.IdData;
                                               snapshot.data!.map((slotWidget) {
                                             return GestureDetector(
                                               onTap: () {
-                                                // _handleSlotTap(slotWidget.toString()); // Pass the slot value
+
                                               },
-                                              child: slotWidget, // Use the slot widget
+                                              child: slotWidget,
                                             );
                                           }).toList(),
                                         );
@@ -1572,23 +1453,22 @@ String iddd=widget.IdData;
                                       children: [
                                         TextSpan(
                                           text:
-                                              '    تأجير الكره   :', // النص الأساسي
+                                              '    تأجير الكره   :',
                                           style: TextStyle(
                                             fontSize: 15,
                                             fontFamily: 'Cairo',
                                             color: Color(
-                                                0xFF495A71), // اللون الأساسي
+                                                0xFF495A71),
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
                                         TextSpan(
                                           text: '   ${costboll}  ' + '  جنية  ',
-                                          // النص الذي تريد جعله أبهت
                                           style: TextStyle(
                                             fontSize: 15,
                                             fontFamily: 'Cairo',
                                             color:
-                                                Color(0xFFB0B0B0), // لون أبهت
+                                                Color(0xFFB0B0B0),
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -1597,13 +1477,11 @@ String iddd=widget.IdData;
                                   ),
                                   Checkbox(
                                     activeColor: Color(0xFF106A35),
-                                    // Check color when checked
                                     checkColor: Color(0xFF106A35),
-                                    // Check color when checked
+
                                     focusColor: Color(0xFF106A35),
                                     fillColor: MaterialStateColor.resolveWith(
                                         (states) => Colors.white),
-                                    // Background color
                                     side: MaterialStateBorderSide.resolveWith(
                                         (states) => states.contains(
                                                 MaterialState.selected)
@@ -1627,7 +1505,6 @@ String iddd=widget.IdData;
                           onTap: _isLoading
                               ? null
                               : () async {
-                                  // Step 2: Disable button when loading
                                   await _sendData(context, _isCheckedList[0]);
                                   await _fetchData();
                                   print(
@@ -1645,7 +1522,7 @@ String iddd=widget.IdData;
                                 borderRadius: BorderRadius.circular(40.0),
                                 shape: BoxShape.rectangle,
                                 color: Color(
-                                    0xFF064821), // Background color of the container
+                                    0xFF064821),
                               ),
                               child: Center(
                                 child: Text(
@@ -1655,7 +1532,7 @@ String iddd=widget.IdData;
                                     fontFamily: 'Cairo',
                                     fontSize: 16.0,
                                     fontWeight: FontWeight.w500,
-                                    color: Colors.white, // Text color
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
@@ -1672,344 +1549,345 @@ String iddd=widget.IdData;
                                     children: List.generate(
                                         matchedPlaygrounds.length, (index) {
                                       final user = matchedPlaygrounds[index];
-                                      print(
-                                          "objectmatching${matchedPlaygrounds.length}");
-                                      return Dismissible(
+                                      print("objectmatching${matchedPlaygrounds.length}");
+                                   return   Stack(
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 17.0,
+                                                left: 17,
+                                                bottom: 9,
+                                                top: 9),
+                                            child: Container(
+                                              height: 84,
+                                              decoration: BoxDecoration(
+                                                color: Colors.red.shade800,
+                                                borderRadius: BorderRadius.circular(20.0),
+
+                                              ),
+
+                                            ),
+                                          ),
+
+                                      Dismissible(
                                         key: Key('${user.UserPhone}_${index}'),
-                                        // Ensure the key is unique
-                                        direction: DismissDirection.horizontal,
-                                        onDismissed: (direction) async {
-                                          await deleteCancelByPhoneAndPlaygroundId(
-                                              user.userID!,
-                                              user.AdminId!,
-                                              user.groundName!,
-                                              user.GroundId!,
-                                              user.selectedTimes!.first,
-                                              user.dateofBooking!
+
+                                      direction: DismissDirection.horizontal,
+                                      onDismissed: (direction) async {
+                                        updateCancelCount(
+                                          user.userID!,);
+                                        deleteCancelByPhoneAndPlaygroundId(
+                                            user.userID!,
+                                            user.AdminId!,
+                                            user.groundName!,
+                                            user.GroundId!,
+                                            user.selectedTimes!.first,
+                                            user.dateofBooking!);
+                                        setState(() {
+                                          matchedPlaygrounds.removeAt(
+                                              index);
+                                          String i = widget.IdData;
+                                          Navigator.pushAndRemoveUntil(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    book_playground_page(i)),
+                                                (Route<dynamic> route) => false,
                                           );
-                                          setState(() {
-                                            matchedPlaygrounds.removeAt(
-                                                index); // Use removeAt to remove by index
-                                            String i = widget.IdData;
-                                            Navigator.pushAndRemoveUntil(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      book_playground_page(i)),
-                                              (Route<dynamic> route) => false,
-                                            );
-                                          });
-                                        },
-                                        confirmDismiss: (direction) async {
-                                          // Show a confirmation dialog before dismissing
-                                          return await showDialog<bool>(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return AlertDialog(
-                                                title: Text('Confirm Deletion'),
-                                                content: Text(
-                                                    'Are you sure you want to delete this item?'),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.of(context)
-                                                            .pop(false),
-                                                    // Cancel the delete
-                                                    child: Text('Cancel'),
-                                                  ),
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.of(context)
-                                                            .pop(true),
-                                                    // Confirm the delete
-                                                    child: Text('Delete'),
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          );
-                                        },
-                                        background: Container(
-                                          height: 72,
-                                          color: Colors.red.shade800,
-                                          // Background color when swiped
-                                          child: Row(
+                                        });
+                                      },
+                                      confirmDismiss: (direction) async {
+                                      return await showDialog<bool>(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                      return  AlertDialog(
+                                        title: Center(
+                                            child: Text("تاكيد الحذف".tr,
+                                                style: TextStyle(
+                                                  color: Color(0xFF374957),
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 15,
+                                                  fontFamily: 'Cairo',
+                                                ))),
+                                        content: Text(
+                                            "هل تريد التأكيد على الغاء الحجز".tr,
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              color: Color(0xFF374957),
+                                              fontFamily: 'Cairo',
+                                            )),
+                                        actions: [
+                                          Row(
                                             mainAxisAlignment:
-                                                MainAxisAlignment.start,
+                                            MainAxisAlignment.spaceBetween,
                                             children: [
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.all(16.0),
-                                                child: Image(
-                                                  image: AssetImage(
-                                                      "assets/images/trush-square.png"),
-                                                  color: Colors.white,
-                                                  width: 40.0,
-                                                  height: 30.0,
+
+                                              ElevatedButton(
+                                                onPressed: () async {
+
+                                                  Navigator.of(context)
+                                                      .pop(true);
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                  Color(0xFFFFBEC5),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                    BorderRadius.circular(20),
+                                                  ),
+                                                  padding: EdgeInsets.symmetric(
+                                                    vertical: 12,
+                                                    horizontal: 20,
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  "حذف".tr,
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontFamily: 'Cairo',
+                                                  ),
                                                 ),
                                               ),
-                                              Expanded(
-                                                  child:
-                                                      Container()), // Fill space
+
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop(false);
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                  Color(0xFF064821),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                    BorderRadius.circular(20),
+                                                  ),
+                                                  padding: EdgeInsets.symmetric(
+                                                    vertical: 12,
+                                                    horizontal: 20,
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  "إلغاء".tr,
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontFamily: 'Cairo',
+                                                  ),
+                                                ),
+                                              ),
                                             ],
                                           ),
-                                        ),
-                                        secondaryBackground: Container(
-                                          height: 72,
-                                          color: Colors.red.shade800,
-                                          // Background color when swiped
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            children: [
-                                              Expanded(
-                                                  child:
-                                                      Container()), // Fill space
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.all(16.0),
-                                                child: Image(
-                                                  image: AssetImage(
-                                                      "assets/images/trush-square.png"),
-                                                  color: Colors.white,
-                                                  width: 40.0,
-                                                  height: 30.0,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                              right: 17.0,
-                                              left: 17,
-                                              bottom: 9,
-                                              top: 9),
-                                          child: Container(
-                                            height: 80,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(20.0),
-                                              color: Color(0xFFF0F6FF),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
-                                                  spreadRadius: 1,
-                                                  blurRadius: 2,
-                                                  offset: Offset(0, 0),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(4.0),
-                                              child: Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceBetween,
-                                                          children: [
-                                                            Row(
-                                                              children: [
-                                                                Text(
-                                                                  'ج.م   ',
-                                                                  textAlign:
-                                                                      TextAlign
-                                                                          .center,
-                                                                  style:
-                                                                      TextStyle(
-                                                                    color: Color(
-                                                                        0xFF7C90AB),
-                                                                    fontSize:
-                                                                        21.55,
-                                                                    fontFamily:
-                                                                        'Cairo',
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w700,
-                                                                    height: 0,
-                                                                    letterSpacing:
-                                                                        -0.43,
-                                                                  ),
-                                                                ),
-                                                                Text(
-                                                                  " ${toArabicNumerals(matchedPlaygrounds[index].totalcost!, 0)}",
-                                                                  // '${matchedplaygroundAllData[0].bookTypes![0].cost} ',
-                                                                  textAlign:
-                                                                      TextAlign
-                                                                          .center,
-                                                                  style:
-                                                                      TextStyle(
-                                                                    color: Color(
-                                                                        0xFF7C90AB),
-                                                                    fontSize:
-                                                                        21.55,
-                                                                    fontFamily:
-                                                                        'Cairo',
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w700,
-                                                                    height: 0,
-                                                                    letterSpacing:
-                                                                        -0.43,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      right: 8,
-                                                                      left: 8),
-                                                              child: Row(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .start,
-                                                                children: [
-                                                                  Text(
-                                                                    formatDate(matchedPlaygrounds[
-                                                                            index]
-                                                                        .dateofBooking!),
-                                                                    textAlign:
-                                                                        TextAlign
-                                                                            .center,
-                                                                    style:
-                                                                        TextStyle(
-                                                                      color: Color(
-                                                                          0xFF324054),
-                                                                      fontSize:
-                                                                          16,
-                                                                      fontFamily:
-                                                                          'Cairo',
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w700,
-                                                                      height: 0,
-                                                                      letterSpacing:
-                                                                          0.64,
-                                                                    ),
-                                                                  ),
-                                                                  SizedBox(
-                                                                      width: 5),
-                                                                  Text(
-                                                                    matchedPlaygrounds[index]
-                                                                            .Day_of_booking ??
-                                                                        " ",
-                                                                    textAlign:
-                                                                        TextAlign
-                                                                            .center,
-                                                                    style:
-                                                                        TextStyle(
-                                                                      color: Color(
-                                                                          0xFF334154),
-                                                                      fontSize:
-                                                                          16,
-                                                                      fontFamily:
-                                                                          'Cairo',
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w700,
-                                                                      height: 0,
-                                                                      letterSpacing:
-                                                                          0.64,
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceBetween,
-                                                          children: [
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      right: 8,
-                                                                      left: 8),
-                                                              child: Text(
-                                                                "التكلفة الاجمالية",
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                style:
-                                                                    TextStyle(
-                                                                  color: Color(
-                                                                      0xFF324054),
-                                                                  fontSize:
-                                                                      10.77,
-                                                                  fontFamily:
-                                                                      'Cairo',
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w700,
-                                                                  height: 0,
-                                                                  letterSpacing:
-                                                                      0.32,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      right:
-                                                                          14.0,
-                                                                      bottom:
-                                                                          10),
-                                                              child: RichText(
-                                                                text: TextSpan(
-                                                                  style:
-                                                                      TextStyle(
-                                                                    color: Color(
-                                                                        0xFF7C90AB),
-                                                                    fontSize:
-                                                                        12,
-                                                                    fontFamily:
-                                                                        'Cairo',
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w400,
-                                                                    height: 0,
-                                                                    letterSpacing:
-                                                                        0.36,
-                                                                  ),
-                                                                  children: [
-                                                                    for (var i =
-                                                                            0;
-                                                                        i < matchedPlaygrounds[index].selectedTimes!.length;
-                                                                        i++)
-                                                                      TextSpan(
-                                                                        text: getTimeRange(
-                                                                            matchedPlaygrounds[index].selectedTimes![0]), // Add formatted time range
-                                                                      ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
+                                        ],
                                       );
+                                      },
+                                      );
+                                      },
+                                      background: Container(
+                                      height: 84,
+                                      decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                      ),
+                                      child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                      Padding(
+                                      padding: const EdgeInsets.all(20.0),
+                                      child: Image(
+                                      image: AssetImage(
+                                      "assets/images/trush-square.png"),
+                                      color: Colors.white,
+                                      width: 40.0,
+                                      height: 40.0,
+                                      ),
+                                      ),
+                                      Expanded(child: Container()),
+                                      ],
+                                      ),
+                                      ),
+                                      secondaryBackground: Container(
+                                      height: 84,
+                                      decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                      ),
+
+                                      child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                      Expanded(child: Container()),
+                                      Padding(
+                                      padding: const EdgeInsets.all(20.0),
+                                      child: Image(
+                                      image: AssetImage(
+                                      "assets/images/trush-square.png"),
+                                      color: Colors.white,
+                                      width: 40.0,
+                                      height: 40.0,
+                                      ),
+                                      ),
+
+                                      ],
+                                      ),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                            right: 17.0,
+                                            left: 17,
+                                            bottom: 9,
+                                            top: 9),
+                                      child: Container(
+                                      height: 84,
+                                      decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                      color: Color(0xFFF0F6FF),
+                                      boxShadow: [
+                                      BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      spreadRadius: 1,
+                                      blurRadius: 2,
+                                      offset: Offset(0, 0),
+                                      ),
+                                      ],
+                                      ),
+                                      child: Row(
+                                      children: [
+                                      Expanded(
+                                      child: Padding(
+                                      padding: const EdgeInsets.only(right: 10.0,left: 10),
+                                      child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment
+                                          .start,
+                                      children: [
+                                      Row(
+                                      mainAxisAlignment: MainAxisAlignment
+                                          .start,
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                      Text(
+                                      'ج.م',
+                                      textAlign: TextAlign.end,
+                                      style: TextStyle(
+                                      color: Color(0xFF7C90AB),
+                                      fontSize: 21.55,
+                                      fontFamily: 'Cairo',
+                                      fontWeight: FontWeight.w700,
+                                      height: 0,
+                                      letterSpacing: -0.43,
+                                      ),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text(
+                                      " ${toArabicNumerals(matchedPlaygrounds[index].totalcost!,0)}",
+                                      textAlign: TextAlign.end,
+                                      style: TextStyle(
+                                      color: Color(0xFF7C90AB),
+                                      fontSize: 21.55,
+                                      fontFamily: 'Cairo',
+                                      fontWeight: FontWeight.w700,
+                                      height: 0,
+                                      letterSpacing: -0.43,
+                                      ),
+                                      ),
+                                      Spacer(),
+                                      Row(
+                                      mainAxisAlignment: MainAxisAlignment
+                                          .start,
+                                      children: [
+                                      Text(
+                                      formatDate(matchedPlaygrounds[index].dateofBooking!),
+                                      style: TextStyle(
+                                      color: Color(0xFF324054),
+                                      fontSize: 16,
+                                      fontFamily: 'Cairo',
+                                      fontWeight: FontWeight.w700,
+                                      height: 0,
+                                      letterSpacing: 0.64,
+                                      ),
+                                      ),
+                                      Padding(
+                                      padding: const EdgeInsets
+                                          .only(right: 12.0,left: 4),
+                                      child: Text(
+                                        matchedPlaygrounds[index].Day_of_booking ?? " ",
+                                      style: TextStyle(
+                                      color: Color(
+                                      0xFF324054),
+                                      fontSize: 16,
+                                      fontFamily: 'Cairo',
+                                      fontWeight: FontWeight
+                                          .w700,
+                                      height: 0,
+                                      letterSpacing: 0.64,
+                                      ),
+                                      ),
+                                      ),
+                                      ],
+                                      ),
+                                      ],
+                                      ),
+                                      Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                      Padding(
+                                      padding: const EdgeInsets
+                                          .only(right: 8, left: 8,bottom: 16),
+                                      child: Text(
+                                      "التكلفة الاجمالية",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                      color: Color(0xFF324054),
+                                      fontSize: 10.77,
+                                      fontFamily: 'Cairo',
+                                      fontWeight: FontWeight
+                                          .w700,
+                                      height: 0,
+                                      letterSpacing: 0.32,
+                                      ),
+                                      ),
+                                      ),
+                                      Padding(
+                                      padding: const EdgeInsets
+                                          .only(right: 14.0),
+                                      child: RichText(
+                                      text: TextSpan(
+                                      style: TextStyle(
+                                      color: Color(
+                                      0xFF7C90AB),
+                                      fontSize: 12,
+                                      fontFamily: 'Cairo',
+                                      fontWeight: FontWeight
+                                          .w400,
+                                      height: 0,
+                                      letterSpacing: 0.36,
+                                      ),
+                                      children: [
+                                      for (var i = 0; i <
+                                          matchedPlaygrounds[index]
+                                          .selectedTimes!
+                                          .length; i++)
+                                      TextSpan(
+                                      text: getTimeRange(
+                                          matchedPlaygrounds[index]
+                                          .selectedTimes![i]) +
+                                      '\n',
+                                      ),
+                                      ],
+                                      ),
+                                      ),
+                                      ),
+                                      ],
+                                      ),
+                                      ],
+                                      ),
+                                      ),
+                                      ),
+                                      ],
+                                      ),
+                                      ),
+                                      ),
+                                      )
+                                        ],
+                                      );
+
+
+
                                     }),
                                   ),
                                 ),
@@ -2032,7 +1910,6 @@ String iddd=widget.IdData;
       bottomNavigationBar: CurvedNavigationBar(
         height: 60,
         index: 2,
-        // Use the dynamic index
         items: [
           Icon(Icons.more_horiz, color: Colors.white, size: 25),
           Image.asset('assets/images/calendar.png',
@@ -2042,8 +1919,6 @@ String iddd=widget.IdData;
           Image.asset('assets/images/home.png',
               height: 21, width: 21, color: Colors.white),
         ],
-        // buttonBackgroundColor: Colors.transparent, // Set button background color to transparent
-        // backgroundColor: Colors.transparent, // Set background color to transparent
 
         color: Color(0xFF064821),
         buttonBackgroundColor: Color(0xFFBACCE6),
@@ -2054,33 +1929,23 @@ String iddd=widget.IdData;
         onTap: (index) {
           setState(() {
             selectedIndex = index;
-            // Update opacity based on the selected index
             opacity = 0.5;
           });
-          // setState(() {
-          //   navigationController.updateIndex(index);
-          //   // Update opacity based on the selected index
-          //   opacity = index == 2 ? 0.9 : 1.0;
-          // });// Update the index dynamically
-          // Handle navigation based on index
           switch (index) {
             case 0:
               Get.to(() => menupage())?.then((_) {
                 navigationController
-                    .updateIndex(0); // Update index when navigating back
+                    .updateIndex(0);
               });
               break;
 
             case 1:
               Get.to(() => my_reservation())?.then((_) {
                 navigationController
-                    .updateIndex(1); // Update index when navigating back
+                    .updateIndex(1);
               });
               break;
             case 2:
-              // Get.to(() => AppBarandNavigationBTN())?.then((_) {
-              //   navigationController.updateIndex(2);
-              // });
               break;
 
             case 3:
@@ -2100,13 +1965,10 @@ String iddd=widget.IdData;
     bool isSelected,
     bool isAlreadySelected,
   ) async {
-    // Fetch selected times for the current day from the fetchedSelectedTimesPerDay map
     String currentDay =
-        selectedDayName; // Get the correct day for the current slot
+        selectedDayName;
     bool isSlotBooked =
         fetchedSelectedTimesPerDay[currentDay]?.contains(slot) ?? false;
-
-    // Determine the color based on booking status
     bool isClickable = !isSlotBooked;
 
     return Padding(
@@ -2118,7 +1980,7 @@ String iddd=widget.IdData;
             if (isClickable) {
               setState(() {
                 selectedTimes.clear();
-                selectedTimes.add(slot); // Add the clicked slot
+                selectedTimes.add(slot);
               });
             }
           },
@@ -2126,17 +1988,16 @@ String iddd=widget.IdData;
             width: MediaQuery.of(context).size.width / 4,
             decoration: BoxDecoration(
               color: selectedTimes.contains(slot)
-                  ? Color(0xFFC3FFDC) // If selected by the user
+                  ? Color(0xFFC3FFDC)
                   : isSlotBooked
-                      ? Color(0xFFFFBEC5) // If already booked
-                      : Color(0xFFEFF6FF), // Default color
+                      ? Color(0xFFFFBEC5)
+                      : Color(0xFFEFF6FF),
               borderRadius: BorderRadius.circular(10.0),
             ),
             child: Padding(
               padding: const EdgeInsets.all(6.0),
               child: Text(
                 slot.characters.length == 7 ? "$slot   " : slot,
-                // Adjust text formatting
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -2163,7 +2024,6 @@ String iddd=widget.IdData;
     List<String> bookedTimes = [];
     if (existingBookings.docs.isNotEmpty) {
       for (var doc in existingBookings.docs) {
-        // Assuming 'selectedTimes' is a field in your document that holds the booked time slots
         List<String> times = List<String>.from(doc['selectedTimes']);
         bookedTimes.addAll(times);
         print("ooootimes$times");
@@ -2205,12 +2065,10 @@ String iddd=widget.IdData;
         List<String> times = time!.split(' - ');
 
         if (times.length == 2) {
-          // Generate hours for this range
           combinedTimeSlots.addAll(_getHoursBetween(time));
         }
       }
     }
-    // Remove duplicates and sort the times
     combinedTimeSlots = combinedTimeSlots.toSet().toList();
     combinedTimeSlots.sort(
         (a, b) => DateFormat.jm().parse(a).compareTo(DateFormat.jm().parse(b)));
@@ -2224,12 +2082,8 @@ String iddd=widget.IdData;
     List<Widget> currentRowChildren = [];
 
     print("selectedddddddddddday: $selectedDay");
-
-    // Fetch booked times for the selected day
     List<String> bookedTimes = await _fetchBookedTimes(selectedDay);
     print("Booked Times for $selectedDay: $bookedTimes");
-
-    // Fetch combined time slots for the selected day
     List<String> combinedTimeSlots =
         _getCombinedTimeSlotsForSelectedDay(selectedDay);
     print("Combined Time Slots for $selectedDay: $combinedTimeSlots");
@@ -2242,14 +2096,11 @@ String iddd=widget.IdData;
         GestureDetector(
           onTap: () {
             if (isTimeSlotBooked) {
-              // Optionally show a message or feedback when trying to click on a booked slot
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text("This time slot is already booked."),
               ));
             } else {
-              // Handle selection of the time slot
               setState(() {
-                // If you want multiple slots selected, use add() instead of clear()
                 selectedTimes.add(slot);
                 reservation();
               });
@@ -2261,27 +2112,23 @@ String iddd=widget.IdData;
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Container();
               } else if (snapshot.hasError) {
-                return Container(); // Handle error case (show nothing if error)
+                return Container();
               } else {
                 return snapshot.data ??
-                    Container(); // Return the widget or empty container
+                    Container();
               }
             },
           ),
         ),
       );
-
-      // Check if we've reached the max slots per row (e.g., 3 per row)
       if (currentRowChildren.length >= 3) {
         rows.add(Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: currentRowChildren,
         ));
-        currentRowChildren = []; // Reset for the next row
+        currentRowChildren = [];
       }
     }
-
-    // Add any remaining children as the last row if they exist
     if (currentRowChildren.isNotEmpty) {
       rows.add(Row(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -2294,31 +2141,26 @@ String iddd=widget.IdData;
 
   Future<void> getAllBookingDocuments() async {
     setState(() {
-      _isLoading = true; // Start loading indicator
+      _isLoading = true;
     });
 
     try {
-      // Reference to the 'booking' collection
       CollectionReference bookingRef =
           FirebaseFirestore.instance.collection("booking");
-
-      // Fetch all documents from the 'booking' collection
       QuerySnapshot bookingSnapshot = await bookingRef.get();
-
-      // Check if any documents were found
       if (bookingSnapshot.docs.isNotEmpty) {
         setState(() {
-          playgroundAllData.clear(); // Clear previous data to avoid duplicates
+          playgroundAllData.clear();
           for (var document in bookingSnapshot.docs) {
-            String docId = document.id; // Get the document ID
+            String docId = document.id;
             Map<String, dynamic> userData =
                 document.data() as Map<String, dynamic>;
 
             AddPlayGroundModel playground =
                 AddPlayGroundModel.fromMap(userData);
-            playground.id = docId; // Store the document ID in the model
+            playground.id = docId;
 
-            playgroundAllData.add(playground); // Add playground to the list
+            playgroundAllData.add(playground);
 
             print("Stored document ID in model: ${playground.id}");
           }
@@ -2330,61 +2172,13 @@ String iddd=widget.IdData;
       print("Error fetching booking documents: $error");
     } finally {
       setState(() {
-        _isLoading = false; // Stop loading after data is fetched
+        _isLoading = false;
       });
     }
   }
 
-  void deleteItemAndRelatedDocs(BuildContext context, int index) async {
-    bool documentDeleted = false;
-
-    // Ensure the index is valid
-    if (index < 0 || index >= playgroundbook.length) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Invalid item to delete")),
-      );
-      return;
-    }
-
-    // final user = matchedPlaygrounds[index];
-    final firestore = FirebaseFirestore.instance;
-    QuerySnapshot querySnapshot = await firestore.collection('booking').get();
-
-    for (var doc in querySnapshot.docs) {
-      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-
-      // Access nested User and Ground Data
-
-      var groundDataList = data['GroundId'] as List?;
-
-      print('Ground Data List: $groundDataList');
-      print('Document dateofBooking: ${data['dateofBooking']}');
-      print('Document selectedTimes: ${data['selectedTimes']}');
-
-      if (groundDataList != null) {
-        print(
-            "matchedPlaygrounds[index].AllUserData![0].UserPhone${matchedPlaygrounds[index].UserPhone}");
-        print(
-            "NeededGroundData[index].NeededGroundData![0].NeededGroundData${matchedPlaygrounds[index].GroundId}");
-        print(
-            "dateofBooking[index].dateofBooking![0].dateofBooking${matchedPlaygrounds[index].dateofBooking}");
-        print(
-            "selectedTimes[index].selectedTimes![0].selectedTimes${matchedPlaygrounds[index].selectedTimes}");
-        if (matchedPlaygrounds[index].UserPhone != null &&
-            matchedPlaygrounds[index].GroundId != null &&
-            matchedPlaygrounds[index].dateofBooking != null &&
-            matchedPlaygrounds[index].selectedTimes != null) {
-          await firestore.collection('booking').doc(doc.id).delete();
-        }
-        print("groundDataListgroundDataList$groundDataList");
-
-        return;
-      }
-    }
-  }
 
   Widget _buildNoInternetUI() {
-    // Your UI design when there's no internet connection
     return Container(
       color: Colors.white,
       child: Column(
@@ -2397,7 +2191,6 @@ String iddd=widget.IdData;
               height: 200,
               child: Image.asset(
                 'assets/images/wifirr.png',
-                // Adjust the height as needed
               ),
             ),
           ),

@@ -362,18 +362,14 @@ class PlaygroundNameState extends State<PlaygroundName>
     }
   }
 
-  int _selectedStars = 0;
 
   Future<void> getUserByPhone(String phoneNumber) async {
     try {
-      // Normalize the phone number by stripping the country code
       String normalizedPhoneNumber = phoneNumber.replaceFirst('+20', '0');
 
-      // Reference to the Firestore collection
       CollectionReference playerchat =
       FirebaseFirestore.instance.collection('Users');
 
-      // Get the documents in the collection where phone number matches
       QuerySnapshot querySnapshot = await playerchat
           .where('phone', isEqualTo: normalizedPhoneNumber)
           .get();
@@ -457,12 +453,11 @@ class PlaygroundNameState extends State<PlaygroundName>
       if (phoneValue != null && phoneValue.isNotEmpty) {
         CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
 
-// Query the PlayersChat collection to find the document where phone number matches
         QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo: phoneValue.toString()).get();
         print('shared phooone ${phoneValue.toString()}');
         if(adminSnapshot.docs.isNotEmpty){
           var adminDoc = adminSnapshot.docs.first;
-          String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+          String docId = adminDoc.id;
           print("Matched user docId: $docId");
           useridddd=docId;
 
@@ -472,7 +467,6 @@ class PlaygroundNameState extends State<PlaygroundName>
             .where('userid', isEqualTo: useridddd)
             .where('playground_idstars', isEqualTo: widget.id)
             .get();
-//to avoid add to total rate that already exist
         int newTotalRating = 0;
         for (bool star in isstared) {
           if (star) {
@@ -480,14 +474,13 @@ class PlaygroundNameState extends State<PlaygroundName>
           }
         }
 
-        if (newTotalRating > 5) newTotalRating = 5; // Cap the rating at 5
+        if (newTotalRating > 5) newTotalRating = 5;
 
         if (querySnapshot.docs.isNotEmpty) {
-          // Document exists, update the rating
           DocumentReference docRef = querySnapshot.docs.first.reference;
           await docRef.update({
-            'rate': isstared, // Update with the new stars only
-            'totalrating': newTotalRating // Use only the new rating value
+            'rate': isstared,
+            'totalrating': newTotalRating
           });
           Navigator.pushReplacement(
             context,

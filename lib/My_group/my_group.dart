@@ -54,25 +54,65 @@ class My_groupState extends State<My_group> {
     print("bvbbvbvbb$isConnected");
 
   }
-
-  Future<void> getUserGroup(String phoneNumber) async {
+  String docId='';
+  Future<void> getUserByPhone(String phoneNumber) async {
     try {
       String normalizedPhoneNumber = phoneNumber.replaceFirst('+20', '0');
       CollectionReference playerchat =
-          FirebaseFirestore.instance.collection('teamData');
+      FirebaseFirestore.instance.collection('Users');
 
       QuerySnapshot querySnapshot = await playerchat
           .where('phone', isEqualTo: normalizedPhoneNumber)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        List<GroupModel> groupdata = querySnapshot.docs.map((doc) {
+        var playerDoc = querySnapshot.docs.first;
+        docId = playerDoc.id; // Get the docId of the matching Phoone number
+        print("Document ID for the Phoone number: $docId");
+      await  getUserGroup(docId);
+        Map<String, dynamic> userData =
+        querySnapshot.docs.first.data() as Map<String, dynamic>;
+        User1 user = User1.fromMap(userData);
+
+        // Update the list and UI inside setState
+        setState(() {
+          user1.add(user);
+        });
+
+        print("object${user1[0].name}");
+        print("User data: $userData");
+      } else {
+        print("User not found with phone number $phoneNumber");
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => SigninPage()),
+              (Route<dynamic> route) => false,
+        );
+      }
+    } catch (e) {
+      print("Error getting user: $e");
+    }
+  }
+  Future<void> getUserGroup(String id) async {
+    try {
+
+      CollectionReference playerchat =
+          FirebaseFirestore.instance.collection('teamData');
+
+      QuerySnapshot querySnapshot = await playerchat
+          .where('userId', isEqualTo: id)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        List<userDataofgroup> groupdata = querySnapshot.docs.map((doc) {
           Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
-          return GroupModel.fromMap(userData);
+          return userDataofgroup.fromMap(userData);
         }).toList();
 
         print("GroupModel : $groupdata");
-        await getGroupdata(groupdata[0].teamId!);
+        await getGroupdata(groupdata[0].TeamId!);
       }
     } catch (e) {
       print("Error getting user: $e");
@@ -81,14 +121,27 @@ class My_groupState extends State<My_group> {
       setState(() {});
     }
   }
+  void _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? phoneValue = prefs.getString('phonev');
+    print("newphoneValue${phoneValue.toString()}");
 
-  Future<void> getGroupdata(String id) async {
+    if (phoneValue != null && phoneValue.isNotEmpty) {
+      await getUserByPhone(phoneValue);
+    }
+    else if (user?.phoneNumber != null) {
+      await getUserByPhone(user!.phoneNumber.toString());
+    } else {
+      print("No phone number available.");
+    }
+  }
+  Future<void> getGroupdata(String adminid) async {
     try {
       CollectionReference playerchat =
           FirebaseFirestore.instance.collection('MyTeam');
-      print("idddddddddddddddddddddddddddd $id");
+      print("idddddddddddddddddddddddddddd $adminid");
 
-      DocumentSnapshot documentSnapshot = await playerchat.doc(id).get();
+      DocumentSnapshot documentSnapshot = await playerchat.doc(adminid).get();
       print("ffffffffffffffffffff${documentSnapshot.exists}");
 
       if (documentSnapshot.exists) {
@@ -108,77 +161,7 @@ class My_groupState extends State<My_group> {
     }
   }
 
-  // void _loadUserData() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   String? phoneValue = prefs.getString('phonev');
-  //   print("newphoneValue${phoneValue.toString()}");
-  //
-  //   if (phoneValue != null && phoneValue.isNotEmpty) {
-  //     await getUserGroup(phoneValue);
-  //   } else if (user?.phoneNumber != null) {
-  //     await getUserGroup(user!.phoneNumber.toString());
-  //   } else {
-  //     print("No phone number available.");
-  //   }
-  // }
-  // List<GroupModel2>stordataofgroup=[];
-  // Future<void> getUserGroup(String phoneNumber) async {
-  //   try {
-  //     String normalizedPhoneNumber = phoneNumber.replaceFirst('+20', '0');
-  //     CollectionReference playerchat = FirebaseFirestore.instance.collection('teamData');
-  //
-  //     QuerySnapshot querySnapshot = await playerchat.where('phone', isEqualTo: normalizedPhoneNumber).get();
-  //
-  //     if (querySnapshot.docs.isNotEmpty) {
-  //       List<GroupModel> groupdata = querySnapshot.docs.map((doc) {
-  //         Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
-  //         return GroupModel.fromMap(userData);
-  //       }).toList();
-  //  print("GroupModel : $groupdata");
-  //       getGroupdata(groupdata[0].teamId!);
-  //
-  //     }
-  //   } catch (e) {
-  //     print("Error getting user: $e");
-  //   }
-  // }
-  //
-  // Future<void> getGroupdata(String id) async {
-  //   try {
-  //
-  //     CollectionReference playerchat = FirebaseFirestore.instance.collection('MyTeam');
-  //     print("idddddddddddddddddddddddddddd $id");
-  //
-  //     DocumentSnapshot documentSnapshot = await playerchat.doc(id).get();
-  //     print("ffffffffffffffffffff${documentSnapshot.exists}");
-  //     if (documentSnapshot.exists) {
-  //       Map<String, dynamic>? data = documentSnapshot.data() as Map<String, dynamic>?;
-  //
-  //       if (data != null) {
-  //         GroupModel2 group = GroupModel2.fromMap(data);
-  //         stordataofgroup.add(group);
-  //
-  //         print("documentSnapshot : ${documentSnapshot.data().toString()}");
-  //         print("shoka dataaaaaaaa ${stordataofgroup[0]}");
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print("Error getting user: $e");
-  //   }
-  // }
-  void _loadUserData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? phoneValue = prefs.getString('phonev');
-    print("newphoneValue${phoneValue.toString()}");
 
-    if (phoneValue != null && phoneValue.isNotEmpty) {
-      await getUserGroup(phoneValue);
-    } else if (user?.phoneNumber != null) {
-      await getUserGroup(user!.phoneNumber.toString());
-    } else {
-      print("No phone number available.");
-    }
-  }
 
   @override
   void initState() {
@@ -187,9 +170,8 @@ class My_groupState extends State<My_group> {
     super.initState();
 
     _loadUserData();
-    // Now you can access the user1 list
-    // print('User data44444: ${user1[0].name}');
-    setState(() {}); // Call setState to rebuild the widget tree
+
+    setState(() {});
   }
 
   @override
@@ -343,14 +325,19 @@ class My_groupState extends State<My_group> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.only(right: 30.0),
-                                    child: Image.network(
-                                      stordataofgroup[0].profileImage!,
-                                      width: 32,
-                                      height: 60,
-                                      // Adjust size as needed
+                                    padding: const EdgeInsets.only(bottom: 22.0,right: 10),
+                                    child: ClipOval(
+                                      child: Image(image:  NetworkImage(
+                                        stordataofgroup[0].profileImage!,
+
+                                        // Adjust size as needed
+                                      ),
+                                        fit: BoxFit.fitWidth,
+                                        height: 32,
+                                        width: 32,
+                                      ),
                                     ),
-                                  ),
+                                  )
                                 ],
                               ),
                             ],

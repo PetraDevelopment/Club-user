@@ -49,11 +49,9 @@ class HomePageState extends State<HomePage> {
 
   String end ="";
   Future<void> _loadData() async {
-
-    // load data here
-    await Future.delayed(Duration(seconds: 2)); // simulate data loading
+    await Future.delayed(Duration(seconds: 2));
     setState(() {
-      _isLoading = false; // set flag to false when data is loaded
+      _isLoading = false;
     });
   }
   bool _isPermissionGranted = false;
@@ -70,7 +68,6 @@ class HomePageState extends State<HomePage> {
 
 
   }
-// Reverse geocode to get the place name from LatLng
   Future<String> _getPlaceName(LatLng position) async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
@@ -78,7 +75,6 @@ class HomePageState extends State<HomePage> {
         position.longitude,
       );
       Placemark place = placemarks[0];
-      // print("locality${place.subAdministrativeArea.toString()}");
       print("locality${place.country.toString()}");
 
       String locality=place.administrativeArea.toString();
@@ -137,7 +133,6 @@ class HomePageState extends State<HomePage> {
     notificationHandleClose(context);
     notificationHandleBackground(context);
     notificationHandleOpened(context);
-    // Call setState to rebuild the widget tree
   }
   @override
   void dispose() {
@@ -161,9 +156,7 @@ class HomePageState extends State<HomePage> {
   late List<AddbookingModel> playgroundbook = [];
   void _initialize() async {
     await checkInternetConnection();
-    print("ggggg");
     setState(() {});
-    // Other initialization tasks
   }
 
   Future<void> checkInternetConnection() async {
@@ -193,9 +186,7 @@ class HomePageState extends State<HomePage> {
       await firestore.collection('Users').doc(userid.userID).get();
 
       if (docSnapshot.exists) {
-        // Cast data to Map<String, dynamic>
         Map<String, dynamic>? data = docSnapshot.data() as Map<String, dynamic>?;
-// for(int ii = 0; ii <playgroundbook.length ;ii++){
 
 
         if (data != null ) {
@@ -219,9 +210,7 @@ class HomePageState extends State<HomePage> {
       await firestore.collection('AddPlayground').doc(ground.GroundId).get();
 
       if (docSnapshot.exists) {
-        // Cast data to Map<String, dynamic>
         Map<String, dynamic>? data = docSnapshot.data() as Map<String, dynamic>?;
-// for(int ii = 0; ii <playgroundbook.length ;ii++){
 
 
         if (data != null ) {
@@ -252,14 +241,11 @@ class HomePageState extends State<HomePage> {
         String normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
         CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
 
-
-
-// Query the PlayersChat collection to find the document where phone number matches
-        QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo: normalizedPhoneNumber).get();
+  QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo: normalizedPhoneNumber).get();
         print('shared phooone $normalizedPhoneNumber');
         if(adminSnapshot.docs.isNotEmpty){
           var adminDoc = adminSnapshot.docs.first;
-          String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+          String docId = adminDoc.id;
           print("Matched user docId: $docId");
           useridddd=docId;
 
@@ -268,7 +254,7 @@ class HomePageState extends State<HomePage> {
         await bookingdataa.where('userID', isEqualTo: useridddd).get();
 
         if(bookingSnapshot.docs.isNotEmpty){
-          playgroundbook = []; // Initialize as an empty list
+          playgroundbook = [];
           for (var document in bookingSnapshot.docs) {
             Map<String, dynamic> userData =
             document.data() as Map<String, dynamic>;
@@ -279,15 +265,12 @@ class HomePageState extends State<HomePage> {
             bookingData.UserPhone = user['phone'];
             bookingData.UserImg = user['profile_image'];
             Map<String, dynamic>? Grounddata =   await fetchgrounddatabyid(bookingData);
-            // print("grounddataaa${Grounddata!['groundName']}");
             bookingData.groundName = Grounddata!['groundName'];
             bookingData.groundphone = Grounddata['phone'];
             bookingData.groundImage = Grounddata['img'][0];
             bookingData.logoimage=Grounddata['LogoImg'];
-            // Store the document ID in the model
-            playgroundbook.add(bookingData); // Add playground to the list
+            playgroundbook.add(bookingData);
             print("bookingData is equal $bookingData");
-            // print("Stored document ID in model: ${user.id}");
           }
           setState(() {
 
@@ -297,9 +280,7 @@ class HomePageState extends State<HomePage> {
 
 
         if (playgroundbook.isNotEmpty) {
-          // Print and access specific fields for each booking
           for (int i = 0; i < playgroundbook.length; i++) {
-            // formatDate(playgroundbook[i].dateofBooking!);
 
             if (playgroundbook[i].AdminId != null) {
               print('AdminIdforbook: ${playgroundbook[i].AdminId}');
@@ -322,14 +303,11 @@ class HomePageState extends State<HomePage> {
         String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
         CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
 
-
-
-// Query the PlayersChat collection to find the document where phone number matches
-        QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo: normalizedPhoneNumber).get();
+  QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo: normalizedPhoneNumber).get();
         print('shared phooone $normalizedPhoneNumber');
         if(adminSnapshot.docs.isNotEmpty){
           var adminDoc = adminSnapshot.docs.first;
-          String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+          String docId = adminDoc.id;
           print("Matched user docId: $docId");
           useridddd=docId;
 
@@ -338,7 +316,7 @@ class HomePageState extends State<HomePage> {
         await bookingdataa.where('userID', isEqualTo: useridddd).get();
 
         if(bookingSnapshot.docs.isNotEmpty){
-          playgroundbook = []; // Initialize as an empty list
+          playgroundbook = [];
           for (var document in bookingSnapshot.docs) {
             Map<String, dynamic> userData =
             document.data() as Map<String, dynamic>;
@@ -353,10 +331,9 @@ class HomePageState extends State<HomePage> {
             bookingData.groundphone = Grounddata['phone'];
             bookingData.logoimage=Grounddata['LogoImg'];
             bookingData.groundImage = Grounddata['img'][0];
-            // Store the document ID in the model
-            playgroundbook.add(bookingData); // Add playground to the list
 
-            // print("Stored document ID in model: ${user.id}");
+            playgroundbook.add(bookingData);
+
           }
           setState(() {
 
@@ -364,24 +341,8 @@ class HomePageState extends State<HomePage> {
 
         }
 
-
-        // for (var doc in querySnapshot.docs) {
-        //   Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        //   var userDataList = data['AlluserData']?['UserData'] as List?;
-        //
-        //   if (userDataList != null) {
-        //     for (var userData in userDataList) {
-        //       if (userData['UserPhone'] == normalizedPhoneNumber) {
-        //         AddbookingModel booking = AddbookingModel.fromMap(data);
-        //         playgroundbook.add(booking); // Add each booking to the list
-        //         break;
-        //       }
-        //     }
-        //   }
-        // }
-
         if (playgroundbook.isNotEmpty) {
-          // Print and access specific fields for each booking
+
           for (int i = 0; i < playgroundbook.length; i++) {
             if (playgroundbook[i].AdminId != null) {
               print('AdminIdforbook: ${playgroundbook[i].AdminId}');
@@ -419,15 +380,13 @@ class HomePageState extends State<HomePage> {
 
   late List<AddPlayGroundModel> Nearbystadiums = [];
   String getTimeRange(String startTime) {
-    DateTime start = DateFormat.jm().parse(startTime); // Parse the start time
-    DateTime end = start.add(Duration(hours: 1)); // Add 1 hour for the end time
-
-    // Format the time in Arabic but numbers in English
+    DateTime start = DateFormat.jm().parse(startTime);
+    DateTime end = start.add(Duration(hours: 1));
     String formattedStartTime = DateFormat('h:mm a', 'ar')
         .format(start)
         .replaceAllMapped(RegExp(r'\d+'), (match) {
       return NumberFormat('en').format(
-          int.parse(match.group(0)!)); // Ensure numbers are in English
+          int.parse(match.group(0)!));
     });
     print("formattedStartTime$formattedStartTime");
     String formattedEndTime = DateFormat('h:mm a', 'ar')
@@ -456,11 +415,8 @@ class HomePageState extends State<HomePage> {
             playgroundAllData.add(user);
 
             String?  bookType = playgroundAllData[0].bookTypes![0].time;
-            // Assuming 'time' is the field you want to split into start and end time
             String timeofAddedPlayground = bookType ?? '';
             print("timeofAddedPlayground: $timeofAddedPlayground");
-
-            // Splitting time into startTime and endTime based on '-'
             List<String> times = timeofAddedPlayground.split(' - ');
             if (times.length == 2) {
               String startTime = times[0];
@@ -473,37 +429,21 @@ class HomePageState extends State<HomePage> {
               print("Start Time: $startTime");
               end=endTime;
               print("End Time: $endTime");
-              String adminId = userData['AdminId'] ?? ''; // Fetch AdminId directly from userData
-              user.adminId = adminId; // Assuming your model has a property for AdminId
+              String adminId = userData['AdminId'] ?? '';
+              user.adminId = adminId;
               print("Admin ID: $adminId");
-              // USerID=adminId;
-              // // You can use these times to update the UI or for other logic
-              // timeSlots.add(startTime); // Add start time to the list
-              // timeSlots.add(endTime);   // Add end time to the list
-
-              // You could directly update your UI here or save this data for later
-              // For example, show the start and end time in the UI
               setState(() {
-                // Update any UI components with the start and end times
-                // startTimeStr = startTime; // Assuming you have a state variable to store this
-                // endTimeStr = endTime;     // Assuming you have a state variable to store this
-              });
+                 });
 
-              // print("Time slots: ${timeSlots}");
             } else {
               print("Invalid time format: $timeofAddedPlayground");
             }
-            // }
-// الوقت  هو سبب المشكله
+
             print(
-                "PlayGroungboook Iiid : ${document.id}"); // Print the latest playground
-            // groundIiid = document.id;
-            // print("Docummmmmmbook$groundIiid");
-            // Normalize playType before comparing
-            String playType = user.playType!.trim();
+                "PlayGroungboook Iiid : ${document.id}");
+
           }
 
-          // Store the document ID in the AddPlayGroundModel object
           user.id = document.id;
         }
       }
@@ -533,11 +473,9 @@ class HomePageState extends State<HomePage> {
 
             }
             String?  bookType = Nearbystadiums[0].bookTypes![0].time;
-            // Assuming 'time' is the field you want to split into start and end time
+
             String timeofAddedPlayground = bookType ?? '';
             print("timeofAddedPlayground: $timeofAddedPlayground");
-
-            // Splitting time into startTime and endTime based on '-'
             List<String> times = timeofAddedPlayground.split(' - ');
             if (times.length == 2) {
               String startTime = times[0];
@@ -550,37 +488,19 @@ class HomePageState extends State<HomePage> {
               print("Start Time: $startTime");
               end=endTime;
               print("End Time: $endTime");
-              String adminId = userData['AdminId'] ?? ''; // Fetch AdminId directly from userData
-              user.adminId = adminId; // Assuming your model has a property for AdminId
+              String adminId = userData['AdminId'] ?? '';
+              user.adminId = adminId;
               print("Admin ID: $adminId");
-              // USerID=adminId;
-              // // You can use these times to update the UI or for other logic
-              // timeSlots.add(startTime); // Add start time to the list
-              // timeSlots.add(endTime);   // Add end time to the list
 
-              // You could directly update your UI here or save this data for later
-              // For example, show the start and end time in the UI
               setState(() {
-                // Update any UI components with the start and end times
-                // startTimeStr = startTime; // Assuming you have a state variable to store this
-                // endTimeStr = endTime;     // Assuming you have a state variable to store this
               });
 
-              // print("Time slots: ${timeSlots}");
             } else {
               print("Invalid time format: $timeofAddedPlayground");
             }
-            // }
-// الوقت  هو سبب المشكله
             print(
-                "PlayGroungboook Iiid : ${document.id}"); // Print the latest playground
-            // groundIiid = document.id;
-            // print("Docummmmmmbook$groundIiid");
-            // Normalize playType before comparing
-            String playType = user.playType!.trim();
+                "PlayGroungboook Iiid : ${document.id}");
 
-
-            // Store the document ID in the AddPlayGroundModel object
             user.id = document.id;
           }else{
 
@@ -613,13 +533,11 @@ class HomePageState extends State<HomePage> {
 
       if (querySnapshot.docs.isNotEmpty) {
         var playerDoc = querySnapshot.docs.first;
-        docId = playerDoc.id; // Get the docId of the matching Phoone number
+        docId = playerDoc.id;
         print("Document ID for the Phoone number: $docId");
         Map<String, dynamic> userData =
         querySnapshot.docs.first.data() as Map<String, dynamic>;
         User1 user = User1.fromMap(userData);
-
-        // Update the list and UI inside setState
         setState(() {
           user1.add(user);
         });
@@ -648,13 +566,13 @@ String adminoooken="";
     int hour = dateTime.hour;
     String period = hour >= 12 ? 'PM' : 'AM';
     hour = hour % 12;
-    hour = hour == 0 ? 12 : hour; // Convert hour '0' to '12'
+    hour = hour == 0 ? 12 : hour;
     return '$hour:${dateTime.minute.toString().padLeft(2, '0')} $period';
   }
 
   Future<void> _sendnotificationtofirebase(int type,String Groundid,day,booktime) async {
     setState(() {
-      _isLoading = true; // Set loading to true when starting the operation
+      _isLoading = true;
     });
 
     DateTime now = DateTime.now();
@@ -686,7 +604,6 @@ String adminoooken="";
       notificationType: type,
     );
 
-    // Add booking to Firestore
     await FirebaseFirestore.instance
         .collection('notification')
         .add(notificationModel.toMap());
@@ -694,17 +611,15 @@ String adminoooken="";
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'تم ارسال البيانات بنجاح', // "Data registered successfully"
+          'تم ارسال البيانات بنجاح',
           textAlign: TextAlign.center,
         ),
         backgroundColor: Color(0xFF1F8C4B),
       ),
     );
 
-    // Clear inputs after successful booking
-
     setState(() {
-      _isLoading = false; // Set loading to false when operation is complete
+      _isLoading = false;
     });
   }
 
@@ -780,7 +695,7 @@ String adminoooken="";
           print('Selected Times: ${doc['selectedTimes']}');
           DocumentSnapshot documentSnapshot = await firestore
               .collection('PlayersChat')
-              .doc(a_id) // Use adminid as the document ID
+              .doc(a_id)
               .get();
           if (documentSnapshot.exists) {
             var data = documentSnapshot.data() as Map<String, dynamic>;
@@ -789,7 +704,7 @@ print(data);
             adminoooken = data['FCMToken'];
             print ("admintoken is $adminoooken");
           }
-          // Delete the document
+
           await firestore.collection('booking').doc(doc.id).delete();
 if(selectedTime.contains("PM")){
   String ms=" "+"تم إلغاء حجز ملعب "+" $g_name "+"يوم"+ " ${dayName} "+" ${selectedTime.substring(0,4)} "+"م";
@@ -810,13 +725,11 @@ if(selectedTime.contains("PM")){
 
           print('Document with phone $userid, playgroundId $playgroundId, dayName $dayName, and selectedTime $selectedTime deleted successfully.');
           documentDeleted = true;
-
-          // Navigate to HomePage
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => HomePage()),
           );
-          return; // Exit after deletion
+          return;
         }
       }
 
@@ -834,12 +747,10 @@ if(selectedTime.contains("PM")){
       await firestore.collection('AddPlayground').doc(ground.playgroundIdstars).get();
 
       if (docSnapshot.exists) {
-        // Cast data to Map<String, dynamic>
+
         Map<String, dynamic>? data = docSnapshot.data() as Map<String, dynamic>?;
-// for(int ii = 0; ii <playgroundbook.length ;ii++){
 
-
-        if (data != null ) {
+ if (data != null ) {
           print("grounddaaaaaaaaaaaaata$data");
           return data;
 
@@ -895,7 +806,6 @@ if(selectedTime.contains("PM")){
           }
         }
 
-        // If there are less than five unique ratings, include them
         rat_list2 = idToHighestRatingMap.values.toList();
         if (rat_list2.length < 5) {
           var uniqueRatings = rat_list.where((rating) => !idToHighestRatingMap.containsKey(rating.playgroundIdstars!));
@@ -923,19 +833,14 @@ if(selectedTime.contains("PM")){
   String toArabicNumerals(num number) {
     const englishToArabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
 
-    // Convert the number to a string for processing
     String numberString = number.toString();
 
-    // Replace each digit in the number string with its Arabic equivalent
     String convertedNumber = numberString.replaceAllMapped(RegExp(r'\d'), (match) {
       return englishToArabicNumbers[int.parse(match.group(0)!)];
     });
     print("kkkkkkتتتتتتk$convertedNumber");
-    // If you want to assign the converted number back to the cost
-    // playgroundAllData[i].bookTypes![0].cost = convertedNumber; // Assuming cost is a String
-
     print("number equal $convertedNumber");
-    return convertedNumber; // Return the converted number
+    return convertedNumber;
   }
 
 
@@ -961,7 +866,6 @@ if(selectedTime.contains("PM")){
 
           allplaygrounds.add(user);
 
-          // Add playground to appropriate category
           if (user.playType == "كرة تنس" && teniss.isEmpty) {
             teniss.add(user);
           } else if (user.playType == "كرة سلة" && basket.isEmpty) {
@@ -972,12 +876,10 @@ if(selectedTime.contains("PM")){
             volly.add(user);
           }
 
-          user.id = document.id; // Store document ID
+          user.id = document.id;
         }
 
         loadfourtype();
-
-        // Update missingTypes list with any empty types
         updateMissingTypes();
       }
     } catch (e) {
@@ -1002,7 +904,7 @@ if(selectedTime.contains("PM")){
     if (footbal.isEmpty) missingTypes.add("كرة قدم");
     if (volly.isEmpty) missingTypes.add("كرة طائرة");
 
-    setState(() {}); // Update the UI to show the missing types
+    setState(() {});
   }
 
 
@@ -1022,11 +924,10 @@ if(selectedTime.contains("PM")){
           AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
 
           allplaygrounds.add(user);
-          print("PlayGroung Id shoka: ${document.id}"); // Print the latest playground
+          print("PlayGroung Id shoka: ${document.id}");
 
-          print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
-// Store the document ID in the AddPlayGroundModel object
-          // user.id = document.id;
+          print("allplaygrounds[i] : ${allplaygrounds.last}");
+
           user.id = document.id;
           print("Docummmmmm${user.id}");
           for(int m=0;m<allplaygrounds.length;m++){
@@ -1036,10 +937,6 @@ if(selectedTime.contains("PM")){
 
           }
 
-          // Store the document ID in the AddPlayGroundModel object
-          // idddddd1 = document.id;
-          // idddddd2=document.id;
-          // print("Docummmmmm$idddddd1    gggg$idddddd2");
         }
       }
     } catch (e) {
@@ -1049,28 +946,29 @@ if(selectedTime.contains("PM")){
 
   final NavigationController navigationController = Get.put(NavigationController());
   double opacity = 1.0;
-// Function to update the cancel count
-  Future<void> updateCancelCount(String userPhone) async {
+  Future<void> updateCancelCount(String userid)
+  async {
     final firestore = FirebaseFirestore.instance;
     final query = await firestore
         .collection('cancel_book')
-        .where('user_phone', isEqualTo: userPhone)
+        .where('userid', isEqualTo: docId)
+
         .get();
 
     if (query.docs.isNotEmpty) {
-      // Document exists, increment the numberofcancel field
       final doc = query.docs.first;
       final currentCount = doc['numberofcancel'] ?? 0;
-
       await firestore
           .collection('cancel_book')
           .doc(doc.id)
           .update({'numberofcancel': currentCount + 1});
+      print("dooooc$doc");
     } else {
-      // Document does not exist, create a new one with numberofcancel set to 1
+
       await firestore.collection('cancel_book').add({
-        'user_phone': userPhone,
+        'userid': docId,
         'numberofcancel': 1,
+
       });
     }
   }
@@ -1133,7 +1031,7 @@ if(selectedTime.contains("PM")){
                       ),
                     ),
                     _isLoading?   Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!, // base color
+                      baseColor: Colors.grey[300]!,
                       highlightColor: Colors.grey[300]!,
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
@@ -1164,8 +1062,7 @@ if(selectedTime.contains("PM")){
                                   ),
                                 )
                                     : Container()
-                                // You can show a placeholder or nothing if the list is empty.
-                              ],
+                             ],
                             ),
                           ),
                           user1.isNotEmpty && user1[0].img!=null&&user1[0].img!=""? Padding(
@@ -1174,7 +1071,6 @@ if(selectedTime.contains("PM")){
                                 child: Image(image:  NetworkImage(
                                   user1[0].img!,
 
-                                  // Adjust size as needed
                                 ),     width: 63,
                                   height: 63,
                                   fit: BoxFit.fitWidth,),
@@ -1187,7 +1083,7 @@ if(selectedTime.contains("PM")){
                               "assets/images/profile.png",
                               width: 63,
                               height: 63,
-                              // Adjust size as needed
+
                             ),
                           ),
                         ],
@@ -1221,8 +1117,7 @@ if(selectedTime.contains("PM")){
                                 ),
                               )
                                   : Container()
-                              // You can show a placeholder or nothing if the list is empty.
-                            ],
+                           ],
                           ),
                         ),
 
@@ -1245,7 +1140,6 @@ if(selectedTime.contains("PM")){
                                 child: Image(image:  NetworkImage(
                                   user1[0].img!,
 
-                                  // Adjust size as needed
                                 ),    width: 63,
                                   height: 63,
                                   fit: BoxFit.fitWidth,),
@@ -1270,7 +1164,7 @@ if(selectedTime.contains("PM")){
                               "assets/images/profile.png",
                               width: 63,
                               height: 63,
-                              // Adjust size as needed
+
                             ),
                           ),
                         ),
@@ -1345,118 +1239,7 @@ if(selectedTime.contains("PM")){
                 SizedBox(height: 10,),
 
                 fourtypes.isNotEmpty?
-                // Stack(
-                //   children: [
-                //     Padding(
-                //
-                //       padding: const EdgeInsets.only(right: 5,left: 5,bottom: 10),
-                //
-                //       child: CarouselSlider(
-                //         options: CarouselOptions(
-                //           height: 165.0,
-                //           aspectRatio: 16 / 9,
-                //           viewportFraction: 0.7,
-                //           initialPage: 1,
-                //           enableInfiniteScroll: false,
-                //           autoPlay: false,
-                //           enlargeCenterPage: true,
-                //           onPageChanged: (index, reason) {},
-                //           scrollDirection: Axis.horizontal,
-                //           reverse: true, // Reverses the scroll direction
-                //
-                //         ),
-                //         items: [
-                //           for (int i = 0; i < fourtypes.length; i++)
-                //             GestureDetector(
-                //               onTap: (){
-                //                 print("111114${fourtypes[i].id!}");
-                //                 Navigator.push(
-                //                   context,
-                //                   MaterialPageRoute(
-                //                     builder: (context) => PlaygroundName(fourtypes[i].id!),
-                //                   ),
-                //                 );
-                //               },
-                //               child: Padding(
-                //                 padding: EdgeInsets.symmetric(horizontal: 5.0,vertical: 5), // Add space between items
-                //                 child: Stack(
-                //                   children: [
-                //                     Material(
-                //                       elevation: 4, // Elevation of 4
-                //                       borderRadius: BorderRadius.circular(20.0),
-                //                       child: Container(
-                //                         height: 163,
-                //                         width: 274,
-                //                         decoration: BoxDecoration(
-                //                           borderRadius: BorderRadius.circular(20.0),
-                //                           shape: BoxShape.rectangle,
-                //
-                //                         ),
-                //                         child: ClipRRect(
-                //                           borderRadius: BorderRadius.circular(20.0),
-                //                           child: fourtypes[i].img!.isNotEmpty?  Image.network(
-                //                             fourtypes[i].img![0],
-                //                             height: 163,
-                //                             width: 274,
-                //                             fit: BoxFit.cover,)
-                //                               : Image.asset(
-                //                             'assets/images/newwadi.png',
-                //                             height: 163,
-                //                             width: 274,
-                //                             fit: BoxFit.cover,
-                //                           )
-                //                           ,
-                //                         ),
-                //                       ),
-                //                     ),
-                //                     Positioned(
-                //                       top: 6,
-                //                       right: 0,
-                //                       left: 0,
-                //                       bottom: 0,
-                //                       child: Container(
-                //                         decoration: BoxDecoration(
-                //                           gradient: LinearGradient(
-                //                             colors: [
-                //                               Colors.transparent,
-                //                               Color(0x1F8C4B).withOpacity(0.0),
-                //                               Color(0x1F8C4B).withOpacity(1.0),
-                //                             ],
-                //                             begin: Alignment.topCenter,
-                //                             end: Alignment.bottomCenter,
-                //                           ),
-                //                           borderRadius: BorderRadius.only(
-                //                             bottomLeft: Radius.circular(20.0),
-                //                             bottomRight: Radius.circular(20.0),
-                //                           ),
-                //                         ),
-                //                       ),
-                //                     ),
-                //                     Positioned(
-                //                       top: 113,
-                //                       right: 40,
-                //                       left: 55,
-                //                       child: Text(
-                //                         fourtypes[i].playgroundName!, // Updated English text
-                //                         style: TextStyle(
-                //                           fontFamily: 'Cairo',
-                //                           fontSize: 16,
-                //                           fontWeight: FontWeight.w700,
-                //                           color: Colors.white,
-                //                         ),
-                //                         textAlign: TextAlign.center,
-                //                       ),
-                //                     ),
-                //                   ],
-                //                 ),
-                //               ),
-                //             ),
-                //         ],
-                //       ),
-                //     ),
-                //
-                //   ],
-                // )
+
                 Stack(
                   children: [
                     Padding(
@@ -1488,7 +1271,6 @@ if(selectedTime.contains("PM")){
                               child: Stack(
                                 children: [
                                   Material(
-                                    // elevation: 4,
                                     borderRadius: BorderRadius.circular(20.0),
                                     child: Container(
                                       height: 163,
@@ -1576,7 +1358,6 @@ if(selectedTime.contains("PM")){
                             child: Image.asset(
                               "assets/images/amico.png",
 
-                              // Adjust size as needed
                             ),
                           ),
                         ),
@@ -1611,13 +1392,13 @@ if(selectedTime.contains("PM")){
                   padding: const EdgeInsets.only(right: 17.0,bottom: 9,top: 9,left: 17),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    reverse: true, // Reverses the scroll direction
+                    reverse: true,
 
                     child:Row(
                       children: [
-                        for (var i = 0; i < playgroundbook.length; i++) // Repeat the container 5 times
+                        for (var i = 0; i < playgroundbook.length; i++)
                           Padding(
-                            padding: const EdgeInsets.only(right: 8.0,left: 12,bottom: 3), // Adds spacing between containers
+                            padding: const EdgeInsets.only(right: 8.0,left: 12,bottom: 3),
                             child: Container(
 
                               width: 230,
@@ -1627,10 +1408,10 @@ if(selectedTime.contains("PM")){
                                 color: Color(0xFFF0F6FF),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withOpacity(0.7), // Increase opacity for a darker shadow
-                                    spreadRadius: 0, // Increase spread to make the shadow larger
-                                    blurRadius: 2, // Increase blur radius for a more diffused shadow
-                                    offset: Offset(0, 0), // Increase offset for a more pronounced shadow effect
+                                    color: Colors.grey.withOpacity(0.7),
+                                    spreadRadius: 0,
+                                    blurRadius: 2,
+                                    offset: Offset(0, 0),
                                   ),
                                 ],
                               ),
@@ -1640,7 +1421,7 @@ if(selectedTime.contains("PM")){
                                   Padding(
                                     padding: const EdgeInsets.only(right: 17.0, left: 17, top: 9),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end, // Aligns the content to the right
+                                      mainAxisAlignment: MainAxisAlignment.end,
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Column(
@@ -1662,12 +1443,11 @@ if(selectedTime.contains("PM")){
 
                                           ],
                                         ),
-                                        SizedBox(width: 10), // Adds space between the text and the image
+                                        SizedBox(width: 10),
                                         ClipOval(
                                           child: Image(image:  NetworkImage(
                                             playgroundbook [i].logoimage!,
 
-                                            // Adjust size as needed
                                           ),
                                             fit: BoxFit.fitWidth,
                                             height: 30,
@@ -1718,9 +1498,9 @@ if(selectedTime.contains("PM")){
 
                                               playgroundbook[i].selectedTimes!.isNotEmpty?   TextSpan(
                                                 text: getTimeRange(
-                                                    playgroundbook[i].selectedTimes![0]??""), // Add formatted time range
+                                                    playgroundbook[i].selectedTimes![0]??""),
                                               ):TextSpan(
-                                                text:"", // Add formatted time range
+                                                text:"",
                                               ),
                                             ],
                                           ),
@@ -1747,7 +1527,6 @@ if(selectedTime.contains("PM")){
                                           ),
                                         ),
                                         Text(
-                                          // " ${playgroundAllData[i].bookTypes![0].cost!}",
 
                                           toArabicNumerals(playgroundbook[i].totalcost!),
                                           style: TextStyle(
@@ -1778,8 +1557,8 @@ if(selectedTime.contains("PM")){
                                         onTap: (){
                                           print("groundName${playgroundbook[i]
                                               .groundName!}");
-                                          updateCancelCount(playgroundbook[i]
-                                              .UserPhone!);
+                                            updateCancelCount(
+                                          playgroundbook[i].userID!,);
                                           deleteCancelByPhoneAndPlaygroundId(
                                               playgroundbook[i].userID!,
                                               playgroundbook[i].AdminId!,
@@ -1796,11 +1575,8 @@ if(selectedTime.contains("PM")){
                                             decoration: BoxDecoration(
                                               borderRadius: BorderRadius.circular(30.0),
                                               shape: BoxShape.rectangle,
-                                              color: Color(0xFFB3261E), // Background color of the container
-                                              // border: Border.all(
-                                              //   width: 1.0, // Border width
-                                              //   color: Colors.black
-                                              // ),
+                                              color: Color(0xFFB3261E),
+
                                             ),
                                             child: Center(
                                               child: Text(
@@ -1809,7 +1585,7 @@ if(selectedTime.contains("PM")){
                                                   fontFamily: 'Cairo',
                                                   fontSize: 11.0,
                                                   fontWeight: FontWeight.w500,
-                                                  color: Colors.white, // Text color
+                                                  color: Colors.white,
                                                 ),
                                               ),
                                             ),
@@ -1834,11 +1610,8 @@ if(selectedTime.contains("PM")){
                                             decoration: BoxDecoration(
                                               borderRadius: BorderRadius.circular(30.0),
                                               shape: BoxShape.rectangle,
-                                              color: Color(0xFF064821), // Background color of the container
-                                              // border: Border.all(
-                                              //   width: 1.0, // Border width
-                                              //   color: Colors.black
-                                              // ),
+                                              color: Color(0xFF064821),
+
                                             ),
                                             child: Center(
                                               child: Text(
@@ -1847,7 +1620,7 @@ if(selectedTime.contains("PM")){
                                                   fontFamily: 'Cairo',
                                                   fontSize : 11,
                                                   fontWeight: FontWeight.w500,
-                                                  color: Colors.white, // Text color
+                                                  color: Colors.white,
                                                 ),
                                               ),
                                             ),
@@ -1860,16 +1633,7 @@ if(selectedTime.contains("PM")){
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       GestureDetector(
-                                        // onTap: (){
-                                        //   print("phooonefff${playgroundbook[i]
-                                        //       .AllUserData![0].UserPhone!}");
-                                        //   updateCancelCount(playgroundbook[i]
-                                        //       .AllUserData![0].UserPhone!);
-                                        //   deleteCancelByPhoneAndPlaygroundId(playgroundbook[i]
-                                        //       .AllUserData![0].UserPhone!,playgroundbook[i]
-                                        //       .NeededGroundData![0].GroundId!,playgroundbook[i].selectedTimes!.first,playgroundbook[i].dateofBooking!);
-                                        //
-                                        // },
+
                                         child: Padding(
                                           padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),
                                           child: Container(
@@ -1878,11 +1642,7 @@ if(selectedTime.contains("PM")){
                                             decoration: BoxDecoration(
                                               borderRadius: BorderRadius.circular(30.0),
                                               shape: BoxShape.rectangle,
-                                              // color: Color(0xFFB3261E), // Background color of the container
-                                              // border: Border.all(
-                                              //   width: 1.0, // Border width
-                                              //   color: Colors.black
-                                              // ),
+
                                             ),
                                             child: Center(
                                               child: Text(
@@ -1891,7 +1651,7 @@ if(selectedTime.contains("PM")){
                                                   fontFamily: 'Cairo',
                                                   fontSize: 11.0,
                                                   fontWeight: FontWeight.w500,
-                                                  color: Colors.white, // Text color
+                                                  color: Colors.white,
                                                 ),
                                               ),
                                             ),
@@ -1908,12 +1668,7 @@ if(selectedTime.contains("PM")){
                                             width: 66,
                                             decoration: BoxDecoration(
                                               borderRadius: BorderRadius.circular(30.0),
-                                              // shape: BoxShape.rectangle,
-                                              // color: Color(0xFF064821), // Background color of the container
-                                              // border: Border.all(
-                                              //   width: 1.0, // Border width
-                                              //   color: Colors.black
-                                              // ),
+
                                             ),
                                             child: Center(
                                               child: Text(
@@ -1922,7 +1677,7 @@ if(selectedTime.contains("PM")){
                                                   fontFamily: 'Cairo',
                                                   fontSize : 11,
                                                   fontWeight: FontWeight.w500,
-                                                  color: Colors.white, // Text color
+                                                  color: Colors.white,
                                                 ),
                                               ),
                                             ),
@@ -1955,7 +1710,6 @@ if(selectedTime.contains("PM")){
                           child: Image.asset(
                             "assets/images/Folder.png",
 
-                            // Adjust size as needed
                           ),
                         ),
                       ),
@@ -1986,7 +1740,7 @@ if(selectedTime.contains("PM")){
                 ),
                 Nearbystadiums.isNotEmpty? SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    reverse: true, // Reverses the scroll direction
+                    reverse: true,
 
                     child:Nearbystadiums.isNotEmpty?
                     Padding(
@@ -2010,8 +1764,8 @@ if(selectedTime.contains("PM")){
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20.0),
                                 ),
-                                elevation: 4, // Adjust elevation to control the shadow
-                                margin: EdgeInsets.all(8), // Adjust margin as needed
+                                elevation: 4,
+                                margin: EdgeInsets.all(8),
                                 child: Stack(
                                   children: [
                                     Container(
@@ -2022,15 +1776,12 @@ if(selectedTime.contains("PM")){
                                         shape: BoxShape.rectangle,
                                       ),
                                       child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
+                                        borderRadius: BorderRadius.circular(20.0),
                                         child: Nearbystadiums[i].img!.isNotEmpty?Image.network(
-                                          // Check if img is a list and has at least one image, otherwise use it as a string
-
-                                          Nearbystadiums[i].img![0], // Use the first image in the list (or the only image if it's a single string turned into a list)
-                                          // Fallback to an empty string if no image is available
+                                         Nearbystadiums[i].img![0],
                                           height: 163,
                                           width: 274,
-                                          fit: BoxFit.fill, // Ensure the image covers the container
+                                          fit: BoxFit.fill,
                                         ):Image(
                                           image: AssetImage("assets/images/newground.png"),
                                           color: Colors.white,
@@ -2041,7 +1792,7 @@ if(selectedTime.contains("PM")){
                                       ),
                                     ),
                                     Positioned(
-                                      top: 6, // Match the top position of the text
+                                      top: 6,
                                       right: 0,
                                       left: 0,
                                       bottom: 0,
@@ -2049,9 +1800,9 @@ if(selectedTime.contains("PM")){
                                         decoration: BoxDecoration(
                                           gradient: LinearGradient(
                                             colors: [
-                                              Colors.transparent, // Start with transparent
-                                              Color(0x1F8C4B).withOpacity(0.0), // Start with #1F8C4B at 0% opacity (fully transparent)
-                                              Color(0x1F8C4B).withOpacity(1.0), // End with #1F8C4B at 100% opacity (fully opaque)
+                                              Colors.transparent,
+                                              Color(0x1F8C4B).withOpacity(0.0),
+                                              Color(0x1F8C4B).withOpacity(1.0),
                                             ],
                                             begin: Alignment.topCenter,
                                             end: Alignment.bottomCenter,
@@ -2064,7 +1815,7 @@ if(selectedTime.contains("PM")){
                                       ),
                                     ),
                                     Positioned(
-                                      top: 113, // Adjust the top position
+                                      top: 113,
                                       right: 40,
                                       left: 55,
                                       child: Text(
@@ -2075,7 +1826,7 @@ if(selectedTime.contains("PM")){
                                           fontWeight: FontWeight.w700,
                                           color: Colors.white,
                                         ),
-                                        textAlign: TextAlign.center, // Center text alignment
+                                        textAlign: TextAlign.center,
                                       ),
                                     ),
                                   ],
@@ -2104,8 +1855,8 @@ if(selectedTime.contains("PM")){
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20.0),
                               ),
-                              elevation: 4, // Adjust elevation to control the shadow
-                              margin: EdgeInsets.all(8), // Adjust margin as needed
+                              elevation: 4,
+                              margin: EdgeInsets.all(8),
                               child: Stack(
                                 children: [
                                   Container(
@@ -2116,15 +1867,12 @@ if(selectedTime.contains("PM")){
                                       shape: BoxShape.rectangle,
                                     ),
                                     child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
+                                      borderRadius: BorderRadius.circular(20.0),
                                       child: playgroundAllData[i].img!.isNotEmpty?Image.network(
-                                        // Check if img is a list and has at least one image, otherwise use it as a string
-
-                                        playgroundAllData[i].img![0], // Use the first image in the list (or the only image if it's a single string turned into a list)
-                                        // Fallback to an empty string if no image is available
+                                        playgroundAllData[i].img![0],
                                         height: 163,
                                         width: 274,
-                                        fit: BoxFit.fill, // Ensure the image covers the container
+                                        fit: BoxFit.fill,
                                       ):Image(
                                         image: AssetImage("assets/images/newground.png"),
                                         color: Colors.white,
@@ -2135,7 +1883,7 @@ if(selectedTime.contains("PM")){
                                     ),
                                   ),
                                   Positioned(
-                                    top: 6, // Match the top position of the text
+                                    top: 6,
                                     right: 0,
                                     left: 0,
                                     bottom: 0,
@@ -2143,9 +1891,9 @@ if(selectedTime.contains("PM")){
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
                                           colors: [
-                                            Colors.transparent, // Start with transparent
-                                            Color(0x1F8C4B).withOpacity(0.0), // Start with #1F8C4B at 0% opacity (fully transparent)
-                                            Color(0x1F8C4B).withOpacity(1.0), // End with #1F8C4B at 100% opacity (fully opaque)
+                                            Colors.transparent,
+                                            Color(0x1F8C4B).withOpacity(0.0),
+                                            Color(0x1F8C4B).withOpacity(1.0),
                                           ],
                                           begin: Alignment.topCenter,
                                           end: Alignment.bottomCenter,
@@ -2158,7 +1906,7 @@ if(selectedTime.contains("PM")){
                                     ),
                                   ),
                                   Positioned(
-                                    top: 113, // Adjust the top position
+                                    top: 113,
                                     right: 40,
                                     left: 55,
                                     child: Text(
@@ -2169,7 +1917,7 @@ if(selectedTime.contains("PM")){
                                         fontWeight: FontWeight.w700,
                                         color: Colors.white,
                                       ),
-                                      textAlign: TextAlign.center, // Center text alignment
+                                      textAlign: TextAlign.center,
                                     ),
                                   ),
                                 ],
@@ -2189,8 +1937,6 @@ if(selectedTime.contains("PM")){
 
                               child:  Image.asset(
                                 "assets/images/amico.png",
-
-                                // Adjust size as needed
                               ),
                             ),
                           ),
@@ -2220,8 +1966,6 @@ if(selectedTime.contains("PM")){
                             opacity: 0.5,
                             child: Image.asset(
                               "assets/images/amico.png",
-
-                              // Adjust size as needed
                             ),
                           ),
                         ),
@@ -2254,7 +1998,7 @@ if(selectedTime.contains("PM")){
                 ),
                 rat_list2.isNotEmpty?    SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  reverse: true, // Reverses the scroll direction
+                  reverse: true,
                   child: rat_list2.isNotEmpty
                       ? Padding(
                     padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),
@@ -2360,8 +2104,6 @@ if(selectedTime.contains("PM")){
 
                             child:  Image.asset(
                               "assets/images/amico.png",
-
-                              // Adjust size as needed
                             ),
                           ),
                         ),
@@ -2391,8 +2133,6 @@ if(selectedTime.contains("PM")){
                             opacity: 0.5,
                             child: Image.asset(
                               "assets/images/amico.png",
-
-                              // Adjust size as needed
                             ),
                           ),
                         ),
@@ -2419,7 +2159,6 @@ if(selectedTime.contains("PM")){
         bottomNavigationBar: CurvedNavigationBar(
           height: 60,
           index: 3,
-          // Use the dynamic index
           items: [
             Icon(Icons.more_horiz, color: Colors.white, size: 25),
 
@@ -2430,8 +2169,6 @@ if(selectedTime.contains("PM")){
             Image.asset('assets/images/home.png',
                 height: 21, width: 21, color: Colors.white),
           ],
-          // buttonBackgroundColor: Colors.transparent, // Set button background color to transparent
-          // backgroundColor: Colors.transparent, // Set background color to transparent
 
           color: Color(0xFF064821),
           buttonBackgroundColor: Color(0xFFBACCE6),
@@ -2443,15 +2180,8 @@ if(selectedTime.contains("PM")){
           onTap: (index) {
             setState(() {
               selectedIndex = index;
-              // Update opacity based on the selected index
               opacity= 0.5;
             });
-            // setState(() {
-            //   navigationController.updateIndex(index);
-            //   // Update opacity based on the selected index
-            //   opacity = index == 2 ? 0.9 : 1.0;
-            // });// Update the index dynamically
-            // Handle navigation based on index
             switch (index) {
               case 0:
                 Get.to(
@@ -2459,7 +2189,7 @@ if(selectedTime.contains("PM")){
                   arguments: {'from': 'home'},
                 )?.then((_){
                   navigationController
-                      .updateIndex(0); // Update index when navigating back
+                      .updateIndex(0);
                 });
                 break;
 
@@ -2475,20 +2205,18 @@ if(selectedTime.contains("PM")){
                   arguments: {'from': 'home'},
                 )?.then((_){
                   navigationController
-                      .updateIndex(1); // Update index when navigating back
+                      .updateIndex(1);
                 });
 
                 break;
 
               case 3:
-              // Get.to(() => HomePage())?.then((_) {
-              //   navigationController.updateIndex(3);
-              // });
+
                 break;
             }
           },
         ),
-        // ),
+
       ),
     );
   }
@@ -2507,7 +2235,6 @@ if(selectedTime.contains("PM")){
               height: 200,
               child: Image.asset(
                 'assets/images/wifirr.png',
-                // Adjust the height as needed
               ),
             ),
           ),
@@ -2528,6 +2255,5 @@ if(selectedTime.contains("PM")){
       ),
     );
   }
-// Your UI design when there's no internet connection
 
 }

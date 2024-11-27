@@ -1,35 +1,23 @@
-class GroupModel {
-  final String? adminId;
-  final String? teamId;
-  final String? name;
-  final String? phone;
-  final String? profileImage;
+class userDataofgroup {
+  // Assuming these are the properties of your User class
+  String? UserId;
+  String? AdminId;
+  String?TeamId;
 
-  GroupModel({
-    required this.adminId,
-    required this.teamId,
-    required this.name,
-    required this.phone,
-    required this.profileImage,
-  });
-
-
-  // Factory constructor to create an instance from a map
-  factory GroupModel.fromMap(Map<String, dynamic> map) {
-    return GroupModel(
-      adminId: map['AdminId'],
-      teamId:map['TeamId']??false,
-      name: map['name'] ?? '',  // Get AdminId directly from the map
-      phone:map['phone'],
-      profileImage: map['profile_image'],
+  // Constructor
+  userDataofgroup({this.UserId, this.AdminId, this.TeamId});
+  // fromMap method to create a User object from a Map
+  factory userDataofgroup.fromMap(Map<String, dynamic> map) {
+    return userDataofgroup(
+      UserId: map['userId'],
+      AdminId: map['AdminId'],
+      TeamId:map['TeamId'],
 
     );
   }
-
-  // Method to convert the instance to
-
+  // toString method to print the User object
   @override
   String toString() {
-    return 'GroupModel(name: $name, phone: $phone, adminId: $adminId),TeamId: $teamId, photo: $profileImage';
+    return 'User(userid: $UserId, adminid: $AdminId,groupid: $TeamId)';
   }
 }

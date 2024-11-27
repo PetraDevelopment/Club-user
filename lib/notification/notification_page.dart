@@ -16,11 +16,8 @@ import '../../Home/HomePage.dart';
 import '../../Home/Userclass.dart';
 import '../../Menu/menu.dart';
 import '../../Register/SignInPage.dart';
-import '../../Splach/LoadingScreen.dart';
 import '../../my_reservation/my_reservation.dart';
-import '../../notification/model/modelsendtodevice.dart';
-import '../../notification/notification_repo.dart';
-import '../../playground_model/AddPlaygroundModel.dart';
+import '../My_group/my_group.dart';
 import '../PlayGround_Name/PlayGroundName.dart';
 import 'model/send_modelfirebase.dart';
 
@@ -213,14 +210,13 @@ if(notification.adminreply==true){
   void initState() {
     checkInternetConnection();
     _loadUserData();
+
     super.initState();
 
   }
 int x=0;
   @override
   Widget build(BuildContext context) {
-
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
@@ -272,121 +268,51 @@ int x=0;
           children: [
             SizedBox(height: 15,),
             for(int x=0;x<notificationlist.length;x++)
-            Padding(
-              padding: const EdgeInsets.only(
-                  right: 25.0, left: 25),
-              child:
-            
-              Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Container(
+            GestureDetector(
+              onTap: (){
+                print("objectnotificationlist[x].idd!${notificationlist[x].idd!}");
+                _updateclick(notificationlist[x].idd!);
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    right: 25.0, left: 25),
+                child:
 
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
 
-                      children: [
-                        notificationlist[x].click==false?  Visibility(
-                          child: Padding(
-                            padding:  EdgeInsets.only(left: 5,right: 5),
-                            child: Container(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
-                              child: ClipOval(
-                                child: Icon(
-                                  Icons.circle,
-                                  size: 15,
-                                  color: Color(0xFFEB5757),
+                        children: [
+                       notificationlist[x].click==false?  Visibility(
+                            child: Padding(
+                              padding:  EdgeInsets.only(left: 5,right: 5),
+                              child: Container(
+
+                                child: ClipOval(
+                                  child: Icon(
+                                    Icons.circle,
+                                    size: 15,
+                                    color: Color(0xFFEB5757),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ):Container(),
-                     notificationlist[x].notificationType==1?
-                     Row(
-                       mainAxisAlignment: MainAxisAlignment.end,
-                       crossAxisAlignment: CrossAxisAlignment.start,
-                       children: [
-    Text('تم اضافة حجز '+'${ notificationlist[x].groundname}'+' '+'يوم'+' ' +'${ notificationlist[x].day}'+' '+'${notificationlist[x].bookingtime.toString().substring(0,4)}', style: TextStyle(
-
-
-                             fontSize: 14,
-                             fontFamily: 'Cairo',
-                             fontWeight: FontWeight.w700,
-                             color: Color(0xFF091C3F)
-                         ),),
-                         SizedBox(width: 12,),
-                         Image.asset(
-                           'assets/images/notification-bing.png.png',
-                           height: 18,
-                           width: 18,
-                           fit: BoxFit.cover,
-                         ),
-                         SizedBox(width: 6,)
-                       ],
-                     ):
-                     notificationlist[x].notificationType==2?
-                     Row(
-                       mainAxisAlignment: MainAxisAlignment.end,
-                       crossAxisAlignment: CrossAxisAlignment.start,
-                       children: [
-
-                         Text('تم الغاء حجز '+'${ notificationlist[x].groundname}'+' '+'يوم'+' ' +'${ notificationlist[x].day}'+' '+'${notificationlist[x].bookingtime.substring(0,4)}', style: TextStyle(
-                             fontSize: 14,
-                             fontFamily: 'Cairo',
-                             fontWeight: FontWeight.w700,
-                             color: Color(0xFF091C3F)
-                         ),),
-                         SizedBox(width: 12,),
-                         Image.asset(
-                           'assets/images/notification-bing.png.png',
-                           height: 18,
-                           width: 18,
-                           fit: BoxFit.cover,
-                         ),
-                         SizedBox(width: 6,)
-                       ],
-                     ): notificationlist[x].notificationType==3?
-                     Row(
-                       mainAxisAlignment: MainAxisAlignment.end,
-                       crossAxisAlignment: CrossAxisAlignment.start,
-                       children: [
-    Text('تم تأكيد حجز '+'${ notificationlist[x].groundname}'+' '+'يوم'+' ' +'${ notificationlist[x].day}'+' '+'${notificationlist[x].bookingtime.substring(0,4)}', style: TextStyle(
-
-
-                             fontSize: 14,
-                             fontFamily: 'Cairo',
-                             fontWeight: FontWeight.w700,
-                             color: Color(0xFF091C3F)
-                         ),),
-                         SizedBox(width: 12,),
-                         Image.asset(
-                           'assets/images/notification-bing.png.png',
-                           height: 18,
-                           width: 18,
-                           fit: BoxFit.cover,
-                         ),
-                         SizedBox(width: 6,)
-                       ],
-                     ): notificationlist[x].notificationType==4?
-                     GestureDetector(
-                       onTap: (){
-                         Navigator.push(
-                           context,
-                           MaterialPageRoute(
-                             builder: (context) => PlaygroundName(notificationlist[x].groundid),
-                           ),
-                         );
-                       },
-                       child: Row(
+                          ):Container(),
+                       notificationlist[x].notificationType==1?
+                       Row(
                          mainAxisAlignment: MainAxisAlignment.end,
                          crossAxisAlignment: CrossAxisAlignment.start,
                          children: [
+                  Text('تم اضافة حجز '+'${ notificationlist[x].groundname}'+' '+'يوم'+' ' +'${ notificationlist[x].day}'+' '+'${notificationlist[x].bookingtime.toString().substring(0,4)}', style: TextStyle(
 
-                           Text('تم اضافة ملعب '+'${ notificationlist[x].groundname}'+' '+'يوم'+' ' +'${ notificationlist[x].day}'+' '+'${notificationlist[x].bookingtime.substring(0,4)}', style: TextStyle(
 
-                           fontSize: 14,
+                               fontSize: 14,
                                fontFamily: 'Cairo',
-                               fontWeight: FontWeight.w700,
+                               fontWeight:notificationlist[x].click==false? FontWeight.w700:FontWeight.w400,
                                color: Color(0xFF091C3F)
                            ),),
                            SizedBox(width: 12,),
@@ -398,58 +324,143 @@ int x=0;
                            ),
                            SizedBox(width: 6,)
                          ],
-                       ),
-                     ): notificationlist[x].notificationType==5?
-                     Row(
-                       mainAxisAlignment: MainAxisAlignment.end,
-                       crossAxisAlignment: CrossAxisAlignment.start,
-                       children: [
+                       ):
+                       notificationlist[x].notificationType==2?
+                       Row(
+                         mainAxisAlignment: MainAxisAlignment.end,
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
 
-                         Text('تم اضافتك فى مجموعه ', style: TextStyle(
+                           Text('تم الغاء حجز '+'${ notificationlist[x].groundname}'+' '+'يوم'+' ' +'${ notificationlist[x].day}'+' '+'${notificationlist[x].bookingtime.substring(0,4)}', style: TextStyle(
+                               fontSize: 14,
+                               fontFamily: 'Cairo',
+                               fontWeight:notificationlist[x].click==false? FontWeight.w700:FontWeight.w400,
+                               color: Color(0xFF091C3F)
+                           ),),
+                           SizedBox(width: 12,),
+                           Image.asset(
+                             'assets/images/notification-bing.png.png',
+                             height: 18,
+                             width: 18,
+                             fit: BoxFit.cover,
+                           ),
+                           SizedBox(width: 6,)
+                         ],
+                       ): notificationlist[x].notificationType==3?
+                       Row(
+                         mainAxisAlignment: MainAxisAlignment.end,
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+                  Text('تم تأكيد حجز '+'${ notificationlist[x].groundname}'+' '+'يوم'+' ' +'${ notificationlist[x].day}'+' '+'${notificationlist[x].bookingtime.substring(0,4)}', style: TextStyle(
+
+
+                               fontSize: 14,
+                               fontFamily: 'Cairo',
+                               fontWeight:notificationlist[x].click==false? FontWeight.w700:FontWeight.w400,
+                               color: Color(0xFF091C3F)
+                           ),),
+                           SizedBox(width: 12,),
+                           Image.asset(
+                             'assets/images/notification-bing.png.png',
+                             height: 18,
+                             width: 18,
+                             fit: BoxFit.cover,
+                           ),
+                           SizedBox(width: 6,)
+                         ],
+                       ): notificationlist[x].notificationType==4?
+                       GestureDetector(
+                         onTap: (){
+                           Navigator.push(
+                             context,
+                             MaterialPageRoute(
+                               builder: (context) => PlaygroundName(notificationlist[x].groundid),
+                             ),
+                           );
+                         },
+                         child: Row(
+                           mainAxisAlignment: MainAxisAlignment.end,
+                           crossAxisAlignment: CrossAxisAlignment.start,
+                           children: [
+
+                             Text('تم اضافة ملعب '+'${ notificationlist[x].groundname}'+' '+'يوم'+' ' +'${ notificationlist[x].day}'+' '+'${notificationlist[x].bookingtime.substring(0,4)}', style: TextStyle(
+
                              fontSize: 14,
-                             fontFamily: 'Cairo',
-                             fontWeight: FontWeight.w700,
-                             color: Color(0xFF091C3F)
-                         ),),
-                         SizedBox(width: 12,),
-                         Image.asset(
-                           'assets/images/notification-bing.png.png',
-                           height: 18,
-                           width: 18,
-                           fit: BoxFit.cover,
+                                 fontFamily: 'Cairo',
+                                 fontWeight:notificationlist[x].click==false? FontWeight.w700:FontWeight.w400,
+                                 color: Color(0xFF091C3F)
+                             ),),
+                             SizedBox(width: 12,),
+                             Image.asset(
+                               'assets/images/notification-bing.png.png',
+                               height: 18,
+                               width: 18,
+                               fit: BoxFit.cover,
+                             ),
+                             SizedBox(width: 6,)
+                           ],
                          ),
-                         SizedBox(width: 6,)
-                       ],
-                     ):Container(),
+                       ): notificationlist[x].notificationType==5?
+                       GestureDetector(
+                         onTap: (){
+                           Navigator.push(
+                             context,
+                             MaterialPageRoute(
+                               builder: (context) => My_group(),
+                             ),
+                           );
+                         },
+                         child: Row(
+                           mainAxisAlignment: MainAxisAlignment.end,
+                           crossAxisAlignment: CrossAxisAlignment.start,
+                           children: [
 
+                             Text('تم اضافتك فى مجموعه ', style: TextStyle(
+                                 fontSize: 14,
+                                 fontFamily: 'Cairo',
+                                 fontWeight:notificationlist[x].click==false? FontWeight.w700:FontWeight.w400,
+                                 color: Color(0xFF091C3F)
+                             ),),
+                             SizedBox(width: 12,),
+                             Image.asset(
+                               'assets/images/notification-bing.png.png',
+                               height: 18,
+                               width: 18,
+                               fit: BoxFit.cover,
+                             ),
+                             SizedBox(width: 6,)
+                           ],
+                         ),
+                       ):Container(),
 
-                      ],
-                    )
-                    ),
-                    Padding(
-                      padding:  EdgeInsets.only(right: 34.0,top: 5),
-                      child: Text('Aug 12, 2020 at 12:08 PM', style: TextStyle(
-                          fontSize: 13,
-                          fontFamily: 'Cairo',
-                          fontWeight: FontWeight.w400,
-                          color: Colors.grey
-                      ),),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          top: 0, bottom: 0),
-                      child: Divider(
-                        // color: Color(0xFF091C3F14),
-                        color: Colors.grey.shade300,
-
-                        // Adjust the color of the line as needed
-                        thickness:
-                        1, // Adjust the thickness of the line as needed
-                      ),
-                    ),
-                  ]
-                          ),
+                        ],
                       )
+                      ),
+                      Padding(
+                        padding:  EdgeInsets.only(right: 34.0,top: 5),
+                        child: Text('${notificationlist[x].time}'+'  '+'${notificationlist[x].date}', style: TextStyle(
+                            fontSize: 13,
+                            fontFamily: 'Cairo',
+                            fontWeight: FontWeight.w400,
+                            color: Colors.grey
+                        ),),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            top: 0, bottom: 0),
+                        child: Divider(
+                          // color: Color(0xFF091C3F14),
+                          color: Colors.grey.shade300,
+
+                          // Adjust the color of the line as needed
+                          thickness:
+                          1, // Adjust the thickness of the line as needed
+                        ),
+                      ),
+                    ]
+                            ),
+                        ),
+            )
           ],
         ),
       ):Container(),
