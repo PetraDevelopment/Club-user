@@ -306,21 +306,18 @@ class PlaygroundNameState extends State<PlaygroundName>
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('Favourite')
           .where('playground_id', isEqualTo: widget.id)
-          .where('user_phone', isEqualTo: user?.phoneNumber)
+          .where('userid', isEqualTo: useridddd)
           .get();
 
       if (snapshot.docs.isNotEmpty) {
-        // Delete the document from Firebase if it exists
         await FirebaseFirestore.instance
             .collection('Favourite')
             .doc(snapshot.docs.first.id)
             .delete();
       } else {
-        // Handle the case where the document to delete is not found
         print('Document not found to delete.');
       }
     } catch (e) {
-      // Handle any errors that occur during the deletion process
       print('Error deleting document: $e');
     }
   }
@@ -343,12 +340,9 @@ class PlaygroundNameState extends State<PlaygroundName>
 
             allplaygrounds.add(user);
             print(
-                "PlayGroung Id : ${document.id}"); // Print the latest playground
-
+                "PlayGroung Id : ${document.id}");
             print(
-                "allplaygrounds[i] : ${user.bookTypes}"); // Print the latest playground
-
-            // Store the document ID in the AddPlayGroundModel object
+                "allplaygrounds[i] : ${user.bookTypes}");
             idddddd = document.id;
             allplaygrounds.last.favourite = favlist[0].isfav;
             print("init${favlist[0].isfav}");
@@ -373,31 +367,20 @@ class PlaygroundNameState extends State<PlaygroundName>
       QuerySnapshot querySnapshot = await playerchat
           .where('phone', isEqualTo: normalizedPhoneNumber)
           .get();
-
-      // Check if a document is found
       if (querySnapshot.docs.isNotEmpty) {
-        // Get the document data
         Map<String, dynamic> userData =
         querySnapshot.docs.first.data() as Map<String, dynamic>;
-
-        // Create a User object from the map
         User1 user = User1.fromMap(userData);
-
-        // Add the User object to the list
         user1.add(user);
         userdata = user1;
         print("userdata User: ${userdata[0].name}");
         print("Loaded User: ${user1[0].name}");
-
-        // Print the user data
         print("User data: $userData");
       } else {
         print("User not found with phone number $phoneNumber");
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.clear();
-        // Clear SharedPreferences
 
-        // Navigate to the SigninPage using GetX
         Get.offAll(() => SigninPage());
       }
     } catch (e) {
@@ -1534,69 +1517,6 @@ class PlaygroundNameState extends State<PlaygroundName>
                       ),
                     ),
 
-
-
-                    // Column(
-                    //   children: List.generate(
-                    //     (allplaygrounds[0]
-                    //                 .availableFacilities!
-                    //                 .where((facility) =>
-                    //                     facility != "حجز نصف ساعة")
-                    //                 .length /
-                    //             2)
-                    //         .ceil(),
-                    //     (index) {
-                    //       // Get two items at a time, skipping "حجز نصف ساعة"
-                    //       final facilitiesChunk = allplaygrounds[0]
-                    //           .availableFacilities!
-                    //           .where((facility) =>
-                    //               facility != "حجز نصف ساعة")
-                    //           .skip(index * 2)
-                    //           .take(2)
-                    //           .toList();
-                    //
-                    //       return Row(
-                    //         mainAxisAlignment: MainAxisAlignment.start,
-                    //         crossAxisAlignment:
-                    //             CrossAxisAlignment.center,
-                    //         children:
-                    //             List.generate(facilitiesChunk.length,
-                    //                 (facilityIndex) {
-                    //           // Aligns first and third items to the same start point and second, fourth items to another start point
-                    //           return Expanded(
-                    //             flex: 1,
-                    //             child: Row(
-                    //               mainAxisAlignment:
-                    //                   facilityIndex % 2 == 0
-                    //                       ? MainAxisAlignment.end
-                    //                       : MainAxisAlignment.center,
-                    //               children: [
-                    //                 Text(
-                    //                   facilitiesChunk[facilityIndex],
-                    //                   style: TextStyle(
-                    //                     fontFamily: 'Cairo',
-                    //                     fontSize: 14,
-                    //                     fontWeight: FontWeight.w500,
-                    //                     color: Color(0xFF106A35),
-                    //                   ),
-                    //                 ),
-                    //                 SizedBox(width: 8),
-                    //                 Image.asset(
-                    //                   _getIconForFacility(
-                    //                       facilitiesChunk[
-                    //                           facilityIndex]),
-                    //                   color: Color(0xFF106A35),
-                    //                   height: 20,
-                    //                   width: 22,
-                    //                 ),
-                    //               ],
-                    //             ),
-                    //           );
-                    //         }),
-                    //       );
-                    //     },
-                    //   ),
-                    // ),
                     SizedBox(height: 50),
                   ],
                 )

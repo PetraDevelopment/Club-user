@@ -292,7 +292,7 @@ class ProfilepageState extends State<Profilepage>
     _loadUserData();
     _loadData();
 
-    setState(() {}); // Call setState to rebuild the widget tree
+    setState(() {});
   }
 
   @override
