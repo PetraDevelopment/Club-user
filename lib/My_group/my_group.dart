@@ -32,7 +32,7 @@ class My_groupState extends State<My_group> {
   late List<User1> user1 = [];
   List<GroupModel2> stordataofgroup = [];
   User? user = FirebaseAuth.instance.currentUser;
-  bool isConnected = true; // Default to true assuming there's internet at start
+  bool isConnected = true;
   bool isLoading = true;
   Future<void> checkInternetConnection() async {
 
@@ -67,14 +67,13 @@ class My_groupState extends State<My_group> {
 
       if (querySnapshot.docs.isNotEmpty) {
         var playerDoc = querySnapshot.docs.first;
-        docId = playerDoc.id; // Get the docId of the matching Phoone number
+        docId = playerDoc.id;
         print("Document ID for the Phoone number: $docId");
       await  getUserGroup(docId);
         Map<String, dynamic> userData =
         querySnapshot.docs.first.data() as Map<String, dynamic>;
         User1 user = User1.fromMap(userData);
 
-        // Update the list and UI inside setState
         setState(() {
           user1.add(user);
         });
@@ -193,10 +192,10 @@ class My_groupState extends State<My_group> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
+        preferredSize: Size.fromHeight(70.0),
         child: Padding(
           padding: EdgeInsets.only(top: 25.0, right: 8, left: 8),
-          // Add padding to the top of the title
+
           child: AppBar(
             backgroundColor: Colors.white,
             surfaceTintColor: Colors.transparent,
@@ -209,11 +208,11 @@ class My_groupState extends State<My_group> {
               ),
             ),
             centerTitle: true,
-            // Center the title horizontally
+
             leading: IconButton(
               onPressed: () {
                 Get.back();
-                // Navigator.of(context).pop(true); // Navigate back to the previous page
+
               },
               icon: Icon(
                 Directionality.of(context) == TextDirection.rtl
@@ -261,13 +260,13 @@ class My_groupState extends State<My_group> {
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.withOpacity(0.7),
-                                // Increase opacity for a darker shadow
+
                                 spreadRadius: 0,
-                                // Increase spread to make the shadow larger
+
                                 blurRadius: 2,
-                                // Increase blur radius for a more diffused shadow
+
                                 offset: Offset(0,
-                                    0), // Increase offset for a more pronounced shadow effect
+                                    0),
                               ),
                             ],
                           ),
@@ -319,9 +318,7 @@ class My_groupState extends State<My_group> {
                                             color: Color(0xFF7D90AC),
                                           ),
                                         )
-
-                                        // You can show a placeholder or nothing if the list is empty.
-                                      ],
+  ],
                                     ),
                                   ),
                                   Padding(
@@ -330,7 +327,6 @@ class My_groupState extends State<My_group> {
                                       child: Image(image:  NetworkImage(
                                         stordataofgroup[0].profileImage!,
 
-                                        // Adjust size as needed
                                       ),
                                         fit: BoxFit.fitWidth,
                                         height: 32,
@@ -388,7 +384,6 @@ class My_groupState extends State<My_group> {
       bottomNavigationBar: CurvedNavigationBar(
         height: 60,
         index: 3,
-        // Use the dynamic index
         items: [
           Icon(Icons.more_horiz, color: Colors.white, size: 25),
           Image.asset('assets/images/calendar.png',
@@ -405,20 +400,20 @@ class My_groupState extends State<My_group> {
         animationDuration: Duration(milliseconds: 600),
         onTap: (index) {
           navigationController
-              .updateIndex(index); // Update the index dynamically
-          // Handle navigation based on index
+              .updateIndex(index);
+
           switch (index) {
             case 0:
               Get.to(() => menupage())?.then((_) {
                 navigationController
-                    .updateIndex(0); // Update index when navigating back
+                    .updateIndex(0);
               });
               break;
 
             case 1:
               Get.to(() => my_reservation())?.then((_) {
                 navigationController
-                    .updateIndex(1); // Update index when navigating back
+                    .updateIndex(1);
               });
               break;
             case 2:
@@ -428,18 +423,16 @@ class My_groupState extends State<My_group> {
               break;
 
             case 3:
-              // Get.to(() => HomePage())?.then((_) {
-              //   navigationController.updateIndex(3);
-              // });
+
               break;
           }
         },
       ),
-      // ),
+
     );
   }
   Widget _buildNoInternetUI() {
-    // Your UI design when there's no internet connection
+
     return Container(
       color: Colors.white,
       child: Column(
@@ -452,7 +445,7 @@ class My_groupState extends State<My_group> {
               height: 200,
               child: Image.asset(
                 'assets/images/nointernetconnection.png',
-                // Adjust the height as needed
+
               ),
             ),
           ),

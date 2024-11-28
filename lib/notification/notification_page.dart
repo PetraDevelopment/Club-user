@@ -1,15 +1,12 @@
-import 'package:carousel_slider/carousel_slider.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart' as intl;
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../Controller/NavigationController.dart';
 import '../../Home/HomePage.dart';
@@ -42,9 +39,7 @@ class Notification_pageState extends State<Notification_page> with TickerProvide
       await firestore.collection('AddPlayground').doc(ground.groundid).get();
 
       if (docSnapshot.exists) {
-        // Cast data to Map<String, dynamic>
         Map<String, dynamic>? data = docSnapshot.data() as Map<String, dynamic>?;
-// for(int ii = 0; ii <playgroundbook.length ;ii++){
 
 
         if (data != null ) {
@@ -77,14 +72,12 @@ class Notification_pageState extends State<Notification_page> with TickerProvide
 
       if (querySnapshot.docs.isNotEmpty) {
         var playerDoc = querySnapshot.docs.first;
-        useridddd = playerDoc.id; // Get the docId of the matching Phoone number
+        useridddd = playerDoc.id;
         print("Document ID for the Phoone number: $useridddd");
         await fetchnotificationdatabyid(useridddd);
         Map<String, dynamic> userData =
         querySnapshot.docs.first.data() as Map<String, dynamic>;
         User1 user = User1.fromMap(userData);
-
-        // Update the list and UI inside setState
         setState(() {
           user1.add(user);
         });
@@ -139,7 +132,6 @@ class Notification_pageState extends State<Notification_page> with TickerProvide
           NotificationModel notification = NotificationModel.fromMap(docData);
 if(notification.adminreply==true){
   Map<String, dynamic>? Grounddata =   await fetchgrounddatabyid(notification);
-  // print("grounddataaa${Grounddata!['groundName']}");
   notification.groundname = Grounddata!['groundName'];
   notificationlist.add(notification);
   print("Notification data: ${docData}");
@@ -157,22 +149,27 @@ if(notification.adminreply==true){
     CollectionReference usersRef = FirebaseFirestore.instance.collection('notification');
 
     try {
-      // Directly get the document reference by ID
       DocumentReference documentRef = usersRef.doc(docid);
       DocumentSnapshot documentSnapshot = await documentRef.get();
 
       if (documentSnapshot.exists) {
-        // Update the user's document with the new data
-        await documentRef.update({
-          'click': true, // Replace 'someField' with the actual field you want to update
-        });
+        print("hhhhhhhhclcik${documentSnapshot['click']}");
+        if(documentSnapshot['click']==true){
+          print('User data already clicked successfully.');
+        }
+      else{
+          await documentRef.update({
+            'click': true,
+          });
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Notification_page()),
-        );
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Notification_page()),
+          );
+          print('User data update clicked successfully.');
+        }
 
-        print('User data updated successfully.');
+
       } else {
         print('Document does not exist.');
       }
@@ -184,7 +181,7 @@ if(notification.adminreply==true){
     int hour = dateTime.hour;
     String period = hour >= 12 ? 'PM' : 'AM';
     hour = hour % 12;
-    hour = hour == 0 ? 12 : hour; // Convert hour '0' to '12'
+    hour = hour == 0 ? 12 : hour;
     return '$hour:${dateTime.minute.toString().padLeft(2, '0')} $period';
   }
   Future<void> checkInternetConnection() async {
@@ -220,10 +217,10 @@ int x=0;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
+        preferredSize: Size.fromHeight(70.0),
         child: Padding(
           padding: EdgeInsets.only(top: 25.0, right: 12, left: 12),
-          // Add padding to the top of the title
+
           child: AppBar(
             backgroundColor: Colors.white,
             surfaceTintColor: Colors.transparent,
@@ -236,7 +233,7 @@ int x=0;
               ),
             ),
             centerTitle: true,
-            // Center the title horizontally
+
             leading: IconButton(
               onPressed: () {
                 Get.back();
@@ -449,12 +446,11 @@ int x=0;
                         padding: const EdgeInsets.only(
                             top: 0, bottom: 0),
                         child: Divider(
-                          // color: Color(0xFF091C3F14),
+
                           color: Colors.grey.shade300,
 
-                          // Adjust the color of the line as needed
                           thickness:
-                          1, // Adjust the thickness of the line as needed
+                          1,
                         ),
                       ),
                     ]
@@ -478,8 +474,6 @@ int x=0;
           Image.asset('assets/images/home.png',
               height: 21, width: 21, color: Colors.white),
         ],
-        // buttonBackgroundColor: Colors.transparent, // Set button background color to transparent
-        // backgroundColor: Colors.transparent, // Set background color to transparent
 
         color: Color(0xFF064821),
         buttonBackgroundColor: Color(0xFFBACCE6),
@@ -491,7 +485,6 @@ int x=0;
         onTap: (index) {
           setState(() {
             selectedIndex = index;
-            // Update opacity based on the selected index
             opacity= 0.5;
           });
 
@@ -499,14 +492,14 @@ int x=0;
             case 0:
               Get.to(() => menupage())?.then((_) {
                 navigationController
-                    .updateIndex(0); // Update index when navigating back
+                    .updateIndex(0);
               });
               break;
 
             case 1:
               Get.to(() => my_reservation())?.then((_) {
                 navigationController
-                    .updateIndex(1); // Update index when navigating back
+                    .updateIndex(1);
               });
               break;
             case 2:

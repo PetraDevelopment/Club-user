@@ -40,7 +40,6 @@ Future<void> verifyOtp(String verificationId, String otp, BuildContext context) 
     await FirebaseAuth.instance.signInWithCredential(credential);
     final User? user = userCredential.user;
 
-    // Handle successful sign-in
     print('User signed in: $user');
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -59,10 +58,8 @@ Future<void> verifyOtp(String verificationId, String otp, BuildContext context) 
     );
 
   } catch (e) {
-    // Handle specific errors
     print('Error signing in: $e');
 
-    // Example of handling quota exceeded error
     if (e.toString().contains('quota for this operation has been exceeded')) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -79,7 +76,7 @@ Future<void> verifyOtp(String verificationId, String otp, BuildContext context) 
         ),
       );
     } else {
-      // Handle other errors
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -98,11 +95,8 @@ Future<void> verifyOtp(String verificationId, String otp, BuildContext context) 
   }
 }
 
-
-String? _verificationId;
-
 class OTPState extends State<OTP>  with SingleTickerProviderStateMixin{
-  TextEditingController controller = TextEditingController(); // Add this line
+  TextEditingController controller = TextEditingController();
   String? otpcode;
   late int _counter = 60;
   late Timer _timer;
@@ -112,15 +106,15 @@ class OTPState extends State<OTP>  with SingleTickerProviderStateMixin{
 
   OTPState(this.phone);
 
-/////////
+
   Future<dynamic> SignUpStudent() async {
     String? tokenFCM =
     await FirebaseMessaging.instance.getToken();
     print("tokenFCM$tokenFCM");
-    // Check internet connectivity
+
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
-      // Not connected to any network
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -140,10 +134,9 @@ class OTPState extends State<OTP>  with SingleTickerProviderStateMixin{
   }
 
   Future<dynamic> LoginStudent() async {
-    // Check internet connectivity
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
-      // Not connected to any network
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -163,23 +156,20 @@ class OTPState extends State<OTP>  with SingleTickerProviderStateMixin{
     String? tokenFCM =
     await FirebaseMessaging.instance.getToken();
     print("tokenFCM$tokenFCM");
-    // Prepare user data
   }
 String phonewithstars='';
   @override
   void initState() {
     String numericPart = widget.phone.replaceAll(RegExp(r'\D'), '');
 
-    // Mask the middle digits
-    String maskedNumber = numericPart.substring(0, 1) + // أول رقم
-        '*******' + // سبع نجوم لإخفاء الأرقام الوسطى
-        numericPart.substring(numericPart.length - 3); // آخر 3 أرقام
+    String maskedNumber = numericPart.substring(0, 1) +
+        '*******' +
+        numericPart.substring(numericPart.length - 3);
 
-    // اجعل الرقم المعروض مضافًا له 2+ كما هو مطلوب
     phonewithstars = '+2 ' + maskedNumber;
 
-    print("maskedNumber: $maskedNumber"); // Output: 6*******010
-    print("phonewithstars: $phonewithstars"); // Output: 2+ 6*******010
+    print("maskedNumber: $maskedNumber");
+    print("phonewithstars: $phonewithstars");
 
     _controller = List<TextEditingController>.generate(
       6,
@@ -190,33 +180,11 @@ String phonewithstars='';
     super.initState();
   }
 
-  // @override
-  // void initState() {
-  //   String numericPart = widget.phone.replaceAll(RegExp(r'\D'), '');
-  //
-  //   // Mask the middle digits
-  //   String maskedNumber = numericPart.substring(0, 3) +
-  //       '*******' +
-  //       numericPart.substring(numericPart.length - 1);
-  //
-  //   String reversedNumericPart = maskedNumber.split('').reversed.join('');
-  //   phonewithstars = reversedNumericPart; // Assign the reversed maskedNumber to phonewithstars
-  //   print("maskedNumber$maskedNumber"); // Output: 01*******9
-  //   print("phonewithstars$phonewithstars"); // Output: 9*******10
-  //
-  //   _controller = List<TextEditingController>.generate(
-  //     6,
-  //         (index) => TextEditingController(),
-  //   );
-  //
-  //   _startTimer();
-  //   super.initState();
-  // }
   void _startTimer() {
     const oneSecond = Duration(seconds: 1);
     _timer = Timer.periodic(oneSecond, (timer) {
       if (!mounted) {
-        timer.cancel(); // Cancel the timer if the widget is no longer in the widget tree
+        timer.cancel();
         return;
       }
 
@@ -233,7 +201,7 @@ String phonewithstars='';
   Future<void> sendOtp(String phoneNumber) async {
     try {
       await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: '+2$phoneNumber', // Ensure correct format
+        phoneNumber: '+2$phoneNumber',
         verificationCompleted: (PhoneAuthCredential credential) async {
           await FirebaseAuth.instance.signInWithCredential(credential);
           print('Auto-signed in with credential');
@@ -241,14 +209,12 @@ String phonewithstars='';
         verificationFailed: (FirebaseAuthException e) {
           print('Verification failed: ${e.message}');
           if (e.code == 'invalid-phone-number') {
-            // Handle invalid phone number
+
           }
         },
         codeSent: (String verificationId, int? resendToken) {
           print('Code sent: $verificationId');
 
-          // Save verificationId to use in OTP verification
-          // Navigate to OTP page
         },
         codeAutoRetrievalTimeout: (String verificationId) {
           print('Code auto-retrieval timeout: $verificationId');
@@ -329,7 +295,7 @@ String phonewithstars='';
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 18.0),
                         child: PinCodeTextField(
-                          // controller: otpController,
+
                           textStyle: const TextStyle(
                             fontSize: 20,
                             fontFamily: 'Inter-SemiBold',
@@ -347,7 +313,7 @@ String phonewithstars='';
                           animationType: AnimationType.fade,
                           pinTheme: PinTheme(
                             shape: PinCodeFieldShape.box,
-                            borderRadius: BorderRadius.circular(15), // Adjust radius here
+                            borderRadius: BorderRadius.circular(15),
                             fieldHeight: 53,
                             fieldWidth: 53,
                             borderWidth: 0,
@@ -362,12 +328,12 @@ String phonewithstars='';
                           keyboardType: TextInputType.number,
                           onCompleted: (String pin) {
                             otpcode = pin;
-                            // Callback when all the fields are filled
+
                             print("Completed: $pin");
-                            // You can add your verification logic here
+
                           },
                           onChanged: (String value) {
-                            // Optional: handle changes in the text field
+
                           },
                         ),
                       ),
@@ -381,7 +347,7 @@ String phonewithstars='';
                           children: <Widget>[
                             _counter != 0
                                 ? Text(
-                              // ,
+
                               ' $_counter${' ثانية  '.tr}',
                               textAlign: TextAlign.center,
                               style: TextStyle(
@@ -394,8 +360,7 @@ String phonewithstars='';
                                 : GestureDetector(
                               onTap: () {
                                 sendOtp(phone);
-                                // FirebaseAuth.instance.currentUser!
-                                //     .sendEmailVerification();
+
                                 setState(() {
                                   _counter = 60;
                                   _startTimer();
@@ -445,7 +410,7 @@ String phonewithstars='';
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(30.0),
                                     ),
-                                    backgroundColor: Color(0xFF064821), // Background color
+                                    backgroundColor: Color(0xFF064821),
                                   ),
                                   onPressed: () async {
                                     setState(() {
@@ -453,7 +418,7 @@ String phonewithstars='';
                                     });
 
                                     try {
-                                      // Verify the OTP code
+
                                       final credential = PhoneAuthProvider.credential(
                                         verificationId: widget.verificationId,
                                         smsCode: otpcode!,
@@ -461,15 +426,13 @@ String phonewithstars='';
                                       print('FCM otpcode: $otpcode');
 
                                       await FirebaseAuth.instance.signInWithCredential(credential).then((value) async {
-                                        // Get FCM token
+
                                         String? tokenFCM = await FirebaseMessaging.instance.getToken();
                                         print('FCM Token: $tokenFCM');
 
-                                        // Get SharedPreferences instance
                                         SharedPreferences prefs = await SharedPreferences.getInstance();
                                         await prefs.setString("studentphone", phone.toString());
 
-                                        // Show success message
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           SnackBar(
                                             content: Text(
@@ -486,7 +449,7 @@ String phonewithstars='';
 
                                         );
                                         await prefs.setString("phoneotp", phone.toString());
-                                        // Call appropriate function based on type
+
                                         if (widget.type == "login") {
                                           LoginStudent();
                                         } else {
@@ -503,7 +466,7 @@ String phonewithstars='';
 
 
                                       }).catchError((error) {
-                                        // Print error details
+
                                         print('Error during sign-in: $error');
 
                                         ScaffoldMessenger.of(context).showSnackBar(
@@ -522,13 +485,13 @@ String phonewithstars='';
                                         );
                                       });
                                     } catch (e) {
-                                      // Print error details
+
                                       print('Exception: $e');
 
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
                                           content: Text(
-                                            'حدث خطأ أثناء التحقق من الرمز', // "An error occurred while verifying the code"
+                                            'حدث خطأ أثناء التحقق من الرمز',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               fontFamily: 'Cairo',

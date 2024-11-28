@@ -20,7 +20,6 @@ import '../my_reservation/my_reservation.dart';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../notification/model/modelsendtodevice.dart';
-import '../notification/model/send_modelfirebase.dart';
 import '../notification/notification_page.dart';
 import '../profile/profile_page.dart';
 class menupage extends StatefulWidget {
@@ -1101,39 +1100,5 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
       return false;
     }
   }
-  Widget _buildNoInternetUI() {
 
-    return Container(
-      color: Colors.white,
-      child: Column(
-        children: [
-          SizedBox(
-            height: MediaQuery.of(context).size.height/5,
-
-          ),
-          Center(
-            child: Container(
-              height: 200,
-              child: Image.asset(
-                'assets/images/wifirr.png',
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          Text(
-            "لا يوجد اتصال بالانترنت".tr,
-            style: TextStyle(
-              fontSize: 14,
-              fontFamily: 'Cairo',
-              fontWeight: FontWeight.w400,
-              color: Colors.black,
-            ),
-          ),
-
-        ],
-      ),
-    );
-  }
 }

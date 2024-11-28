@@ -14,8 +14,6 @@ class Ratemodel {
     this.playgroundIdstars,
     this.rate,
   });
-
-  // Factory constructor to create the model from a Map
   factory Ratemodel.fromMap(Map<String, dynamic> map) {
     return Ratemodel(
       img: List<String>.from(map['img'] ?? []), // Convert to a list of strings
@@ -26,8 +24,6 @@ class Ratemodel {
       rate: List<bool>.from(map['rate'] ?? []), // Convert to a list of booleans
     );
   }
-
-  // Method to convert the model to a Map
   Map<String, dynamic> toMap() {
     return {
       'playground_name': name,

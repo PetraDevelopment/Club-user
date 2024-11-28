@@ -26,8 +26,6 @@ class NotificationModel {
     required this.time,
     required this.userId,
   });
-
-  // Factory constructor to create the model from a Map
   factory NotificationModel.fromMap(Map<String, dynamic> map) {
     return NotificationModel(
       adminId: map['adminId'] ?? '',
@@ -44,11 +42,9 @@ class NotificationModel {
       time: map['time']??'',
     );
   }
-
-  // Method to convert the model to a Map
   Map<String, dynamic> toMap() {
     return {
-      'groundmame':groundname,
+
       'click':click,
       'adminid': adminId,
       'date': date,

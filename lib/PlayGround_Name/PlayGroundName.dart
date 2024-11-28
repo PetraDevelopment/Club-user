@@ -43,12 +43,12 @@ class PlaygroundNameState extends State<PlaygroundName>
   Get.put(NavigationController());
   User? user = FirebaseAuth.instance.currentUser;
   bool star = false;
-  bool _isLoading = true; // flag to control shimmer effect
+  bool _isLoading = true;
   Future<void> _loadData() async {
-    // load data here
-    await Future.delayed(Duration(seconds: 2)); // simulate data loading
+
+    await Future.delayed(Duration(seconds: 2));
     setState(() {
-      _isLoading = false; // set flag to false when data is loaded
+      _isLoading = false;
     });
   }
   bool isConnected=true;
@@ -100,11 +100,9 @@ class PlaygroundNameState extends State<PlaygroundName>
       );
       return null;
     }
-
-    // Assuming you have access to 'allplaygrounds', 'widget.id', 'user.phoneNumber', and 'context'
-    if (allplaygrounds.isNotEmpty) {
+  if (allplaygrounds.isNotEmpty) {
       if (allplaygrounds[0].favourite == true) {
-        // Check if the playground is already a favorite
+
         SharedPreferences prefs = await SharedPreferences.getInstance();
         String? phoneValue = prefs.getString('phonev');
         print("newphoneValue${phoneValue.toString()}");
@@ -117,7 +115,7 @@ class PlaygroundNameState extends State<PlaygroundName>
             print('shared phooone ${phoneValue.toString()}');
             if(adminSnapshot.docs.isNotEmpty){
               var adminDoc = adminSnapshot.docs.first;
-              String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+              String docId = adminDoc.id;
               print("Matched user docId: $docId");
               useridddd=docId;
 
@@ -131,12 +129,11 @@ class PlaygroundNameState extends State<PlaygroundName>
           try {
             CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
             String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
-// Query the PlayersChat collection to find the document where phone number matches
             QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo:normalizedPhoneNumber).get();
             print('shared phooone ${normalizedPhoneNumber}');
             if(adminSnapshot.docs.isNotEmpty){
               var adminDoc = adminSnapshot.docs.first;
-              String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+              String docId = adminDoc.id;
               print("Matched user docId: $docId");
               useridddd=docId;
 
@@ -164,7 +161,7 @@ class PlaygroundNameState extends State<PlaygroundName>
               'is_favourite': allplaygrounds[0].favourite!,
             });
             setState(() {
-              _isLoading = false; // set flag to false when data is loaded
+              _isLoading = false;
             });
           } else if (user?.phoneNumber != null) {
             await FirebaseFirestore.instance.collection('Favourite').add({
@@ -193,19 +190,18 @@ class PlaygroundNameState extends State<PlaygroundName>
   async {
     try {
       print("kkkkk$u_id");
-      // Query Firebase to check if the playground is already marked as a favorite
+
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('Favourite')
           .where('playground_id', isEqualTo: playgroundId)
           .where('userid', isEqualTo: u_id)
           .get();
 
-      // Check if any documents match the query
       return snapshot.docs.isNotEmpty;
     } catch (e) {
-      // Handle any errors that occur during the query process
+
       print('Error checking if favorite exists  : $e');
-      return false; // Return false in case of an error
+      return false;
     }
   }
 
@@ -227,16 +223,15 @@ class PlaygroundNameState extends State<PlaygroundName>
           if (favourite.userid == iduser &&
               favourite.playground_id == widget.id) {
             favlist.add(favourite);
-            print("Fav Id : ${document.id}"); // Print the latest playground
+            print("Fav Id : ${document.id}");
 
             print(
-                "allplaygrounds[i] : ${favlist.last}"); // Print the latest playground
-            // Store the document ID in the AddPlayGroundModel object
+                "allplaygrounds[i] : ${favlist.last}");
+
             favourite.id = document.id;
             print("favourite${favourite.id}");
             print("shimaa${favourite.isfav}");
 
-            // Update allplaygrounds[0].favourite
             if (allplaygrounds.isNotEmpty) {
               setState(() {
                 allplaygrounds[0].favourite = favourite.isfav;
@@ -258,7 +253,7 @@ class PlaygroundNameState extends State<PlaygroundName>
 
     if (phoneValue != null && phoneValue.isNotEmpty) {
       setState(() {
-        _isLoading = true; // set flag to false when data is loaded
+        _isLoading = true;
       });
       CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
 
@@ -266,43 +261,41 @@ class PlaygroundNameState extends State<PlaygroundName>
       print('shared phooone ${phoneValue.toString()}');
       if(adminSnapshot.docs.isNotEmpty){
         var adminDoc = adminSnapshot.docs.first;
-        String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+        String docId = adminDoc.id;
         print("Matched user docId: $docId");
         useridddd=docId;
 
       }
-      await getfavdata(useridddd); // simulate data loading
+      await getfavdata(useridddd);
       setState(() {
-        _isLoading = false; // set flag to false when data is loaded
+        _isLoading = false;
       });
     } else if (user?.phoneNumber != null) {
       setState(() {
-        _isLoading = true; // set flag to false when data is loaded
+        _isLoading = true;
       });
       CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
       String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
-// Query the PlayersChat collection to find the document where phone number matches
       QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo:normalizedPhoneNumber).get();
       print('shared phooone ${normalizedPhoneNumber}');
       if(adminSnapshot.docs.isNotEmpty){
         var adminDoc = adminSnapshot.docs.first;
-        String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+        String docId = adminDoc.id;
         print("Matched user docId: $docId");
         useridddd=docId;
 
       }
-      await getfavdata(useridddd); // simulate data loading
+      await getfavdata(useridddd);
       setState(() {
-        _isLoading = false; // set flag to false when data is loaded
+        _isLoading = false;
       });
     }
   }
 
   List<User1> userdata = [];
-  double opacity = 1.0; // Initial opacity value
+  double opacity = 1.0;
   Future<void> deleteFavoriteData() async {
     try {
-      // Query Firebase to find the document to delete based on certain conditions
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('Favourite')
           .where('playground_id', isEqualTo: widget.id)
@@ -470,7 +463,6 @@ class PlaygroundNameState extends State<PlaygroundName>
             MaterialPageRoute(builder: (context) => PlaygroundName(widget.id)),
           );
         } else {
-          // Document doesn't exist, create a new one
           await playerchat.add({
             'rate': isstared,
             'userid': useridddd,
@@ -486,17 +478,15 @@ class PlaygroundNameState extends State<PlaygroundName>
       else if (user?.phoneNumber != null) {
         CollectionReference uuuserData = FirebaseFirestore.instance.collection('Users');
         String? normalizedPhoneNumber = user?.phoneNumber!.replaceFirst('+20', '0');
-// Query the PlayersChat collection to find the document where phone number matches
         QuerySnapshot adminSnapshot = await uuuserData.where('phone', isEqualTo:normalizedPhoneNumber).get();
         print('shared phooone ${normalizedPhoneNumber}');
         if(adminSnapshot.docs.isNotEmpty){
           var adminDoc = adminSnapshot.docs.first;
-          String docId = adminDoc.id; // Get the document ID (this will be the AdminId for playgrounds)
+          String docId = adminDoc.id;
           print("Matched user docId: $docId");
           useridddd=docId;
 
         }
-        // Similar logic if phone number is obtained from `user`
         CollectionReference playerchat =
         FirebaseFirestore.instance.collection("Playground_Rate");
         QuerySnapshot querySnapshot = await playerchat
@@ -511,10 +501,9 @@ class PlaygroundNameState extends State<PlaygroundName>
           }
         }
 
-        if (newTotalRating > 5) newTotalRating = 5; // Cap the rating at 5
+        if (newTotalRating > 5) newTotalRating = 5;
 
         if (querySnapshot.docs.isNotEmpty) {
-          // Document exists, update the rating
           DocumentReference docRef = querySnapshot.docs.first.reference;
           await docRef
               .update({'rate': isstared, 'totalrating': newTotalRating});
@@ -523,7 +512,6 @@ class PlaygroundNameState extends State<PlaygroundName>
             MaterialPageRoute(builder: (context) => PlaygroundName(widget.id)),
           );
         } else {
-          // Document doesn't exist, create a new one
           await playerchat.add({
             'rate': isstared,
             'userid': useridddd,
@@ -551,7 +539,6 @@ class PlaygroundNameState extends State<PlaygroundName>
       String? phoneValue = prefs.getString('phonev');
 
       if (phoneValue != null && phoneValue.isNotEmpty) {
-        // Fetch ratings for the specific phone number and playground ID
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
             .collection('Playground_Rate')
             .where('playground_idstars', isEqualTo: widget.id)
@@ -566,7 +553,6 @@ class PlaygroundNameState extends State<PlaygroundName>
         _calculateAverageRating();
         setState(() {});
       } else if (user?.phoneNumber != null) {
-        // Fetch ratings for the user's phone number and playground ID
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
             .collection('Playground_Rate')
             .where('playground_idstars', isEqualTo: widget.id)
@@ -626,12 +612,11 @@ class PlaygroundNameState extends State<PlaygroundName>
 
   @override
   Widget build(BuildContext context) {
-    List<List<bool>> allRatings = rat_list.map((r) => r.rate!).toList();
 
     double filledStars = _averageRating.toDouble();
 
     return Scaffold(
-      // backgroundColor: Colors.white,
+
       body: isConnected?Stack(
         children: [
           SingleChildScrollView(
@@ -654,11 +639,10 @@ class PlaygroundNameState extends State<PlaygroundName>
                           return Padding(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8.0),
-                            // Add some space between images
                             child: Stack(
                               children: [
                                 Material(
-                                  elevation: 4, // Elevation of 4
+                                  elevation: 4,
                                   borderRadius:
                                   BorderRadius.circular(20.0),
                                   child: Container(
@@ -691,29 +675,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                                     ),
                                   ),
                                 ),
-                                // Positioned(
-                                //   top: 6,
-                                //   right: 0,
-                                //   left: 0,
-                                //   bottom: 0,
-                                //   child: Container(
-                                //     decoration: BoxDecoration(
-                                //       gradient: LinearGradient(
-                                //         colors: [
-                                //           Colors.transparent,
-                                //           Color(0x1F8C4B).withOpacity(0.0),
-                                //           Color(0x1F8C4B).withOpacity(1.0),
-                                //         ],
-                                //         begin: Alignment.topCenter,
-                                //         end: Alignment.bottomCenter,
-                                //       ),
-                                //       borderRadius: BorderRadius.only(
-                                //         bottomLeft: Radius.circular(20.0),
-                                //         bottomRight: Radius.circular(20.0),
-                                //       ),
-                                //     ),
-                                //   ),
-                                // ),
+
                               ],
                             ),
                           );
@@ -721,11 +683,11 @@ class PlaygroundNameState extends State<PlaygroundName>
                         options: CarouselOptions(
                           height: 200,
                           viewportFraction: 0.9,
-                          // Adjust this value to change the width of each image
+
                           enableInfiniteScroll: true,
                           enlargeCenterPage: true,
-                          // Makes the current image larger in the center
-                          autoPlay: true, // Enables automatic sliding
+
+                          autoPlay: true,
                         ),
                       )
                           : Image.asset(
@@ -733,28 +695,27 @@ class PlaygroundNameState extends State<PlaygroundName>
                         height: 250,
                         width: double.infinity,
                         fit: BoxFit
-                            .fill, // Ensure the placeholder image covers the container
+                            .fill,
                       ),
                     ),
 
                     Positioned(
                       top: 5,
-                      // Match the top position of the text
                       right: 0,
                       left: 0,
                       bottom: 0,
                       child: IgnorePointer(
-                        // Prevents this container from capturing any gestures
+
                         child: Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
                                 Colors.transparent,
-                                // Start with transparent
+
                                 Color(0x1F8C4B).withOpacity(0.0),
-                                // Start with #1F8C4B at 0% opacity (fully transparent)
+
                                 Color(0x1F8C4B).withOpacity(1.0),
-                                // End with #1F8C4B at 100% opacity (fully opaque)
+
                               ],
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
@@ -777,7 +738,6 @@ class PlaygroundNameState extends State<PlaygroundName>
                         children: [
                           Text(
                             allplaygrounds[0].playgroundName!,
-                            // Updated English text
                             style: TextStyle(
                               fontFamily: 'Cairo',
                               fontSize: 16,
@@ -792,10 +752,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                           ClipOval(
                         child: Image(image:  NetworkImage(
                             allplaygrounds[0].logoimage!,
-
-                            // Adjust size as needed
-
-                          ),
+ ),
                           fit: BoxFit.fitWidth,
                           height: 30,
                           width: 30,
@@ -805,7 +762,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                       ),
                     )
                         : Container(),
-                    // Top left icon with green shadow
+
                     Positioned(
                       top: 40,
                       left: 20,
@@ -813,12 +770,12 @@ class PlaygroundNameState extends State<PlaygroundName>
                         icon: Icon(Icons.arrow_back_ios,
                             color: Colors.white, size: 25),
                         onPressed: () {
-                          print("Back button pressed"); // Debugging statement
-                          Get.back(); // Navigate back to the previous page
+                          print("Back button pressed");
+                          Get.back();
                         },
                       ),
                     ),
-                    // Top right icon with green shadow
+
                   ],
                 ),
                 SizedBox(
@@ -835,10 +792,10 @@ class PlaygroundNameState extends State<PlaygroundName>
                         });
 
                         if (allplaygrounds[0].favourite == true) {
-                          // If favorite is true, add playground to Firebase
+
                           await _sendData();
                         } else {
-                          // If favorite is false, delete playground from Firebase
+
                           await deleteFavoriteData();
                         }
                       },
@@ -933,7 +890,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                                   ],
                                 ),
                                 content: StatefulBuilder(
-                                  //
+
                                   builder: (BuildContext context,
                                       StateSetter setState) {
                                     return Container(
@@ -951,9 +908,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                                                       isstared[i] == true) {
                                                     totalRating += 1;
                                                   }
-                                                  // if( isstared[i]==true){
-                                                  //   totalRating=totalRating+1;
-                                                  // }
+
                                                   print(
                                                       "starrrr value${isstared[i]}");
                                                 });
@@ -1025,32 +980,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                               color: Color(0xFF064821)),
                         ),
                       ),
-                      // Row(
-                      //   mainAxisAlignment: MainAxisAlignment.end,
-                      //   children: [
-                      //     for (int i = 5; i >0; i--)
-                      //       GestureDetector(
-                      //         // onTap: () {
-                      //         //   setState(() {
-                      //         //     if (i < _selectedStars) {
-                      //         //       _selectedStars = i;
-                      //         //     } else {
-                      //         //       _selectedStars = i + 1;
-                      //         //     }
-                      //         //     List<bool> rating = List.generate(
-                      //         //         5, (index) => index < _selectedStars);
-                      //         //     sendRating(rating);
-                      //         //   });
-                      //         // },
-                      //         child: Icon(
-                      //           i < filledStars
-                      //               ? Icons.star
-                      //               : Icons.star_border_outlined,
-                      //           color: Color(0xFFFFCC00),
-                      //         ),
-                      //       )
-                      //   ],
-                      // ),
+
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -1058,7 +988,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                             GestureDetector(
                               onTap: () {
                                 setState(() {
-                                  // Handle onTap logic here if needed
+
                                 });
                               },
                               child: Icon(
@@ -1084,7 +1014,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                         color: Color(0xFF495A71)),
                   ),
                 ),
-                // Data in Column after the text 'ملعب وادى دجـــلة'
+
                 Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -1139,8 +1069,6 @@ class PlaygroundNameState extends State<PlaygroundName>
                                       ? '   ${allplaygrounds[0].width!}x${allplaygrounds[0].length!} م '
                                       :  '   ${allplaygrounds[0].width!.length>10?allplaygrounds[0].width!.substring(0,5):allplaygrounds[0].width!}x${allplaygrounds[0].length!.length>10?allplaygrounds[0].length!.substring(0,5):allplaygrounds[0].length!} م ',
                                   textDirection: TextDirection.rtl,
-                                  // Ensures the text direction is RTL
-
                                   style: TextStyle(
                                     fontFamily: 'Cairo',
                                     fontSize: 14,
@@ -1151,7 +1079,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                                     : Text(
                                   '   20x50 م ',
                                   textDirection: TextDirection.rtl,
-                                  // Ensures the text direction is RTL
+
                                   style: TextStyle(
                                     fontFamily: 'Cairo',
                                     fontSize: 14,
@@ -1316,7 +1244,8 @@ class PlaygroundNameState extends State<PlaygroundName>
                               color: Color(0xFF106A35),
                             ),
                           ),
-                          SizedBox(width: 8), // Space between icon and text
+                          SizedBox(width: 8),
+
                           Icon(Icons.location_on_outlined,
                               color: Color(0xFF106A35), size: 20),
                         ],
@@ -1324,7 +1253,6 @@ class PlaygroundNameState extends State<PlaygroundName>
                     ],
                   ),
                 ),
-                // Pricing and location info
 
                 SizedBox(
                   height: 28,
@@ -1369,61 +1297,6 @@ class PlaygroundNameState extends State<PlaygroundName>
                 )
                     : Container(),
 
-                //               allplaygrounds.isNotEmpty &&
-                //                       allplaygrounds[0].availableFacilities != null &&
-                //                       allplaygrounds[0].availableFacilities!.isNotEmpty
-                //                   ? Column(
-                //                       mainAxisAlignment: MainAxisAlignment.end,
-                //                       crossAxisAlignment: CrossAxisAlignment.end,
-                //                       children: [
-                //                         Padding(
-                //                           padding:
-                //                               const EdgeInsets.only(right: 26.0, left: 26),
-                //                           child: Text(
-                //                             "المرفقات".tr,
-                //                             style: TextStyle(
-                //                                 fontFamily: 'Cairo',
-                //                                 fontSize: 14.0,
-                //                                 fontWeight: FontWeight.w700,
-                //                                 color: Color(0xFF495A71)),
-                //                           ),
-                //                         ),
-                //                         SizedBox(
-                //                           height: 12,
-                //                         ),
-                //                         Padding(
-                //                           padding: const EdgeInsets.only(right: 26),
-                //                           child: Column(
-                //                             children: allplaygrounds[0].availableFacilities!.map((facility) {
-                //
-                //   return Row(
-                //   mainAxisAlignment: MainAxisAlignment.end,
-                //   children: [
-                //     facility=="حجز نصف ساعة"?Container():
-                //   Text(
-                //   facility,
-                //   style: TextStyle(
-                //   fontFamily: 'Cairo',
-                //   fontSize: 14,
-                //   fontWeight: FontWeight.w500,
-                //   color: Color(0xFF106A35),
-                //   ),
-                //   ),
-                //   SizedBox(width: 8),
-                //     facility=="حجز نصف ساعة"?Container():   Image.asset(
-                //   _getIconForFacility(facility),
-                //   color: Color(0xFF106A35),
-                //   height: 20,
-                //   width: 22,
-                //   ),
-                //   ],
-                //   );
-                // }).toList(),
-                // ),
-                // ),
-                // SizedBox(height: 50),
-                // ],
-                // ):Container(),
                 allplaygrounds.isNotEmpty &&
                     allplaygrounds[0].availableFacilities != null &&
                     allplaygrounds[0].availableFacilities!.isNotEmpty
@@ -1446,7 +1319,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                     SizedBox(height: 12),
                     Column(
                       textDirection: TextDirection.rtl,
-                      mainAxisAlignment: MainAxisAlignment.end, // Aligns the content to the right
+                      mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: List.generate(
                         (allplaygrounds[0].availableFacilities!
@@ -1454,7 +1327,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                             .length / 2)
                             .ceil(),
                             (index) {
-                          // Get two items at a time, skipping "حجز نصف ساعة"
+
                           final facilitiesChunk = allplaygrounds[0].availableFacilities!
                               .where((facility) => facility != "حجز نصف ساعة")
                               .skip(index * 2)
@@ -1465,21 +1338,20 @@ class PlaygroundNameState extends State<PlaygroundName>
                             padding: const EdgeInsets.only(right: 15.0),
                             child: Row(
                               textDirection: TextDirection.rtl,
-                              mainAxisAlignment: MainAxisAlignment.end, // Aligns the content to the right
+                              mainAxisAlignment: MainAxisAlignment.end,
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: List.generate(
                                 2,
                                     (facilityIndex) {
                                   if (facilityIndex >= facilitiesChunk.length) {
-                                    // Add Spacer if facilitiesChunk has only 1 item in this row
-                                    return Spacer(flex: 1);
+                                  return Spacer(flex: 1);
                                   }
                                   return Expanded(
                                     flex: 1,
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.end, // Aligns the content to the right
+                                        mainAxisAlignment: MainAxisAlignment.end,
                                         crossAxisAlignment: CrossAxisAlignment.end,
                                         children: [
                                           Row(
@@ -1540,7 +1412,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                         borderRadius: BorderRadius.circular(30.0),
                         shape: BoxShape.rectangle,
                         color: Color(
-                            0xFF064821), // Background color of the container
+                            0xFF064821),
 
                       ),
                       child: Center(
@@ -1550,7 +1422,7 @@ class PlaygroundNameState extends State<PlaygroundName>
                             fontFamily: 'Cairo',
                             fontSize: 16.0,
                             fontWeight: FontWeight.w500,
-                            color: Colors.white, // Text color
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -1569,7 +1441,6 @@ class PlaygroundNameState extends State<PlaygroundName>
         height: 60,
         index: 2,
 
-        // Use the dynamic index
         items: [
           Icon(Icons.more_horiz, color: Colors.white, size: 25),
           Image.asset('assets/images/calendar.png',
@@ -1587,21 +1458,21 @@ class PlaygroundNameState extends State<PlaygroundName>
         onTap: (index) {
           navigationController.updateIndex(index);
           setState(() {
-            // Update opacity based on the selected index
+
             opacity = index == 2 ? 0.5 : 1.0;
-          }); // Update the index dynamically
-          // Handle navigation based on index
+          });
+
           switch (index) {
             case 0:
               Get.to(() => menupage())?.then((_) {
                 navigationController
-                    .updateIndex(0); // Update index when navigating back
+                    .updateIndex(0);
               });
               break;
             case 1:
               Get.to(() => my_reservation())?.then((_) {
                 navigationController
-                    .updateIndex(1); // Update index when navigating back
+                    .updateIndex(1);
               });
 
               break;
@@ -1635,7 +1506,7 @@ class PlaygroundNameState extends State<PlaygroundName>
               height: 200,
               child: Image.asset(
                 'assets/images/wifirr.png',
-                // Adjust the height as needed
+
               ),
             ),
           ),

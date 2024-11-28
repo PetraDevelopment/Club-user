@@ -20,10 +20,8 @@ import '../../Splach/LoadingScreen.dart';
 import '../../my_reservation/my_reservation.dart';
 import '../../notification/model/modelsendtodevice.dart';
 import '../../notification/model/send_modelfirebase.dart';
-import '../../notification/notification_repo.dart';
 import '../../playground_model/AddPlaygroundModel.dart';
 import '../AddbookingModel/AddbookingModel.dart';
-import '../widgets_for_popover_cancel_and_add/reservation.dart';
 
 class book_playground_page extends StatefulWidget {
   String IdData;
@@ -2102,7 +2100,6 @@ String iddd=widget.IdData;
             } else {
               setState(() {
                 selectedTimes.add(slot);
-                reservation();
               });
             }
           },
@@ -2211,6 +2208,3 @@ String iddd=widget.IdData;
     );
   }
 }
-
-
-

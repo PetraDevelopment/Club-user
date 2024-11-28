@@ -15,7 +15,6 @@ class _LoadingState extends State<Loading> {
 
   @override
   void initState() {
-    // loader
     Timer.periodic(const Duration(milliseconds: 250), (timer) {
       if (mounted) {
         setState(() {

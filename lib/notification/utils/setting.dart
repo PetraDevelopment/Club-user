@@ -1,7 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import '../notification_page.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -10,7 +9,6 @@ FlutterLocalNotificationsPlugin();
 FlutterLocalNotificationsPlugin rideNotification =
 FlutterLocalNotificationsPlugin();
 bool isGeneral = false;
-String latestNotification = '';
 int id = 0;
 bool background=false;
 
@@ -36,7 +34,7 @@ var generalNotificationDetails =
 NotificationDetails(android: androidDetails, iOS: iosDetails);
 
 var androiInit =
-const AndroidInitializationSettings('@mipmap/ic_launcher'); //for logo
+const AndroidInitializationSettings('@mipmap/ic_launcher');
 var iosInit = const DarwinInitializationSettings(
   defaultPresentAlert: true,
   defaultPresentBadge: true,
@@ -63,9 +61,6 @@ notificationHandleOpened(context){
 
   FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
     print('data:::2');
-    // _showGeneralNotification(message.data);
-    // valueNotifierHome.incrementNotifier();
-    // isGeneral = true;
     RemoteNotification? notification = message.notification;
     if (notification != null) {
       showGeneralNotification(message.notification,context);

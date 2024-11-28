@@ -11,17 +11,14 @@ class AppBarandNavigationBTN extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SportsController controller = Get.put(SportsController());
-    final size = MediaQuery.of(context).size;
     final NavigationController navigationController = Get.put(NavigationController());
 
-
-//to make back btn of android not working
 
     return WillPopScope(
       onWillPop: () async {
         Map<dynamic, dynamic>? arguments = ModalRoute.of(context)
             ?.settings
-            .arguments as Map<dynamic, dynamic>?; // Explicit casting
+            .arguments as Map<dynamic, dynamic>?;
         if (arguments != null && arguments['from'] == 'home') {
           Navigator.push(
             context,
@@ -37,14 +34,14 @@ class AppBarandNavigationBTN extends StatelessWidget {
             ),
           );
         }
-        return false; // Prevent default back button behavior
+        return false;
       },
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
+          preferredSize: Size.fromHeight(70.0),
           child: Padding(
-            padding: EdgeInsets.only(top: 25.0,bottom: 12,right: 8,left: 8), // Add padding to the top of the title
+            padding: EdgeInsets.only(top: 25.0,bottom: 12,right: 8,left: 8),
             child: AppBar(
               backgroundColor: Colors.white,
               surfaceTintColor: Colors.transparent,
@@ -58,16 +55,16 @@ class AppBarandNavigationBTN extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                   height: 29.98 / 16,
                   letterSpacing: 0.04,
-                  color:  Color(0xFF334154), // Add this line
+                  color:  Color(0xFF334154),
                 ),
               ),
-              centerTitle: true, // Center the title horizontally
+              centerTitle: true,
               leading: IconButton(
                 onPressed: () {
 
                     Map<dynamic, dynamic>? arguments = ModalRoute.of(context)
                         ?.settings
-                        .arguments as Map<dynamic, dynamic>?; // Explicit casting
+                        .arguments as Map<dynamic, dynamic>?;
                     if (arguments != null && arguments['from'] == 'home') {
                       Navigator.push(
                         context,
@@ -119,7 +116,6 @@ class AppBarandNavigationBTN extends StatelessWidget {
                     GestureDetector(
                       onTap: () {
                         controller.selectCategory("كرة تنس");
-                        // Reset the "كرة قدم" container color
                         controller.selectedCategory.value = "كرة تنس";
                       },
                       child: Container(
@@ -277,7 +273,7 @@ class AppBarandNavigationBTN extends StatelessWidget {
 
                   itemCount: controller.sportData.length,
                   itemBuilder: (BuildContext context, int index) {
-                    return controller.sportData[index]; // Use the widgets stored in sportData
+                    return controller.sportData[index];
                   },
                 ):_buildNoInternetUI();
               }),
@@ -288,7 +284,7 @@ class AppBarandNavigationBTN extends StatelessWidget {
         bottomNavigationBar: CurvedNavigationBar(
           height: 60,
           index: 2,
-          // Use the dynamic index
+
           items: [
              Icon(Icons.more_horiz, color: Colors.white, size: 25),
 
@@ -306,19 +302,19 @@ class AppBarandNavigationBTN extends StatelessWidget {
           animationDuration: Duration(milliseconds: 600),
           onTap: (index) {
             navigationController
-                .updateIndex(index); // Update the index dynamically
-            // Handle navigation based on index
+                .updateIndex(index);
+
             switch (index) {
             case 0:
               Get.to(() => menupage())?.then((_) {
                 navigationController
-                    .updateIndex(0); // Update index when navigating back
+                    .updateIndex(0);
               });
               break;
               case 1:
                 Get.to(() => my_reservation())?.then((_) {
                   navigationController
-                      .updateIndex(1); // Update index when navigating back
+                      .updateIndex(1);
                 });
 
                 break;
@@ -342,7 +338,6 @@ class AppBarandNavigationBTN extends StatelessWidget {
 
   }
   Widget _buildNoInternetUI() {
-    // Your UI design when there's no internet connection
     return Container(
       color: Colors.white,
       child: Column(
@@ -355,7 +350,6 @@ class AppBarandNavigationBTN extends StatelessWidget {
               height: 200,
               child: Image.asset(
                 'assets/images/wifirr.png',
-                // Adjust the height as needed
               ),
             ),
           ),
@@ -376,18 +370,17 @@ class AppBarandNavigationBTN extends StatelessWidget {
       ),
     );
   }
-  // Function to handle back navigation logic
   Future<bool> handleBackNavigation() async {
     int currentIndex = NavigationController().currentIndex.value;
 
     if (currentIndex == 3) {
-      // If already on Home page, simply pop the route
+
       return true;
     } else {
-      // Update index and navigate back correctly
-      NavigationController().updateIndex(3); // Set index to Home
-      Get.off(HomePage()); // Navigate to HomePage manually
-      return false; // Prevent default pop behavior
+
+      NavigationController().updateIndex(3);
+      Get.off(HomePage());
+      return false;
     }
   }
 }

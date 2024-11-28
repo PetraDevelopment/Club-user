@@ -1,4 +1,4 @@
-import 'dart:developer';
+
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -15,8 +15,6 @@ import 'SignInPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:path_provider/path_provider.dart';
 import 'package:image_picker/image_picker.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -28,21 +26,16 @@ class SignUpPage extends StatefulWidget {
 
 late AnimationController animationController;
 late Animation<double> animation;
-//save data to firebase
 final TextEditingController _nameController = TextEditingController();
 final TextEditingController _phoneNumberController = TextEditingController();
-bool _isNavigating = false; // Flag to prevent multiple navigation calls
+bool _isNavigating = false;
 
-
-// Function to check if a phone number is valid
 bool isValidPhoneNumber(String phoneNumber) {
-  // Check if the phone number starts with a valid prefix (e.g., 01, 02, etc.)
   String prefix = phoneNumber.substring(0, 2);
   if (prefix != '01' && prefix != '02' && prefix != '03' && prefix != '04') {
     return false;
   }
 
-  // Check if the phone number has a valid length (e.g., 11 digits)
   if (phoneNumber.length != 11) {
     return false;
   }
@@ -53,7 +46,6 @@ var Phone = '';
 
 class SignUpPageState extends State<SignUpPage>
     with SingleTickerProviderStateMixin {
-  //send data to firebase
 
   bool isLoading = false;
   File? selectedImages;
@@ -65,17 +57,15 @@ class SignUpPageState extends State<SignUpPage>
     if (value.isEmpty) {
       setState(() {
         PhoneErrorText = ' يجب ادخال رقم التليفون *'.tr;
-        // isLoading=false;
       });
     } else if (value.length < 11) {
       setState(() {
         PhoneErrorText = ' يجب أن يكون رقم الهاتف 11 رقمًا *'.tr;
-        // isLoading=false;
       });
     } else {
       setState(() {
-        // isLoading=false;
-        PhoneErrorText = ''; // No error message for 3-letter names
+
+        PhoneErrorText = '';
       });
     }
   }
@@ -84,7 +74,6 @@ class SignUpPageState extends State<SignUpPage>
     await checkInternetConnection();
     print("ggggg");
     setState(() {});
-    // Other initialization tasks
   }
 
   Future<void> checkInternetConnection() async {
@@ -127,7 +116,6 @@ class SignUpPageState extends State<SignUpPage>
         verificationCompleted: (PhoneAuthCredential credential) async {
           await FirebaseAuth.instance.signInWithCredential(credential).then((value) {
             print("Successfully signed in with auto-retrieval.");
-            // You might want to navigate directly to the home page or similar
           });
         },
         verificationFailed: (FirebaseAuthException e) {
@@ -135,7 +123,6 @@ class SignUpPageState extends State<SignUpPage>
           if (e.code == 'invalid-phone-number') {
             print("The phone number entered is invalid!");
           }
-          // Handle error
         },
         codeSent: (String verificationId, int? forceResendingToken) async {
           print('Verification code sent to $phone');
@@ -166,14 +153,12 @@ class SignUpPageState extends State<SignUpPage>
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('phone', value);
     print('shared phone ${prefs.getString('phone') ?? ''}');
-
-    // Check if the phone number was found
     if (querySnapshot.docs.isNotEmpty) {
-      // Phone number exists, navigate to the Sign-in page
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'هذا الحساب موجود بالفعل برجاء تسجيل الدخول', // "This account already exists. Please sign in."
+            'هذا الحساب موجود بالفعل برجاء تسجيل الدخول',
             textAlign: TextAlign.center,
           ),
           backgroundColor: Color(0xFF1F8C4B),
@@ -187,19 +172,18 @@ class SignUpPageState extends State<SignUpPage>
       print('Phone number exists, navigating to Sign-in page');
     }
     else {
-      // Phone number does not exist, proceed to send data and call verifyPhone
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'برجاء الانتظار', // "Successfully registered"
+            'برجاء الانتظار',
             textAlign: TextAlign.center,
           ),
           backgroundColor: Color(0xFF1F8C4B),
         ),
       );
 
-      _sendData(); // Function to send data to Firestore
-      await verifyPhone(value.trim());  // Pass context here
+      _sendData();
+      await verifyPhone(value.trim());
 
     }
   }
@@ -213,10 +197,9 @@ class SignUpPageState extends State<SignUpPage>
     final phoneNumber = _phoneNumberController.text;
   final imggggg=img_profile;
     final connectivityResult = await Connectivity().checkConnectivity();
-    SharedPreferences prefs = await SharedPreferences.getInstance();
 
     if (connectivityResult == ConnectivityResult.none) {
-      // Not connected to any network
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -231,26 +214,11 @@ class SignUpPageState extends State<SignUpPage>
           backgroundColor: Color(0xFF1F8C4B),
         ),
       );
-      return; // No need to return null; just return to exit the method.
+      return;
     }
-    // final storageRef = FirebaseStorage.instance.ref();
-    // final profileImageRef = storageRef.child('profile_images/$phoneNumber.png');
-    //
-    // // Load the image from the assets folder
-    // final bytes = await rootBundle.load('assets/images/profile.png');
-    // final directory = await getApplicationDocumentsDirectory();
-    // final file = File('${directory.path}/profile.png');
-    // await file.writeAsBytes(bytes.buffer.asUint8List());
-    //
-    // // Upload the image to Firebase Storage
-    // await profileImageRef.putFile(file);
-    //
-    // // Get the download URL
-    // final downloadUrl = await profileImageRef.getDownloadURL();
-
 
     if (name.isNotEmpty && phoneNumber.isNotEmpty ) {
-      // Add data to Firestore and get the document reference
+
       DocumentReference docRef = await FirebaseFirestore.instance.collection('Users').add({
         'name': name,
         'phone': phoneNumber,
@@ -258,12 +226,9 @@ class SignUpPageState extends State<SignUpPage>
         'fcm':token
       });
 
-      // Get the document ID of phone number
       String docId = docRef.id;
       print("Document ID: $docId");
-      // prefs.setString('AdminId', docId);
 
-      // Clear the text fields
       _nameController.clear();
       _phoneNumberController.clear();
 
@@ -272,7 +237,7 @@ class SignUpPageState extends State<SignUpPage>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'يجب ادخال الاسم', // "There was an error with this account"
+            'يجب ادخال الاسم',
             textAlign: TextAlign.center,
           ),
           backgroundColor: Color(0xFF1F8C4B),
@@ -284,7 +249,7 @@ class SignUpPageState extends State<SignUpPage>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'يجب ادخال رقم التليفون', // "There was an error with this account"
+            'يجب ادخال رقم التليفون',
             textAlign: TextAlign.center,
           ),
           backgroundColor: Color(0xFF1F8C4B),
@@ -297,7 +262,7 @@ class SignUpPageState extends State<SignUpPage>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'يجب ادخال الصورة', // "There was an error with this account"
+            'يجب ادخال الصورة',
             textAlign: TextAlign.center,
           ),
           backgroundColor: Color(0xFF1F8C4B),
@@ -310,7 +275,7 @@ class SignUpPageState extends State<SignUpPage>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'حدث خطأ فى ارسال الtoken', // "There was an error with this account"
+            'حدث خطأ فى ارسال الtoken',
             textAlign: TextAlign.center,
           ),
           backgroundColor: Color(0xFF1F8C4B),
@@ -326,30 +291,14 @@ class SignUpPageState extends State<SignUpPage>
     await ImagePicker().pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       setState(() {
-        selectedImages = File(pickedFile.path); // Update the selected image
-         img_profile = pickedFile.path; // Update the img_profile variable
+        selectedImages = File(pickedFile.path);
+         img_profile = pickedFile.path;
         setState(() {
 
         });
       });
     }
   }
-  // Future<void> uploadImagesAndSaveUrls() async {
-  //   File? image = await pickImageFromGallery();
-  //   if (image == null) return;
-  //
-  //   setState(() {
-  //     selectedImages = image; // Update the selected image
-  //     // img_profile = image.path.toString(); // Update the img_profile variable
-  //   });
-  //
-  //   String downloadUrl = await _uploadImage(image);
-  //   print("downloadUrl$downloadUrl");
-  //   img_profile = downloadUrl;
-  //   setState(() {
-  //
-  //   });
-  // }
 
   Future<File?> pickImageFromGallery() async {
     final XFile? image =
@@ -357,18 +306,6 @@ class SignUpPageState extends State<SignUpPage>
     return image != null ? File(image.path) : null;
   }
 
-//   Future<String> _uploadImage(File image) async {
-//     String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-//     Reference storageRef =
-//     FirebaseStorage.instance.ref().child('Users/$fileName');
-//     await storageRef.putFile(image);
-//     String downloadUrl = await storageRef.getDownloadURL();
-//     img_profile = downloadUrl;
-// setState(() {
-//
-// });
-//     return downloadUrl;
-//   }
   Future<void> uploadImagesAndSaveUrls() async {
     File? image = await pickImageFromGallery();
     if (image == null) return;
@@ -402,14 +339,12 @@ class SignUpPageState extends State<SignUpPage>
   @override
   void initState() {
     _initialize();
-    // Define animation controller
     animationController = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 2), // Adjust the duration as needed
+      duration: Duration(seconds: 2),
     );
     Future.delayed(Duration(seconds: 2), () {});
 
-    // Define animation
     animation = Tween<double>(begin: 0.5, end: 1.0).animate(
       CurvedAnimation(
         parent: animationController,
@@ -417,15 +352,12 @@ class SignUpPageState extends State<SignUpPage>
       ),
     );
 
-    // Start the animation
     animationController.forward();
   }
 
   @override
   void dispose() {
     animationController.dispose();
-    // confirmPasswordController.dispose();
-    // _phoneNumberController.dispose();
     super.dispose();
   }
 
@@ -488,8 +420,8 @@ class SignUpPageState extends State<SignUpPage>
                                                                                   ),
                                           )
                                           : Container(
-                                        width: 200, // Set a fixed width
-                                        height: 164, // Set a fixed height
+                                        width: 200,
+                                        height: 164,
                                         color: Color(0xFFDCDCDC),
                                             child: ClipOval(
                                                                                     child: Image(
@@ -506,8 +438,7 @@ class SignUpPageState extends State<SignUpPage>
                                             height: 200,
                                             width: 164,
                                             fit: BoxFit.cover,
-                                          )) // Display selected image
-
+                                          ))
                                   ),
                                 ),
                                 Positioned(
@@ -522,20 +453,20 @@ class SignUpPageState extends State<SignUpPage>
                                       boxShadow: [
                                         BoxShadow(
                                           color: Colors.white.withOpacity(0.2),
-                                          // Increase opacity for a darker shadow
+
                                           spreadRadius: 0,
-                                          // Increase spread to make the shadow larger
+
                                           blurRadius: 5,
-                                          // Increase blur radius for a more diffused shadow
+
                                           offset: Offset(0,
-                                              0), // Increase offset for a more pronounced shadow effect
+                                              0),
                                         ),
                                       ],
                                     ),
                                     child: FloatingActionButton(
                                       onPressed: () {
-                                        _showImageSourceDialog(); // Show dialog on tap
-                                        // Get.to(() => AddNewPlayGround()); // Use GetX navigation
+                                        _showImageSourceDialog();
+
                                       },
                                       child: Icon(
                                         Icons.add,
@@ -545,9 +476,9 @@ class SignUpPageState extends State<SignUpPage>
                                       backgroundColor: Color(0xFF064821),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(
-                                            30), // Adjust the circular shape here
+                                            30),
                                       ),
-                                      // elevation: 6.0, // Adjust the elevation if needed
+
                                     ),
                                   ),
                                 )
@@ -573,7 +504,7 @@ class SignUpPageState extends State<SignUpPage>
                             child: Text(
                               '  *  ',
                               style: TextStyle(
-                                color: Colors.red.shade800, // Red color for the asterisk
+                                color: Colors.red.shade800,
                               ),
                             ),
                           ),
@@ -594,8 +525,8 @@ class SignUpPageState extends State<SignUpPage>
                         shape: BoxShape.rectangle,
                         color: Colors.white70,
                         border: Border.all(
-                          color: Color(0xFF9AAEC9), // Border color
-                          width: 1.0, // Border width
+                          color: Color(0xFF9AAEC9),
+                          width: 1.0,
                         ),
                       ),
                       alignment: Alignment.centerRight,
@@ -608,7 +539,7 @@ class SignUpPageState extends State<SignUpPage>
                               cursorColor: Color(0xFF064821),
                               textInputAction: TextInputAction.next,
                               keyboardType: TextInputType.text,
-                              textAlign: TextAlign.right, // Align text to the right
+                              textAlign: TextAlign.right,
                               decoration: InputDecoration(
                                 hintText: 'الأسم'.tr,
                                 hintStyle: TextStyle(
@@ -619,7 +550,7 @@ class SignUpPageState extends State<SignUpPage>
                               ),
 
                               onEditingComplete: () async {
-                                // Move focus to the next text field
+
                                 FocusScope.of(context).nextFocus();
                               },
                             ),
@@ -639,15 +570,13 @@ class SignUpPageState extends State<SignUpPage>
                     ),
                     if (_nameController.text.length >0 && _nameController.text.length <2)
                       Text(
-                        // textAlign: TextAlign.end,
                         "برجاء ادخال الاسم",
                         style: TextStyle(
-                          color: Colors.red.shade900, // Error message color
+                          color: Colors.red.shade900,
                           fontSize: 12.0,
                           fontFamily: 'Cairo',
                         ),
                       ),
-                    //passssssssssssssssssssword
                     SizedBox(
                       height: 12,
                     ),
@@ -665,7 +594,7 @@ class SignUpPageState extends State<SignUpPage>
                             child: Text(
                               '  *  ',
                               style: TextStyle(
-                                color: Colors.red.shade800, // Red color for the asterisk
+                                color: Colors.red.shade800,
                               ),
                             ),
                           ),
@@ -686,8 +615,8 @@ class SignUpPageState extends State<SignUpPage>
                         shape: BoxShape.rectangle,
                         color: Colors.white70,
                         border: Border.all(
-                          color: Color(0xFF9AAEC9), // Border color
-                          width: 1.0, // Border width
+                          color: Color(0xFF9AAEC9),
+                          width: 1.0,
                         ),
                       ),
                       alignment: Alignment.centerRight,
@@ -702,8 +631,8 @@ class SignUpPageState extends State<SignUpPage>
                                 LengthLimitingTextInputFormatter(11),
                               ],
                               textInputAction: TextInputAction.done,
-                              keyboardType: TextInputType.datetime, // Updated keyboard type for phone input
-                              textAlign: TextAlign.right, // Align text to the right
+                              keyboardType: TextInputType.datetime,
+                              textAlign: TextAlign.right,
                               decoration: InputDecoration(
                                 hintText: 'رقم التليفون'.tr,
                                 hintStyle: TextStyle(
@@ -720,8 +649,7 @@ class SignUpPageState extends State<SignUpPage>
                                 });
                               },
                               onSubmitted: (value) {
-                                // Move focus to the next text field
-                                // FocusScope.of(context).nextFocus();
+
                               },
                             ),
                           ),
@@ -741,14 +669,11 @@ class SignUpPageState extends State<SignUpPage>
                       Text(
                         PhoneErrorText,
                         style: TextStyle(
-                          color: Colors.red.shade900, // Error message color
+                          color: Colors.red.shade900,
                           fontSize: 12.0,
                           fontFamily: 'Cairo',
                         ),
                       ),
-
-
-                    //passssssssssssssssssssword
                     SizedBox(
                       height: 50,
                     ),
@@ -756,21 +681,20 @@ class SignUpPageState extends State<SignUpPage>
 
                     GestureDetector(
                       onTap: () async {
-                        // Check if any field is empty or if the passwords do not match
                         if (_nameController.text.isEmpty ||
                             _phoneNumberController.text.isEmpty ) {
                           setState(() {
-                            // Show a SnackBar with the error message
+
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  'برجاء ادخال جميع البيانات', // "Please enter all the data"
+                                  'برجاء ادخال جميع البيانات',
                                   textAlign: TextAlign.center,
                                 ),
                                 backgroundColor: Color(0xFF1F8C4B),
                               ),
                             );
-                            // Ensure `isLoading` is set to false when there's a validation error
+
                             isLoading = false;
                           });
                         }
@@ -793,24 +717,18 @@ class SignUpPageState extends State<SignUpPage>
 
                         else {
                           setState(() {
-                            // Clear any existing error message
-
-                            isLoading = true;  // Set loading to true since we're starting an operation
+                           isLoading = true;
                           });
+ if (!_isNavigating) {
+                            _isNavigating = true;
 
-                          // Prevent multiple navigation attempts
-                          if (!_isNavigating) {
-                            _isNavigating = true; // Set the flag to true
-
-                            // Validate phone number in Firestore
                             await validatePhonefirebase(_phoneNumberController.text.trim(), context);
 
-                            // Reset the flag after operation completes
                             _isNavigating = false;
                           }
 
                           setState(() {
-                            isLoading = true;  // Set loading to false after the operation completes
+                            isLoading = true;
                           });
                         }
                       },
@@ -822,7 +740,7 @@ class SignUpPageState extends State<SignUpPage>
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(30.0),
                             shape: BoxShape.rectangle,
-                            color: Color(0xFF064821), // Background color of the container
+                            color: Color(0xFF064821),
                           ),
                           child: Center(
                             child: Text(
@@ -831,7 +749,7 @@ class SignUpPageState extends State<SignUpPage>
                                 fontFamily: 'Cairo',
                                 fontSize: 16.0,
                                 fontWeight: FontWeight.w500,
-                                color: Colors.white, // Text color
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -847,17 +765,17 @@ class SignUpPageState extends State<SignUpPage>
                         );
                       },
                       child: Container(
-                        alignment: Alignment.center, // Center the text within the container
+                        alignment: Alignment.center,
                         child: Text(
                           "تسجيل دخول".tr,
                           style: TextStyle(
                             fontFamily: 'Cairo',
                             fontSize: 14.0,
                             fontWeight: FontWeight.w400,
-                            color: Color(0xFF32AE64), // Text color
-                            decoration: TextDecoration.underline, // Adds the underline
-                            decorationColor: Color(0xFF32AE64), // Underline color to match text color
-                            decorationThickness: 1.0, // Optional: Thickness of the underline
+                            color: Color(0xFF32AE64),
+                            decoration: TextDecoration.underline,
+                            decorationColor: Color(0xFF32AE64),
+                            decorationThickness: 1.0,
                           ),
                         ),
                       ),
@@ -898,15 +816,15 @@ class SignUpPageState extends State<SignUpPage>
                 TextButton(
                   child: Icon(Icons.camera_alt_outlined,color: Color(0xFF064821),),
                   onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
-                    takePhoto(); // Call method to take a photo
+                    Navigator.of(context).pop();
+                    takePhoto();
                   },
                 ),
                 TextButton(
                   child:  Icon(Icons.photo_library_outlined,color:Color(0xFF064821)),
                   onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
-                    uploadImagesAndSaveUrls(); // Call method to pick images from gallery
+                    Navigator.of(context).pop();
+                    uploadImagesAndSaveUrls();
                   },
                 ),
               ],)

@@ -1,5 +1,5 @@
 class AddPlayGroundModel {
-  String? id;  // Optional ID for the playground
+  String? id;
   String? playgroundName;
   String? playType;
   bool?favourite;
@@ -8,11 +8,11 @@ class AddPlayGroundModel {
   String? phoneCommunication;
   String? length;
   String? width;
-  List<String>? img;  // Changed from String? to List<String>?
+  List<String>? img;
   List<String>? availableFacilities = [];
   String? notes;
-  List<BookTypeEntry>? bookTypes; // List of booking entries
-  String? adminId;  // Renamed to follow Dart naming conventions
+  List<BookTypeEntry>? bookTypes;
+  String? adminId;
   String? cost;
   String? logoimage;
   AddPlayGroundModel({
@@ -26,20 +26,19 @@ class AddPlayGroundModel {
     this.phoneCommunication,
     this.length,
     this.width,
-    this.img,  // Now accepts a list of images
+    this.img,
     this.availableFacilities,
     this.notes,
     this.bookTypes,
     this.cost,
-    this.adminId,  // Use the new name for consistency
+    this.adminId,
   });
 
-  // Factory constructor to create the model from a Map
   factory AddPlayGroundModel.fromMap(Map<String, dynamic> map) {
     return AddPlayGroundModel(
-      id: map['id'] ?? '',  // Fetch the ID from the map
+      id: map['id'] ?? '',
       logoimage:map['LogoImg']??'',
-      adminId: map['AdminId'] ?? '',  // Get AdminId directly from the map
+      adminId: map['AdminId'] ?? '',
       playgroundName: map['groundName'],
       playType: map['playType'],
       address: map['address'],
@@ -49,8 +48,8 @@ class AddPlayGroundModel {
       length: map['length'],
       width: map['width'],
       img: map['img'] is String
-          ? [map['img']] // If it's a string, convert it to a list with one element
-          : (map['img'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],  // If it's a list, handle it normally
+          ? [map['img']]
+          : (map['img'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
       availableFacilities: (map['availableFacilities'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
       notes: map['notes'],
       bookTypes: (map['boooktybe']['entries'] as List<dynamic>?)
@@ -59,12 +58,11 @@ class AddPlayGroundModel {
     );
   }
 
-  // Method to convert the model to a Map
   Map<String, dynamic> toMap() {
     return {
       'LogoImg':logoimage,
-      'id': id,  // Include id in the map if needed
-      'AdminId': adminId,  // Add AdminId to the map
+      'id': id,
+      'AdminId': adminId,
       'groundName': playgroundName,
       'playType': playType,
       'address': address,
@@ -72,7 +70,7 @@ class AddPlayGroundModel {
       'phone': phoneCommunication,
       'length': length,
       'width': width,
-      'img': img ?? [],  // Ensure it's an empty list if null
+      'img': img ?? [],
       'availableFacilities': availableFacilities?.isNotEmpty == true ? availableFacilities : [],
       'notes': notes,
       'boooktybe': {
@@ -83,7 +81,7 @@ class AddPlayGroundModel {
 
   @override
   String toString() {
-    return 'AddPlayGroundModel(playgroundName: $playgroundName, playType: $playType, address: $address, location: $location, phoneCommunication: $phoneCommunication, length: $length, width: $width, img: $img, availableFacilities: $availableFacilities, notes: $notes, bookTypes: $bookTypes, adminId: $adminId, id: $id,favourite: $favourite)';  // Updated to include img
+    return 'AddPlayGroundModel(playgroundName: $playgroundName, playType: $playType, address: $address, location: $location, phoneCommunication: $phoneCommunication, length: $length, width: $width, img: $img, availableFacilities: $availableFacilities, notes: $notes, bookTypes: $bookTypes, adminId: $adminId, id: $id,favourite: $favourite)';
   }
 }
 

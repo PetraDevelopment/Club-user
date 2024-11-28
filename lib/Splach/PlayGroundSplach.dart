@@ -28,13 +28,11 @@ class PlayGroundSplashState extends State<PlayGroundSplach>
     prefs.setString('phone', value);
     print('shared phone ${prefs.getString('phone') ?? ''}');
 
-    // Check if the phone number was found
     if (querySnapshot.docs.isNotEmpty) {
-      // Phone number exists, navigate to the Sign-in page
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'هذا الحساب موجود بالفعل برجاء تسجيل الدخول', // "This account already exists. Please sign in."
+            'هذا الحساب موجود بالفعل برجاء تسجيل الدخول',
             textAlign: TextAlign.center,
           ),
           backgroundColor: Color(0xFF1F8C4B),
@@ -47,11 +45,10 @@ class PlayGroundSplashState extends State<PlayGroundSplach>
       );
       print('Phone number exists, navigating to Sign-in page');
     } else {
-      // Phone number does not exist, proceed to send data and call verifyPhone
-      ScaffoldMessenger.of(context).showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'تم تسجيل الدخول بنجاح', // "Successfully registered"
+            'تم تسجيل الدخول بنجاح',
             textAlign: TextAlign.center,
           ),
           backgroundColor: Color(0xFF1F8C4B),
@@ -63,31 +60,24 @@ class PlayGroundSplashState extends State<PlayGroundSplach>
   @override
   void initState() {
     super.initState();
-
-    // Define animation controller
     animationController = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 2), // Adjust the duration as needed
+      duration: Duration(seconds: 2),
     );
-
-    // Define animation
     animation = Tween<double>(begin: 0.5, end: 1.0).animate(
       CurvedAnimation(
         parent: animationController,
         curve: Curves.easeInOut,
       ),
     );
-    playerChatSubscription = null; // Initialize it here
+    playerChatSubscription = null;
 
-    // Start the animation
     animationController.forward();
 
-    // Navigate to the next page after 3 seconds
     Future.delayed(Duration(seconds: 3), () {
       navigateToPage();
     });
 
-    // Add Firestore listener for phone deletion
     addFirestoreListener();
   }
 
@@ -102,7 +92,7 @@ class PlayGroundSplashState extends State<PlayGroundSplach>
         bool phoneExists = snapshot.docs.any((doc) => doc['phone'] == phone);
 
         if (!phoneExists) {
-          // Phone number has been deleted, navigate to SignUpPage
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => SignUpPage()),
@@ -121,22 +111,22 @@ class PlayGroundSplashState extends State<PlayGroundSplach>
     print("Phone011$Phone011");
     print('shared phone $phone');
 
-    if (!mounted) return; // Ensure the widget is still mounted
+    if (!mounted) return;
 
     if (phone.isEmpty&&Phone011.isEmpty) {
-      // Phone is empty, navigate to the sign-up page
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => SignUpPage()),
       );
     } else if (Phone011.isEmpty && phone.isNotEmpty) {
-      // Phone is not empty, navigate to the home page
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
       );}
     else if (Phone011.isNotEmpty && phone.isEmpty) {
-      // Phone is not empty, navigate to the home page
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
@@ -147,7 +137,7 @@ class PlayGroundSplashState extends State<PlayGroundSplach>
   @override
   void dispose() {
     animationController.dispose();
-    // Check if playerChatSubscription is not null before canceling
+
     playerChatSubscription?.cancel();
     super.dispose();
   }

@@ -27,38 +27,34 @@ final PasswordController = TextEditingController();
 
 var Phone = '';
 String PhoneErrorText = '';
-bool _isPasswordVisible = false;
 
 class SigninPageState extends State<SigninPage>
     with SingleTickerProviderStateMixin {
-  final _auth =FirebaseAuth.instance;
   void validatePhone(String value) {
     if (value.isEmpty) {
       setState(() {
         PhoneErrorText = ' يجب ادخال رقم التليفون *'.tr;
-        // isLoading=false;
+
       });
     } else if (value.length < 11) {
       setState(() {
         PhoneErrorText = ' يجب أن يكون رقم الهاتف 11 رقمًا *'.tr;
-        // isLoading=false;
+
       });
     } else {
       setState(() {
-        // isLoading=false;
-        PhoneErrorText = ''; // No error message for 3-letter names
+
+        PhoneErrorText = '';
       });
     }
   }
-  // Function to check if a phone number is valid
   bool isValidPhoneNumber(String phoneNumber) {
-    // Check if the phone number starts with a valid prefix (e.g., 01, 02, etc.)
+
     String prefix = phoneNumber.substring(0, 2);
     if (prefix != '01' && prefix != '02' && prefix != '03' && prefix != '04') {
       return false;
     }
 
-    // Check if the phone number has a valid length (e.g., 11 digits)
     if (phoneNumber.length != 11) {
       return false;
     }
@@ -81,7 +77,7 @@ class SigninPageState extends State<SigninPage>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'تم التسجيل بنجاح', // "Successfully registered"
+            'تم التسجيل بنجاح',
             textAlign: TextAlign.center,
           ),
           backgroundColor: Color(0xFF1F8C4B),
@@ -95,7 +91,6 @@ class SigninPageState extends State<SigninPage>
         verificationCompleted: (PhoneAuthCredential credential) async {
           await FirebaseAuth.instance.signInWithCredential(credential).then((value) {
             print("Successfully signed in with auto-retrieval.");
-            // You might want to navigate directly to the home page or similar
           });
         },
         verificationFailed: (FirebaseAuthException e) {
@@ -103,7 +98,6 @@ class SigninPageState extends State<SigninPage>
           if (e.code == 'invalid-phone-number') {
             print("The phone number entered is invalid!");
           }
-          // Handle error
         },
         codeSent: (String verificationId, int? forceResendingToken) async {
           print('Verification code sent to $phone');
@@ -133,10 +127,8 @@ setState(() {
     CollectionReference usersRef = FirebaseFirestore.instance.collection('Users');
 
     try {
-      // Query the Firestore database to find the user's document based on their phone number
       QuerySnapshot querySnapshot = await usersRef.where('phone', isEqualTo: PhoneController.text).get();
 
-      // Check if the user document exists
       if (querySnapshot.docs.isNotEmpty) {
         DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
         String existingfcm = documentSnapshot['fcm'];
@@ -144,7 +136,6 @@ setState(() {
         if (tooken == existingfcm) {
           print("Token is already up to date");
         } else {
-          // Update the user's document with the new token
           await documentSnapshot.reference.update({'fcm': tooken});
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -158,9 +149,9 @@ setState(() {
           print('User  data updated successfully.');
         }
       } else {
-        // If the user's document is not found, create a new document
+
         await usersRef.add({
-          'phone': PhoneController.text, // Assuming you want to store the phone number
+          'phone': PhoneController.text,
           'fcm': tooken,
         });
         print('User  data added successfully.');
@@ -189,7 +180,7 @@ setState(() {
         String? token = await messaging.getToken();
         print("FCM Token: $token");
 await updatetoken(token!);
-          // Start the phone verification process
+
           await verifyPhone(value);
 
 
@@ -219,7 +210,7 @@ await updatetoken(token!);
     await checkInternetConnection();
     print("ggggg");
     setState(() {});
-    // Other initialization tasks
+
   }
 
   Future<void> checkInternetConnection() async {
@@ -246,22 +237,18 @@ await updatetoken(token!);
   @override
   void initState() {
     _initialize();
-    // Define animation controller
+
     animationController = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 2), // Adjust the duration as needed
+      duration: Duration(seconds: 2),
     );
     Future.delayed(Duration(seconds: 2), () {});
-
-    // Define animation
     animation = Tween<double>(begin: 0.5, end: 1.0).animate(
       CurvedAnimation(
         parent: animationController,
         curve: Curves.easeInOut,
       ),
     );
-
-    // Start the animation
     animationController.forward();
   }
 
@@ -334,7 +321,7 @@ await updatetoken(token!);
                             child: Text(
                               '  *  ',
                               style: TextStyle(
-                                color: Colors.red.shade800, // Red color for the asterisk
+                                color: Colors.red.shade800,
                               ),
                             ),
                           ),
@@ -355,8 +342,8 @@ await updatetoken(token!);
                         shape: BoxShape.rectangle,
                         color: Colors.white70,
                         border: Border.all(
-                          color: Color(0xFF9AAEC9), // Border color
-                          width: 1.0, // Border width
+                          color: Color(0xFF9AAEC9),
+                          width: 1.0,
                         ),
                       ),
                       alignment: Alignment.centerRight,
@@ -372,7 +359,7 @@ await updatetoken(token!);
                               ],
                               textInputAction: TextInputAction.done,
                               keyboardType: TextInputType.datetime,
-                              textAlign: TextAlign.right, // Align text to the right
+                              textAlign: TextAlign.right,
                               decoration: InputDecoration(
                                 hintText: 'رقم التليفون'.tr,
                                 hintStyle: TextStyle(
@@ -389,8 +376,7 @@ await updatetoken(token!);
                                 });
                               },
                               onSubmitted: (value) {
-                                // Move focus to the next text field
-                                // FocusScope.of(context).nextFocus();
+
                               },
                             ),
                           ),
@@ -410,10 +396,10 @@ await updatetoken(token!);
                     ),
                     if (PhoneErrorText.isNotEmpty)
                       Text(
-                        // textAlign: TextAlign.end,
+
                         PhoneErrorText,
                         style: TextStyle(
-                          color: Colors.red.shade900, // Error message color
+                          color: Colors.red.shade900,
                           fontSize: 12.0,
                           fontFamily: 'Cairo',
                         ),),
@@ -470,11 +456,7 @@ await updatetoken(token!);
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(30.0),
                             shape: BoxShape.rectangle,
-                            color: Color(0xFF064821), // Background color of the container
-                            // border: Border.all(
-                            //   width: 1.0, // Border width
-                            //   color: Colors.black
-                            // ),
+                            color: Color(0xFF064821),
                           ),
                           child: Center(
                             child: Text(
@@ -483,7 +465,7 @@ await updatetoken(token!);
                                 fontFamily: 'Cairo',
                                 fontSize: 16.0,
                                 fontWeight: FontWeight.w500,
-                                color: Colors.white, // Text color
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -504,17 +486,17 @@ await updatetoken(token!);
                       },
 
                       child: Container(
-                        alignment: Alignment.center, // Center the text within the container
+                        alignment: Alignment.center,
                         child: Text(
                           'إنشــــاء حســــــاب'.tr,
                           style: TextStyle(
                             fontFamily: 'Cairo',
                             fontSize: 14.0,
                             fontWeight: FontWeight.w400,
-                            color: Color(0xFF32AE64), // Text color
-                            decoration: TextDecoration.underline, // Adds the underline
-                            decorationColor: Color(0xFF32AE64), // Underline color to match text color
-                            decorationThickness: 1.0, // Optional: Thickness of the underline
+                            color: Color(0xFF32AE64),
+                            decoration: TextDecoration.underline,
+                            decorationColor: Color(0xFF32AE64),
+                            decorationThickness: 1.0,
                           ),
                         ),
                       ),

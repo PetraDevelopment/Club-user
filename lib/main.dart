@@ -11,9 +11,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'notification/notification_repo.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // This method will be called when the app is in the background
   print('Handling a background message: ${message.messageId}');
-  // You can handle the message here
 }
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -21,8 +19,6 @@ FlutterLocalNotificationsPlugin();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Firebase
   await Firebase.initializeApp(
     options: FirebaseOptions(
       apiKey: "AIzaSyAr4vHDaUehgTeW1Utt7Vp9xefjNIjXWdQ",
@@ -34,24 +30,12 @@ Future<void> main() async {
       measurementId: "G-QPB1L99TQ5",
     ),
   );
-
-  // Initialize local notifications
   await _initializeLocalNotifications();
-
-  // Register the background message handler
-
-  // Initialize NavigationController
   Get.put(NavigationController());
-
-  // Get FCM token
   FirebaseMessaging messaging = FirebaseMessaging.instance;
   String? token = await messaging.getToken();
   print("FCM Token: $token");
-
-  // Initialize date formatting for Arabic
   await initializeDateFormatting('ar', null);
-
-  // Request permission for notifications
   NotificationSettings settings = await messaging.requestPermission(
     alert: true,
     badge: true,
@@ -63,20 +47,16 @@ Future<void> main() async {
   Future<void> _firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
     print('jjshsghshs');
-
-    // If you're going to use other Firebase services in the background, such as Firestore,
-    // make sure you call `initializeApp` before using other Firebase services.
     await Firebase.initializeApp();
   }
 
-  // Run the app
   runApp(
     GetMaterialApp(
       theme: ThemeData(
         textSelectionTheme: TextSelectionThemeData(
-          selectionColor: Color(0xFF32AE64), // Color of selected text
+          selectionColor: Color(0xFF32AE64),
           selectionHandleColor: Color(0xFF32AE64),
-          cursorColor: Colors.green.shade600, // Color of the selection handles (cursors)
+          cursorColor: Colors.green.shade600,
         ),
       ),
       debugShowCheckedModeBanner: false,
@@ -96,7 +76,6 @@ Future<void> _initializeLocalNotifications() async {
   await flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
     onDidReceiveNotificationResponse: (NotificationResponse response) {
-      // Handle notification tap
       print("Notification tapped: ${response.payload}");
     },
   );

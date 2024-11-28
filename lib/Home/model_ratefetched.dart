@@ -13,7 +13,6 @@ class Rate_fetched {
     this.rate,
   });
 
-  // Factory constructor to create the model from a Map
   factory Rate_fetched.fromMap(Map<String, dynamic> map) {
     return Rate_fetched(
       PlayGroundName:'',
@@ -21,14 +20,12 @@ class Rate_fetched {
 
       userid: map['userid'],
       playgroundIdstars: map['playground_idstars'] ?? '',
-      rate: List<bool>.from(map['rate'] ?? []), // Convert to a list of booleans
+      rate: List<bool>.from(map['rate'] ?? []),
     );
   }
 
-  // Method to calculate the overall rating score
   int get totalRating => rate?.where((r) => r).length ?? 0;
 
-  // Method to convert the model to a Map
   Map<String, dynamic> toMap() {
     return {
       'userid': userid,

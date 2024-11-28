@@ -18,14 +18,14 @@ class ShimmerLoadingbig extends StatelessWidget {
               margin: EdgeInsets.only(bottom: 9),
             ),
           ),
-          SizedBox(height: 15), // Adjust spacing as needed
+          SizedBox(height: 15),
           Shimmer.fromColors(
             baseColor: Colors.grey[300]!,
             highlightColor: Colors.grey[100]!,
             child: Container(
               width: 90,
               height: 10,
-              color: Colors.grey[300], // Placeholder color
+              color: Colors.grey[300],
               margin: EdgeInsets.only(bottom: 9),
             ),
           ),

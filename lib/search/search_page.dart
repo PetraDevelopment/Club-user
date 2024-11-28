@@ -30,7 +30,7 @@ class Searchpage extends StatefulWidget {
 class SearchpageState extends State<Searchpage> {
   late List<User1> user1 = [];
   User? user = FirebaseAuth.instance.currentUser;
-  bool _isLoading = true; // flag to control shimmer effect
+  bool _isLoading = true;
   bool isConnected=true;
   Future<void> checkInternetConnection() async {
 
@@ -53,10 +53,9 @@ class SearchpageState extends State<Searchpage> {
 
   }
   Future<void> _loadData() async {
-    // load data here
-    await Future.delayed(Duration(seconds: 2)); // simulate data loading
+    await Future.delayed(Duration(seconds: 2));
     setState(() {
-      _isLoading = false; // set flag to false when data is loaded
+      _isLoading = false;
     });
   }
   @override
@@ -73,7 +72,6 @@ class SearchpageState extends State<Searchpage> {
         _currentIndex = _pageController.page!.round();
       });
     });
-    // Call setState to rebuild the widget tree
   }
   @override
   void dispose() {
@@ -104,10 +102,10 @@ class SearchpageState extends State<Searchpage> {
       QuerySnapshot querySnapshot = await playerchat.get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        String userInput = Searchcontrol.text; // Get the user's input from the TextField
+        String userInput = Searchcontrol.text;
 
         setState(() {
-          searchPlaygrounds = []; // Clear the list before searching
+          searchPlaygrounds = [];
 
           for (QueryDocumentSnapshot document in querySnapshot.docs) {
             Map<String, dynamic> userData = document.data() as Map<String, dynamic>;
@@ -122,13 +120,10 @@ class SearchpageState extends State<Searchpage> {
         });
 
         if (searchPlaygrounds.isNotEmpty) {
-          // Show the design with the filtered playgrounds
           print("searchPlaygrounds: $searchPlaygrounds");
         } else {
 
           print("this play round not found");
-          // Show the "this play round not found" text
-          // return Text("this play round not found");
         }
       }
     } catch (e) {
@@ -149,8 +144,6 @@ class SearchpageState extends State<Searchpage> {
         Map<String, dynamic> userData =
         querySnapshot.docs.first.data() as Map<String, dynamic>;
         User1 user = User1.fromMap(userData);
-
-        // Update the list and UI inside setState
         setState(() {
           user1.add(user);
         });
@@ -191,17 +184,11 @@ class SearchpageState extends State<Searchpage> {
           AddPlayGroundModel user = AddPlayGroundModel.fromMap(userData);
 
           allplaygrounds.add(user);
-          print("PlayGroung Id : ${document.id}"); // Print the latest playground
+          print("PlayGroung Id : ${document.id}");
 
-          print("allplaygrounds[i] : ${allplaygrounds.last}"); // Print the latest playground
-// Store the document ID in the AddPlayGroundModel object
-          // user.id = document.id;
+          print("allplaygrounds[i] : ${allplaygrounds.last}");
           user.id = document.id;
           print("Docummmmmm${user.id}");
-          // Store the document ID in the AddPlayGroundModel object
-          // idddddd1 = document.id;
-          // idddddd2=document.id;
-          // print("Docummmmmm$idddddd1    gggg$idddddd2");
         }
       }
     } catch (e) {
@@ -215,16 +202,15 @@ class SearchpageState extends State<Searchpage> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // SystemNavigator.pop();
         return false;
       },
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
+          preferredSize: Size.fromHeight(70.0),
           child: Padding(
             padding: EdgeInsets.only(top: 25.0,  right: 12, left: 12),
-            // Add padding to the top of the title
+
             child: AppBar(
               backgroundColor: Colors.white,
               surfaceTintColor: Colors.transparent,
@@ -237,17 +223,16 @@ class SearchpageState extends State<Searchpage> {
                 ),
               ),
               centerTitle: true,
-              // Center the title horizontally
+
               leading: IconButton(
                 onPressed: () {
                   Get.back();
-                  // Navigator.of(context).pop(true); // Navigate back to the previous page
-                },
+                 },
                 icon: Icon(
                   Directionality.of(context) == TextDirection
                       ? Icons.arrow_forward_ios
                       : Icons.arrow_back_ios_new_rounded,
-                  // size: 24,
+
 
                   color: Color(0xFF62748E),
                 ),
@@ -281,11 +266,11 @@ class SearchpageState extends State<Searchpage> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
                     shape: BoxShape.rectangle,
-                    color: Color(0xFFF1F1F1), // Border color
+                    color: Color(0xFFF1F1F1),
         
                     border: Border.all(
-                      color: Color(0xFFB8B8B8), // Border color
-                      width: 1.0, // Border width
+                      color: Color(0xFFB8B8B8),
+                      width: 1.0,
                     ),
                   ),
                   alignment: Alignment.centerRight,
@@ -299,7 +284,6 @@ class SearchpageState extends State<Searchpage> {
                           padding: const EdgeInsets.only(right: 20,top: 7,bottom: 7),
                           child: TextField(
                             controller: Searchcontrol,
-                            // readOnly: true,
 textDirection: TextDirection.rtl,
                             textInputAction: TextInputAction.next,
                             keyboardType: TextInputType.text,
@@ -318,14 +302,14 @@ textDirection: TextDirection.rtl,
                             onChanged: (value) {
                               if (value.isEmpty) {
                                 setState(() {
-                                  searchPlaygrounds = []; // Clear the list when the search controller is cleared
+                                  searchPlaygrounds = [];
                                 });
                               } else {
-                                serarchforplayground(); // Call the search function when the text changes
+                                serarchforplayground();
                               }
                             },
                             onSubmitted: (value) {
-                              serarchforplayground(); // Call the search function when the user submits the text field
+                              serarchforplayground();
                             },
                           ),
                         ),
@@ -350,7 +334,7 @@ textDirection: TextDirection.rtl,
 
               searchPlaygrounds.isNotEmpty?    SingleChildScrollView(
                 scrollDirection: Axis.vertical,
-                reverse: true, // Reverses the scroll direction
+                reverse: true,
 
                 child: Center(
                   child: Column(
@@ -373,8 +357,8 @@ textDirection: TextDirection.rtl,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20.0),
                             ),
-                            elevation: 4, // Adjust elevation to control the shadow
-                            margin: EdgeInsets.all(8), // Adjust margin as needed
+                            elevation: 4,
+                            margin: EdgeInsets.all(8),
                             child: Stack(
                               children: [
                                 Container(
@@ -385,17 +369,17 @@ textDirection: TextDirection.rtl,
                                     shape: BoxShape.rectangle,
                                   ),
                                   child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(20.0), // Clip to match card radius
+                                    borderRadius: BorderRadius.circular(20.0),
                                     child: Image.network(
                                       searchPlaygrounds[i].img![0],
                                       height: 163,
                                       width: 274,
-                                      fit: BoxFit.cover, // Ensure image covers the container
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
                                 ),
                                 Positioned(
-                                  top: 6, // Match the top position of the text
+                                  top: 6,
                                   right: 0,
                                   left: 0,
                                   bottom: 0,
@@ -403,9 +387,9 @@ textDirection: TextDirection.rtl,
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
-                                          Colors.transparent, // Start with transparent
-                                          Color(0x1F8C4B).withOpacity(0.0), // Start with #1F8C4B at 0% opacity (fully transparent)
-                                          Color(0x1F8C4B).withOpacity(1.0), // End with #1F8C4B at 100% opacity (fully opaque)
+                                          Colors.transparent,
+                                          Color(0x1F8C4B).withOpacity(0.0),
+                                          Color(0x1F8C4B).withOpacity(1.0),
                                         ],
                                         begin: Alignment.topCenter,
                                         end: Alignment.bottomCenter,
@@ -418,7 +402,7 @@ textDirection: TextDirection.rtl,
                                   ),
                                 ),
                                 Positioned(
-                                  top: 113, // Adjust the top position
+                                  top: 113,
                                   right: 40,
                                   left: 55,
                                   child: Text(
@@ -429,7 +413,7 @@ textDirection: TextDirection.rtl,
                                       fontWeight: FontWeight.w700,
                                       color: Colors.white,
                                     ),
-                                    textAlign: TextAlign.center, // Center text alignment
+                                    textAlign: TextAlign.center,
                                   ),
                                 ),
                               ],
@@ -456,7 +440,6 @@ textDirection: TextDirection.rtl,
                             child: Image.asset(
                               "assets/images/searchzero.png",
 
-                              // Adjust size as needed
                             ),
                           ),
                         ),
@@ -483,7 +466,7 @@ textDirection: TextDirection.rtl,
         bottomNavigationBar: CurvedNavigationBar(
           height: 60,
           index: 2,
-          // Use the dynamic index
+
           items: [
             Icon(Icons.more_horiz, color: Colors.white, size: 25),
 
@@ -494,10 +477,7 @@ textDirection: TextDirection.rtl,
             Image.asset('assets/images/home.png',
                 height: 21, width: 21, color: Colors.white),
           ],
-          // buttonBackgroundColor: Colors.transparent, // Set button background color to transparent
-          // backgroundColor: Colors.transparent, // Set background color to transparent
-
-          color: Color(0xFF064821),
+         color: Color(0xFF064821),
           buttonBackgroundColor: Color(0xFFBACCE6),
           backgroundColor: Colors.white,
 
@@ -507,33 +487,26 @@ textDirection: TextDirection.rtl,
           onTap: (index) {
             setState(() {
               selectedIndex = index;
-              // Update opacity based on the selected index
+
               opacity= 0.5;
             });
-            // setState(() {
-            //   navigationController.updateIndex(index);
-            //   // Update opacity based on the selected index
-            //   opacity = index == 2 ? 0.9 : 1.0;
-            // });// Update the index dynamically
-            // Handle navigation based on index
+
             switch (index) {
               case 0:
                 Get.to(() => menupage())?.then((_) {
                   navigationController
-                      .updateIndex(0); // Update index when navigating back
+                      .updateIndex(0);
                 });
                 break;
 
               case 1:
                 Get.to(() => my_reservation())?.then((_) {
                   navigationController
-                      .updateIndex(1); // Update index when navigating back
+                      .updateIndex(1);
                 });
                 break;
               case 2:
-                // Get.to(() => AppBarandNavigationBTN())?.then((_) {
-                //   navigationController.updateIndex(2);
-                // });
+
                 break;
 
               case 3:
@@ -544,7 +517,7 @@ textDirection: TextDirection.rtl,
             }
           },
         ),
-        // ),
+
       ),
     );
   }
@@ -563,7 +536,6 @@ textDirection: TextDirection.rtl,
               height: 200,
               child: Image.asset(
                 'assets/images/wifirr.png',
-                // Adjust the height as needed
               ),
             ),
           ),

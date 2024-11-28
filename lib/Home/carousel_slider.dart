@@ -47,7 +47,7 @@ class CarouselSliderWithZoom extends StatelessWidget {
                 ),
               ),
             ),
-            // Add more containers for each item in the carousel
+
           ],
         ),
       ),

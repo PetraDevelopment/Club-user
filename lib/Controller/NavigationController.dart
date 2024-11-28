@@ -54,8 +54,6 @@ String docid='';
     _loadUserData();
     super.onInit();
   }
-
-  // Method to update the current index
   void updateIndex(int index) {
     currentIndex.value = index;
   }

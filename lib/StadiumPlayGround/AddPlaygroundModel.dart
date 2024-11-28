@@ -8,9 +8,8 @@ class AddPlayGroundModel {
   String? length;
   String? width;
   String? img;
-  List<String>? bookTypes;  // List of book types
-  List<String>? days;        // List of days
-  // List<String>? times;       // List of times
+  List<String>? bookTypes;
+  List<String>? days;
   String? cost;
   List<String>? availableFacilities = [];
   String? notes;
@@ -29,10 +28,6 @@ String? time2;
     this.img,
     this.length,
     this.width,
-    // this.bookTypes,          // Initialize as List
-    // this.days,               // Initialize as List
-    // this.times,              // Initialize as List
-    // this.cost,
     this.availableFacilities,
     this.notes,
     this.day,
@@ -52,10 +47,6 @@ String? time2;
       length: map['length'],
       width: map['width'],
       img: map['img'],
-      // bookTypes: (map['bookTypes'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-      // days: (map['days'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-      // times: (map['times'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-      // cost: map['cost'],
       availableFacilities: (map['availableFacilities'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
       notes: map['notes'],
     );
@@ -72,10 +63,7 @@ String? time2;
       'length': length,
       'width': width,
       'img': img,
-      // 'bookTypes': bookTypes ?? [],  // Ensure it's always a list
-      // 'days': days ?? [],            // Ensure it's always a list
-      // 'times': times ?? [],          // Ensure it's always a list
-      // 'cost': cost,
+
       'availableFacilities': availableFacilities?.isNotEmpty == true ? availableFacilities : [],
       'notes': notes,
     };

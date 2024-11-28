@@ -139,6 +139,8 @@ class my_reservationState extends State<my_reservation>
         var playerDoc = querySnapshot.docs.first;
         docId = playerDoc.id;
         print("Document ID for the Phoone number: $docId");
+
+        _load_cancel_book();
         Map<String, dynamic> userData =
         querySnapshot.docs.first.data() as Map<String, dynamic>;
         User1 user = User1.fromMap(userData);
@@ -194,7 +196,6 @@ class my_reservationState extends State<my_reservation>
     super.initState();
     checkInternetConnection();
     _loadUserData();
-    _load_cancel_book();
     _load_Accepted_book();
 
     fetchBookingData();
@@ -226,7 +227,7 @@ class my_reservationState extends State<my_reservation>
     print("bvbbvbvbb$isConnected");
 
   }
-  Future<void> getcancel_bookDataByPhone(String userPhone) async {
+  Future<void> getcancel_bookDataByPhone(String useridd) async {
     final firestore = FirebaseFirestore.instance;
 
     try {
@@ -263,7 +264,7 @@ class my_reservationState extends State<my_reservation>
 
       final querySnapshot = await firestore
           .collection('accepted')
-          .where('phone_number', isEqualTo: userPhone)
+          .where('userId', isEqualTo: userPhone)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
@@ -272,7 +273,7 @@ class my_reservationState extends State<my_reservation>
           Map<String, dynamic> data = doc.data();
           int numberOfaccepted = data['accepted_number'] ?? 0;
 
-          print('User Phone: ${data['phone_number']}');
+          print('User Phone: ${data['userId']}');
           print('Number of accepted: $numberOfaccepted');
           numberaccepted = numberOfaccepted;
         });

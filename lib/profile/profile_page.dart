@@ -38,12 +38,11 @@ class ProfilepageState extends State<Profilepage>
   final NavigationController navigationController =
   Get.put(NavigationController());
 
-  bool _isLoading = true; // flag to control shimmer effect
+  bool _isLoading = true;
   Future<void> _loadData() async {
-    // load data here
-    await Future.delayed(Duration(seconds: 2)); // simulate data loading
+    await Future.delayed(Duration(seconds: 2));
     setState(() {
-      _isLoading = false; // set flag to false when data is loaded
+      _isLoading = false;
     });
   }
 
@@ -59,8 +58,7 @@ class ProfilepageState extends State<Profilepage>
     await ImagePicker().pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       setState(() {
-        selectedImages = File(pickedFile.path); // Update the selected image
-        // img_profile = pickedFile.path; // Update the img_profile variable
+        selectedImages = File(pickedFile.path);
       });
     }
   }
@@ -92,8 +90,7 @@ class ProfilepageState extends State<Profilepage>
     if (image == null) return;
 
     setState(() {
-      selectedImages = image; // Update the selected image
-      // img_profile = image.path.toString(); // Update the img_profile variable
+      selectedImages = image;
     });
 
     String downloadUrl = await _uploadImage(image);
@@ -157,7 +154,6 @@ class ProfilepageState extends State<Profilepage>
           );
         print('User  data updated successfully.');
       } else {
-        // If the user's document is not found, create a new document
 
         print('users document is not found');
       }
@@ -255,8 +251,6 @@ class ProfilepageState extends State<Profilepage>
         Map<String, dynamic> userData =
         querySnapshot.docs.first.data() as Map<String, dynamic>;
         User1 user = User1.fromMap(userData);
-
-        // Update the list and UI inside setState
         setState(() {
           user1.add(user);
           if (user1.isNotEmpty) {
@@ -300,10 +294,9 @@ class ProfilepageState extends State<Profilepage>
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(70.0), // Set the height of the AppBar
+        preferredSize: Size.fromHeight(70.0),
         child: Padding(
           padding: EdgeInsets.only(top: 25.0, right: 8, left: 8),
-          // Add padding to the top of the title
           child: AppBar(
             backgroundColor: Colors.white,
             surfaceTintColor: Colors.transparent,
@@ -316,13 +309,12 @@ class ProfilepageState extends State<Profilepage>
               ),
             ),
             centerTitle: true,
-            // Center the title horizontally
             leading: IconButton(
               onPressed: () {
                 Map<dynamic, dynamic>? arguments = ModalRoute
                     .of(context)
                     ?.settings
-                    .arguments as Map<dynamic, dynamic>?; // Explicit casting
+                    .arguments as Map<dynamic, dynamic>?;
                 if (arguments != null && arguments['from'] == 'menu_page') {
                   Navigator.push(
                     context,
@@ -398,13 +390,12 @@ class ProfilepageState extends State<Profilepage>
                                   height: 164,
                                   width: 164,
                                   fit: BoxFit.cover,
-                                )) // Display selected image
+                                ))
 
                         ),
                       ),
                       Positioned(
-                        //129
-                        //200
+
                         top: MediaQuery.of(context).size.height/6.2,
                         left: MediaQuery.of(context).size.width/1.8,
                         child: Container(
@@ -416,20 +407,20 @@ class ProfilepageState extends State<Profilepage>
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.white.withOpacity(0.9),
-                                // Increase opacity for a darker shadow
+
                                 spreadRadius: 0,
-                                // Increase spread to make the shadow larger
+
                                 blurRadius: 5,
-                                // Increase blur radius for a more diffused shadow
+
                                 offset: Offset(0,
-                                    0), // Increase offset for a more pronounced shadow effect
+                                    0),
                               ),
                             ],
                           ),
                           child: FloatingActionButton(
                             onPressed: () {
-                              _showImageSourceDialog(); // Show dialog on tap
-                              // Get.to(() => AddNewPlayGround()); // Use GetX navigation
+                              _showImageSourceDialog();
+
                             },
                             child: Icon(
                               Icons.add,
@@ -439,9 +430,9 @@ class ProfilepageState extends State<Profilepage>
                             backgroundColor: Color(0xFF064821),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(
-                                  30), // Adjust the circular shape here
+                                  30),
                             ),
-                            // elevation: 6.0, // Adjust the elevation if needed
+
                           ),
                         ),
                       )
@@ -486,11 +477,11 @@ class ProfilepageState extends State<Profilepage>
                       shape: BoxShape.rectangle,
                       color: Colors.white70,
                       border: Border.all(
-                        color: Color(0xFF9AAEC9), // Border color
-                        width: 1.0, // Border width
+                        color: Color(0xFF9AAEC9),
+                        width: 1.0,
                       ),
                     ),
-                    // alignment: Alignment.centerRight,
+
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -510,7 +501,7 @@ class ProfilepageState extends State<Profilepage>
                             textInputAction: TextInputAction.next,
                             keyboardType: TextInputType.text,
                             textAlign: TextAlign.start,
-                            // Align text to the right
+
                             decoration: InputDecoration(
                               hintText: 'الأسم'.tr,
                               hintStyle: TextStyle(
@@ -521,7 +512,7 @@ class ProfilepageState extends State<Profilepage>
                             ),
 
                             onEditingComplete: () async {
-                              // Move focus to the next text field
+
                               FocusScope.of(context).nextFocus();
                             },
                           ),
@@ -532,15 +523,15 @@ class ProfilepageState extends State<Profilepage>
                   if (_nameController.text.length > 0 &&
                       _nameController.text.length < 2)
                     Text(
-                      // textAlign: TextAlign.end,
+
                       "برجاء ادخال الاسم",
                       style: TextStyle(
-                        color: Colors.red.shade900, // Error message color
+                        color: Colors.red.shade900,
                         fontSize: 12.0,
                         fontFamily: 'Cairo',
                       ),
                     ),
-                  //phone
+
                   SizedBox(
                     height: 12,
                   ),
@@ -576,8 +567,8 @@ class ProfilepageState extends State<Profilepage>
                       shape: BoxShape.rectangle,
                       color: Colors.white70,
                       border: Border.all(
-                        color: Color(0xFF9AAEC9), // Border color
-                        width: 1.0, // Border width
+                        color: Color(0xFF9AAEC9),
+                        width: 1.0,
                       ),
                     ),
                     alignment: Alignment.centerRight,
@@ -598,14 +589,8 @@ class ProfilepageState extends State<Profilepage>
                           child: TextField(
                             controller: _phoneNumberController,
                             readOnly: true,
-                            // cursorColor: Color(0xFF064821),
-                            // inputFormatters: [
-                            //   LengthLimitingTextInputFormatter(11),
-                            // ],
-                            // textInputAction: TextInputAction.done,
-                            // keyboardType: TextInputType.none, // Updated keyboard type for phone input
-                            textAlign: TextAlign.right,
-                            // Align text to the right
+                         textAlign: TextAlign.right,
+
                             decoration: InputDecoration(
                               hintText: 'رقم التليفون'.tr,
                               hintStyle: TextStyle(
@@ -615,15 +600,10 @@ class ProfilepageState extends State<Profilepage>
                               border: InputBorder.none,
                             ),
                             onChanged: (value) {
-                              // Phone = value;
-                              // print("phoneeee" + " " + Phone);
-                              // setState(() {
-                              //   validatePhone(value);
-                              // });
+
                             },
                             onSubmitted: (value) {
-                              // Move focus to the next text field
-                              // FocusScope.of(context).nextFocus();
+
                             },
                           ),
                         ),
@@ -634,7 +614,7 @@ class ProfilepageState extends State<Profilepage>
                     Text(
                       PhoneErrorText,
                       style: TextStyle(
-                        color: Colors.red.shade900, // Error message color
+                        color: Colors.red.shade900,
                         fontSize: 12.0,
                         fontFamily: 'Cairo',
                       ),
@@ -662,7 +642,6 @@ class ProfilepageState extends State<Profilepage>
                             _isLoading = true;
                           });
 
-                          // Update user name
                           await _updateName(_nameController.text);
 await  getUserByPhone(_phoneNumberController.text);
                           if (selectedImages != null) {
@@ -706,7 +685,7 @@ await  getUserByPhone(_phoneNumberController.text);
                           borderRadius: BorderRadius.circular(30.0),
                           shape: BoxShape.rectangle,
                           color: Color(
-                              0xFF064821), // Background color of the container
+                              0xFF064821),
                         ),
                         child: Center(
                           child: Text(
@@ -715,7 +694,7 @@ await  getUserByPhone(_phoneNumberController.text);
                               fontFamily: 'Cairo',
                               fontSize: 16.0,
                               fontWeight: FontWeight.w500,
-                              color: Colors.white, // Text color
+                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -736,7 +715,7 @@ await  getUserByPhone(_phoneNumberController.text);
       bottomNavigationBar: CurvedNavigationBar(
         height: 60,
         index: 0,
-        // Use the dynamic index
+
         items: [
           Icon(Icons.more_horiz, color: Colors.white, size: 25),
           Image.asset('assets/images/calendar.png',
@@ -753,19 +732,16 @@ await  getUserByPhone(_phoneNumberController.text);
         animationDuration: Duration(milliseconds: 600),
         onTap: (index) {
           navigationController
-              .updateIndex(index); // Update the index dynamically
-          // Handle navigation based on index
+              .updateIndex(index);
+
           switch (index) {
             case 0:
-            // Get.to(() => menupage())?.then((_) {
-            //   navigationController
-            //       .updateIndex(0); // Update index when navigating back
-            // });
+
               break;
             case 1:
               Get.to(() => my_reservation())?.then((_) {
                 navigationController
-                    .updateIndex(1); // Update index when navigating back
+                    .updateIndex(1);
               });
 
               break;
@@ -789,17 +765,14 @@ await  getUserByPhone(_phoneNumberController.text);
     int currentIndex = NavigationController().currentIndex.value;
 
     if (currentIndex == 3) {
-      // If already on Home page, simply pop the route
       return true;
     } else {
-      // Update index and navigate back correctly
-      NavigationController().updateIndex(3); // Set index to Home
-      Get.off(HomePage()); // Navigate to HomePage manually
-      return false; // Prevent default pop behavior
+      NavigationController().updateIndex(3);
+      Get.off(HomePage());
+      return false;
     }
   }
 
-  //allow open gallery or camera
   void _showImageSourceDialog() {
     showDialog(
       context: context,
@@ -820,16 +793,16 @@ await  getUserByPhone(_phoneNumberController.text);
                   child: Icon(
                     Icons.camera_alt_outlined, color: Color(0xFF064821),),
                   onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
-                    takePhoto(); // Call method to take a photo
+                    Navigator.of(context).pop();
+                    takePhoto();
                   },
                 ),
                 TextButton(
                   child: Icon(
                       Icons.photo_library_outlined, color: Color(0xFF064821)),
                   onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
-                    uploadImagesAndSaveUrls(); // Call method to pick images from gallery
+                    Navigator.of(context).pop();
+                    uploadImagesAndSaveUrls();
                   },
                 ),
               ],)
@@ -840,7 +813,6 @@ await  getUserByPhone(_phoneNumberController.text);
   }
 
   Widget _buildNoInternetUI() {
-    // Your UI design when there's no internet connection
     return Container(
       color: Colors.white,
       child: Column(
@@ -854,7 +826,6 @@ await  getUserByPhone(_phoneNumberController.text);
               height: 200,
               child: Image.asset(
                 'assets/images/wifirr.png',
-                // Adjust the height as needed
               ),
             ),
           ),
