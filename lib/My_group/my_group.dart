@@ -9,6 +9,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import '../Controller/NavigationController.dart';
 import '../Home/Userclass.dart';
 import '../Menu/menu.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../Register/SignInPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
@@ -333,13 +334,21 @@ class My_groupState extends State<My_group> {
                                       Padding(
                                         padding: const EdgeInsets.only(bottom: 22.0,right: 10),
                                         child: ClipOval(
-                                          child: Image(image:  NetworkImage(
-                                            stordataofgroup[0].profileImage!,
+                                          child: CachedNetworkImage(
+                                           imageUrl: stordataofgroup[0].profileImage!,
 
-                                          ),
+
                                             fit: BoxFit.fitWidth,
                                             height: 32,
                                             width: 32,
+                                            placeholder: (context, url) => Center(
+                                              child: CircularProgressIndicator(color: Color(0xFF4AD080),),
+                                            ),
+                                            errorWidget: (context, url, error) => Icon(
+                                              Icons.image_not_supported,
+                                              color: Colors.grey,
+                                              size: 40,
+                                            ),
                                           ),
                                         ),
                                       )

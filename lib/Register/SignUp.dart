@@ -105,6 +105,20 @@ class SignUpPageState extends State<SignUpPage>
     print("bvbbvbvbb$isConnected");
 
   }
+  void _showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+        ),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+
+  String errorrr='';
   Future<void> verifyPhone(String phone) async {
     print('verificationIddd  ' + '+2$phone');
     if(phone.startsWith("011")||phone.startsWith("015")){
@@ -145,26 +159,33 @@ class SignUpPageState extends State<SignUpPage>
           },
           verificationFailed: (FirebaseAuthException e) {
             print("Verification failed: ${e.code}");
+            isLoading = false; // Stop the loading state immediately
             if (e.code == 'invalid-phone-number') {
-              print("The phone number entered is invalid!");
+              errorrr = 'invalid-phone-number';
+              _showErrorSnackbar('The phone number entered is invalid.');
             } else if (e.code == 'billing-not-enabled') {
-              print("Billing is not enabled for this project.");
+              errorrr = 'billing-not-enabled';
+              _showErrorSnackbar('Billing is not enabled for this project.');
             } else {
-              print("An unknown error occurred: ${e.message}");
+              errorrr = 'unknown-error';
+              _showErrorSnackbar('An internal error occurred: ${e.message}');
             }
-            // if (e.code == 'invalid-phone-number') {
-            //   print("The phone number entered is invalid!");
-            // }
+            setState(() {}); // Update UI to reflect the stopped loading state
           },
+
           codeSent: (String verificationId, int? forceResendingToken) async {
-            print('Verification code sent to $phone');
-            isLoading=true;
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => OTP(verificationId, phone, '', ''),
-              ),
-            );
+            if (errorrr.isEmpty) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => OTP(verificationId, phone, '', ''),
+                ),
+              );
+            } else {
+              isLoading = false; // Stop loading if there's an error
+              _showErrorSnackbar('Cannot proceed due to billing error.');
+            }
+            setState(() {}); // Update the UI
           },
           codeAutoRetrievalTimeout: (String verificationID) {
             print("Auto retrieval timeout for verification ID: $verificationID");
@@ -175,9 +196,7 @@ class SignUpPageState extends State<SignUpPage>
 
 
     }
-    setState(() {
-      isLoading=true;
-    });
+
   }
   Future<void> validatePhonefirebase(String value, BuildContext context) async {
     var connectivityResult = await (Connectivity().checkConnectivity());

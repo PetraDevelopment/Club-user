@@ -930,7 +930,7 @@ class my_reservationState extends State<my_reservation>
                                     height: 18,
                                   ),
                                   Text(
-                                    "حجزات ملغية",
+                                    "حجوزات ملغية",
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
                                       fontSize: 8.5,
@@ -987,7 +987,7 @@ class my_reservationState extends State<my_reservation>
                                     height: 18,
                                   ),
                                   Text(
-                                    "حجزات مأكدة",
+                                    "حجوزات مأكدة",
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
                                       fontSize: 8.5,

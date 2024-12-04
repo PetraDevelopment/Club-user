@@ -315,7 +315,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                                   user1.isNotEmpty
                                       ? user1[0].name!.isNotEmpty
                                       ? Text(
-                                    user1[0].name!,
+                                    user1[0].name!.substring(0,14),
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
                                       fontSize: 16.0,
@@ -387,7 +387,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                                 user1.isNotEmpty
                                     ? user1[0].name!.isNotEmpty
                                     ? Text(
-                                  user1[0].name!,
+                                  user1[0].name!.substring(0,14),
                                   style: TextStyle(
                                     fontFamily: 'Cairo',
                                     fontSize: 16.0,

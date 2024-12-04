@@ -100,7 +100,7 @@ class OTPState extends State<OTP>  with SingleTickerProviderStateMixin{
   String phonenn='';
   String  verificationId='';
 
-  String? otpcode;
+  String otpcode='';
   late int _counter = 60;
   late Timer _timer;
   late List<TextEditingController> _controller;
@@ -109,7 +109,7 @@ class OTPState extends State<OTP>  with SingleTickerProviderStateMixin{
 
   OTPState(this.phone);
 
-
+  TextEditingController otpController = TextEditingController();
   Future<dynamic> SignUpStudent() async {
     String? tokenFCM =
     await FirebaseMessaging.instance.getToken();
@@ -293,55 +293,205 @@ class OTPState extends State<OTP>  with SingleTickerProviderStateMixin{
                       ),
                     ),
                     SizedBox(height: 20.0),
-                    Directionality(
-                      textDirection: TextDirection.ltr,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18.0),
-                        child: PinCodeTextField(
+                    // _counter != 0? Directionality(
+                    //   textDirection: TextDirection.ltr,
+                    //   child: Padding(
+                    //     padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                    //     child: PinCodeTextField(
+                    //
+                    //       textStyle: const TextStyle(
+                    //         fontSize: 20,
+                    //         fontFamily: 'Inter-SemiBold',
+                    //       ),
+                    //       hintCharacter: '0',
+                    //       hintStyle: const TextStyle(
+                    //         fontWeight: FontWeight.w400,
+                    //         fontSize: 24,
+                    //         fontFamily: 'Inter-SemiBold',
+                    //         color: Color(0xff8198A5),
+                    //       ),
+                    //       appContext: context,
+                    //       length: 6,
+                    //       blinkWhenObscuring: true,
+                    //       animationType: AnimationType.fade,
+                    //       pinTheme: PinTheme(
+                    //         shape: PinCodeFieldShape.box,
+                    //         borderRadius: BorderRadius.circular(15),
+                    //         fieldHeight: 53,
+                    //         fieldWidth: 53,
+                    //         borderWidth: 0,
+                    //         activeFillColor: Colors.grey.shade600,
+                    //         inactiveColor:  Color(0xFF9AAEC9),
+                    //         selectedColor: Color(0xFF9AAEC9),
+                    //         activeColor: Color(0xFF9AAEC9),
+                    //         selectedFillColor: Colors.grey,
+                    //       ),
+                    //       cursorColor: const Color(0xff001D4A),
+                    //       animationDuration: const Duration(milliseconds: 300),
+                    //       keyboardType: TextInputType.number,
+                    //       onCompleted: (String pin) {
+                    //         if( _counter != 0){
+                    //           otpcode = pin;
+                    //
+                    //           print("Completed: $pin");
+                    //
+                    //         }else{
+                    //           otpcode ='';
+                    //         }
+                    //
+                    //       },
+                    //       onChanged: (String value) {
+                    //
+                    //       },
+                    //     ),
+                    //   ),
+                    // )
+                    //     :Directionality(
+                    //   textDirection: TextDirection.ltr,
+                    //   child: Padding(
+                    //     padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                    //     child: PinCodeTextField(
+                    //
+                    //       textStyle: const TextStyle(
+                    //         fontSize: 20,
+                    //         fontFamily: 'Inter-SemiBold',
+                    //       ),
+                    //       hintCharacter: '0',
+                    //       hintStyle: const TextStyle(
+                    //         fontWeight: FontWeight.w400,
+                    //         fontSize: 24,
+                    //         fontFamily: 'Inter-SemiBold',
+                    //         color: Color(0xff8198A5),
+                    //       ),
+                    //       appContext: context,
+                    //       length: 6,
+                    //       blinkWhenObscuring: true,
+                    //       animationType: AnimationType.fade,
+                    //       pinTheme: PinTheme(
+                    //         shape: PinCodeFieldShape.box,
+                    //         borderRadius: BorderRadius.circular(15),
+                    //         fieldHeight: 53,
+                    //         fieldWidth: 53,
+                    //         borderWidth: 0,
+                    //         activeFillColor: Colors.grey.shade600,
+                    //         inactiveColor:  Color(0xFF9AAEC9),
+                    //         selectedColor: Color(0xFF9AAEC9),
+                    //         activeColor: Color(0xFF9AAEC9),
+                    //         selectedFillColor: Colors.grey,
+                    //       ),
+                    //       cursorColor: const Color(0xff001D4A),
+                    //       animationDuration: const Duration(milliseconds: 300),
+                    //       keyboardType: TextInputType.number,
+                    //       onCompleted: (String pin) {
+                    //
+                    //
+                    //       },
+                    //       onChanged: (String value) {
+                    //
+                    //       },
+                    //     ),
+                    //   ),
+                    // ),
+              _counter != 0
 
-                          textStyle: const TextStyle(
-                            fontSize: 20,
-                            fontFamily: 'Inter-SemiBold',
-                          ),
-                          hintCharacter: '0',
-                          hintStyle: const TextStyle(
-                            fontWeight: FontWeight.w400,
-                            fontSize: 24,
-                            fontFamily: 'Inter-SemiBold',
-                            color: Color(0xff8198A5),
-                          ),
-                          appContext: context,
-                          length: 6,
-                          blinkWhenObscuring: true,
-                          animationType: AnimationType.fade,
-                          pinTheme: PinTheme(
-                            shape: PinCodeFieldShape.box,
-                            borderRadius: BorderRadius.circular(15),
-                            fieldHeight: 53,
-                            fieldWidth: 53,
-                            borderWidth: 0,
-                            activeFillColor: Colors.grey.shade600,
-                            inactiveColor:  Color(0xFF9AAEC9),
-                            selectedColor: Color(0xFF9AAEC9),
-                            activeColor: Color(0xFF9AAEC9),
-                            selectedFillColor: Colors.grey,
-                          ),
-                          cursorColor: const Color(0xff001D4A),
-                          animationDuration: const Duration(milliseconds: 300),
-                          keyboardType: TextInputType.number,
-                          onCompleted: (String pin) {
-                            otpcode = pin;
-
-                            print("Completed: $pin");
-
-                          },
-                          onChanged: (String value) {
-
-                          },
-                        ),
-                      ),
+                  ? Directionality(
+                textDirection: TextDirection.ltr,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                  child: PinCodeTextField(
+                    controller: otpController, // Use the controller here
+                    textStyle: const TextStyle(
+                      fontSize: 20,
+                      fontFamily: 'Inter-SemiBold',
                     ),
-                    Align(
+                    hintCharacter: '0',
+                    hintStyle: const TextStyle(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 24,
+                      fontFamily: 'Inter-SemiBold',
+                      color: Color(0xff8198A5),
+                    ),
+                    appContext: context,
+                    length: 6,
+                    blinkWhenObscuring: true,
+                    animationType: AnimationType.fade,
+                    pinTheme: PinTheme(
+                      shape: PinCodeFieldShape.box,
+                      borderRadius: BorderRadius.circular(15),
+                      fieldHeight: 53,
+                      fieldWidth: 53,
+                      borderWidth: 0,
+                      activeFillColor: Colors.grey.shade600,
+                      inactiveColor: Color(0xFF9AAEC9),
+                      selectedColor: Color(0xFF9AAEC9),
+                      activeColor: Color(0xFF9AAEC9),
+                      selectedFillColor: Colors.grey,
+                    ),
+                    cursorColor: const Color(0xff001D4A),
+                    animationDuration: const Duration(milliseconds: 300),
+                    keyboardType: TextInputType.number,
+                    onCompleted: (String pin) {
+                      if (_counter != 0) {
+                        otpcode = pin;
+                        print("Completed: $pin");
+                      } else {
+                        otpcode = '';
+                      }
+                    },
+                    onChanged: (String value) {
+                      if (_counter == 0) {
+                        otpcode = ''; // Clear the OTP code
+                      }
+                    },
+                  ),
+                ),
+              )
+                  : Directionality(
+                textDirection: TextDirection.ltr,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                  child: PinCodeTextField(
+                    textStyle: const TextStyle(
+                      fontSize: 20,
+                      fontFamily: 'Inter-SemiBold',
+                    ),
+                    hintCharacter: '0',
+                    hintStyle: const TextStyle(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 24,
+                      fontFamily: 'Inter-SemiBold',
+                      color: Color(0xff8198A5),
+                    ),
+                    appContext: context,
+                    length: 6,
+                    blinkWhenObscuring: true,
+                    animationType: AnimationType.fade,
+                    pinTheme: PinTheme(
+                      shape: PinCodeFieldShape.box,
+                      borderRadius: BorderRadius.circular(15),
+                      fieldHeight: 53,
+                      fieldWidth: 53,
+                      borderWidth: 0,
+                      activeFillColor: Colors.grey.shade600,
+                      inactiveColor: Color(0xFF9AAEC9),
+                      selectedColor: Color(0xFF9AAEC9),
+                      activeColor: Color(0xFF9AAEC9),
+                      selectedFillColor: Colors.grey,
+                    ),
+                    cursorColor: const Color(0xff001D4A),
+                    animationDuration: const Duration(milliseconds: 300),
+                    keyboardType: TextInputType.number,
+                    onCompleted: (String pin) {},
+                    onChanged: (String value) {
+                      if (_counter == 0) {
+                        otpcode = ''; // Clear the OTP code
+                      }
+                    },
+                  ),
+                ),
+              ),
+
+              Align(
                       alignment: Alignment.topRight,
                       child: Container(
                         padding: EdgeInsets.only(right: 8.0, top: 5.0, bottom: 30),
@@ -377,15 +527,10 @@ class OTPState extends State<OTP>  with SingleTickerProviderStateMixin{
                               onTap: () {
                                 verificationId=widget.verificationId;
                                 sendOtp(phone);
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => OTP(verificationId,phone,'',''),
-                                  ),
-                                );
                                 setState(() {
                                   _counter = 60;
                                   _startTimer();
+                                  otpController.clear();
                                 });
                               },
                               child: Text(
@@ -443,7 +588,7 @@ class OTPState extends State<OTP>  with SingleTickerProviderStateMixin{
 
                                       final credential = PhoneAuthProvider.credential(
                                         verificationId: widget.verificationId,
-                                        smsCode: otpcode!,
+                                        smsCode: otpcode,
                                       );
                                       print('FCM otpcode: $otpcode');
 

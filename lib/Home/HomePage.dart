@@ -1053,7 +1053,7 @@ if(selectedTime.contains("PM")){
                                 ),
                                 user1.isNotEmpty && user1[0].name!.isNotEmpty
                                     ? Text(
-                                  user1[0].name!,
+                                  user1[0].name!.substring(0,12),
                                   textAlign: TextAlign.start,
                                   style: TextStyle(
                                     fontFamily: 'Cairo',
@@ -1078,8 +1078,8 @@ if(selectedTime.contains("PM")){
                                     child: CircularProgressIndicator(color: Color(0xFF4AD080),),
                                   ),
                                   errorWidget: (context, url, error) => Icon(
-                                    Icons.error,
-                                    color: Colors.red,
+                                    Icons.image_not_supported,
+                                    color: Colors.grey,
                                     size: 40,
                                   ),
                                 ),
@@ -1130,7 +1130,7 @@ if(selectedTime.contains("PM")){
                                 ),
                                 user1.isNotEmpty && user1[0].name!.isNotEmpty
                                     ? Text(
-                                  user1[0].name!.length<20? user1[0].name!:user1[0].name!.substring(0,20),
+                                  user1[0].name!.length<15? user1[0].name!:user1[0].name!.substring(0,12),
                                   textAlign: TextAlign.start,
                                   style: TextStyle(
                                     fontFamily: 'Cairo',
@@ -1170,8 +1170,8 @@ if(selectedTime.contains("PM")){
                                       child: CircularProgressIndicator(color: Color(0xFF4AD080),),
                                     ),
                                     errorWidget: (context, url, error) => Icon(
-                                      Icons.error,
-                                      color: Colors.red,
+                                      Icons.image_not_supported,
+                                      color: Colors.grey,
                                       size: 40,
                                     ),
 
@@ -1325,7 +1325,7 @@ if(selectedTime.contains("PM")){
                                             child: CircularProgressIndicator(color: Color(0xFF4AD080),),
                                           ),
                                           errorWidget: (context, url, error) => Icon(
-                                            Icons.error,
+                                            Icons.image_not_supported,
                                             color: Colors.red,
                                             size: 40,
                                           ),
@@ -1488,16 +1488,30 @@ if(selectedTime.contains("PM")){
                                         ),
                                         SizedBox(width: 10),
                                         ClipOval(
-                                          child: Image(
-                                            image: NetworkImage(
-                                            playgroundbook [i].logoimage!,),
-
-
-                                            fit: BoxFit.fitWidth,
+                                          child: CachedNetworkImage(
+                                            imageUrl: playgroundbook[i].logoimage ?? '', // Handle null safety
+                                            fit: BoxFit.cover,
                                             height: 30,
                                             width: 30,
-                                          )
+                                            placeholder: (context, url) => Center(
+                                              child: CircularProgressIndicator(
+                                                color: Color(0xFF4AD080),
+                                                strokeWidth: 2,
+                                              ),
+                                            ),
+                                            errorWidget: (context, url, error) => Container(
+                                              height: 30,
+                                              width: 30,
+                                              color: Colors.grey.shade300, // Fallback color
+                                              child: Icon(
+                                                Icons.image_not_supported,
+                                                color: Colors.grey,
+                                                size: 20,
+                                              ),
+                                            ),
+                                          ),
                                         )
+
                                       ],
                                     ),
                                   ),
@@ -1830,8 +1844,8 @@ if(selectedTime.contains("PM")){
                                             child: CircularProgressIndicator(color: Color(0xFF4AD080),),
                                           ),
                                           errorWidget: (context, url, error) => Icon(
-                                            Icons.error,
-                                            color: Colors.red,
+                                            Icons.image_not_supported,
+                                            color: Colors.grey,
                                             size: 40,
                                           ),
                                         ):Image(
@@ -1929,8 +1943,8 @@ if(selectedTime.contains("PM")){
                                           child: CircularProgressIndicator(color: Color(0xFF4AD080),),
                                         ),
                                         errorWidget: (context, url, error) => Icon(
-                                          Icons.error,
-                                          color: Colors.red,
+                                          Icons.image_not_supported,
+                                          color: Colors.grey,
                                           size: 40,
                                         ),
                                       ):Image(
@@ -2104,8 +2118,8 @@ if(selectedTime.contains("PM")){
                                           child: CircularProgressIndicator(color: Color(0xFF4AD080),),
                                         ),
                                         errorWidget: (context, url, error) => Icon(
-                                          Icons.error,
-                                          color: Colors.red,
+                                          Icons.image_not_supported,
+                                          color: Colors.grey,
                                           size: 40,
                                         ),
                                       ) : Image(

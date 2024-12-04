@@ -173,15 +173,15 @@ class SigninPageState extends State<SigninPage>
             print("Token is already up to date");
           } else {
             await documentSnapshot.reference.update({'fcm': tooken});
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'تم حفظ التعديل بنجاح',
-                  textAlign: TextAlign.center,
-                ),
-                backgroundColor: Color(0xFF1F8C4B),
-              ),
-            );
+            // ScaffoldMessenger.of(context).showSnackBar(
+            //   SnackBar(
+            //     content: Text(
+            //       'تم حفظ التعديل بنجاح',
+            //       textAlign: TextAlign.center,
+            //     ),
+            //     backgroundColor: Color(0xFF1F8C4B),
+            //   ),
+            // );
             print('User  data updated successfully.');
           }
         } else {
@@ -327,11 +327,12 @@ else{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       body:Stack(
         children: [
            (isLoading == true)
-              ? const Positioned(top: 0, child: Loading()): SingleChildScrollView(
+              ? const Positioned(top: 0,bottom: 0, child: Loading()): SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.only(top: 15.0,bottom: 15,right: 22,left: 22),
 
