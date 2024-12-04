@@ -85,79 +85,116 @@ class SigninPageState extends State<SigninPage>
       );
     }
     else{
-      await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: '+2$phone',
-
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await FirebaseAuth.instance.signInWithCredential(credential).then((value) {
-            print("Successfully signed in with auto-retrieval.");
-          });
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          print("Verification failed: ${e.code}");
-          if (e.code == 'invalid-phone-number') {
-            print("The phone number entered is invalid!");
-          }
-        },
-        codeSent: (String verificationId, int? forceResendingToken) async {
-          print('Verification code sent to $phone');
-isLoading=true;
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => OTP(verificationId, phone, '', ''),
+      var connectivityResult = await (Connectivity().checkConnectivity());
+      print("connectivityResult$connectivityResult");
+      print("connectivityResult${ConnectivityResult.none}");
+      if (connectivityResult[0] == ConnectivityResult.none) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'لا يوجد اتصال بالانترنت',
+              textAlign: TextAlign.center,
+             style: TextStyle(
+               color: Colors.black
+             ) ,
             ),
-          );
-        },
-        codeAutoRetrievalTimeout: (String verificationID) {
-          print("Auto retrieval timeout for verification ID: $verificationID");
-        },
-        timeout: const Duration(seconds: 60),
-      );
+            backgroundColor: Color(0xFFB3261E),
+          ),
+        );
+        print("لا يوجد اتصال بالانترنت");
+      }else{
+        await FirebaseAuth.instance.verifyPhoneNumber(
+          phoneNumber: '+2$phone',
 
-    }
-setState(() {
-  isLoading=true;
-});
-  }
+          verificationCompleted: (PhoneAuthCredential credential) async {
+            await FirebaseAuth.instance.signInWithCredential(credential).then((value) {
+              print("Successfully signed in with auto-retrieval.");
+            });
+          },
+          verificationFailed: (FirebaseAuthException e) {
+            print("Verification failed: ${e.code}");
+            if (e.code == 'invalid-phone-number') {
+              print("The phone number entered is invalid!");
+            }
+          },
+          codeSent: (String verificationId, int? forceResendingToken) async {
+            print('Verification code sent to $phone');
+            isLoading=true;
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => OTP(verificationId, phone, '', ''),
+              ),
+            );
+          },
+          codeAutoRetrievalTimeout: (String verificationID) {
+            print("Auto retrieval timeout for verification ID: $verificationID");
+          },
+          timeout: const Duration(seconds: 60),
+        );
+
+      }
+      setState(() {
+        isLoading=true;
+      });
+      }
+      }
+
+
   bool isLoading = false;
   late List<User1> user1 = [];
 
   Future<void> updatetoken( String tooken) async {
-    CollectionReference usersRef = FirebaseFirestore.instance.collection('Users');
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    print("connectivityResult$connectivityResult");
+    print("connectivityResult${ConnectivityResult.none}");
+    if (connectivityResult[0] == ConnectivityResult.none) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'لا يوجد اتصال بالانترنت',
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Color(0xFF1F8C4B),
+        ),
+      );
+      print("لا يوجد اتصال بالانترنت");
+    }else{
+      CollectionReference usersRef = FirebaseFirestore.instance.collection('Users');
 
-    try {
-      QuerySnapshot querySnapshot = await usersRef.where('phone', isEqualTo: PhoneController.text).get();
+      try {
+        QuerySnapshot querySnapshot = await usersRef.where('phone', isEqualTo: PhoneController.text).get();
 
-      if (querySnapshot.docs.isNotEmpty) {
-        DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
-        String existingfcm = documentSnapshot['fcm'];
+        if (querySnapshot.docs.isNotEmpty) {
+          DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+          String existingfcm = documentSnapshot['fcm'];
 
-        if (tooken == existingfcm) {
-          print("Token is already up to date");
-        } else {
-          await documentSnapshot.reference.update({'fcm': tooken});
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'تم حفظ التعديل بنجاح',
-                textAlign: TextAlign.center,
+          if (tooken == existingfcm) {
+            print("Token is already up to date");
+          } else {
+            await documentSnapshot.reference.update({'fcm': tooken});
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'تم حفظ التعديل بنجاح',
+                  textAlign: TextAlign.center,
+                ),
+                backgroundColor: Color(0xFF1F8C4B),
               ),
-              backgroundColor: Color(0xFF1F8C4B),
-            ),
-          );
-          print('User  data updated successfully.');
-        }
-      } else {
+            );
+            print('User  data updated successfully.');
+          }
+        } else {
 
-        await usersRef.add({
-          'phone': PhoneController.text,
-          'fcm': tooken,
-        });
-        print('User  data added successfully.');
+          await usersRef.add({
+            'phone': PhoneController.text,
+            'fcm': tooken,
+          });
+          print('User  data added successfully.');
+        }
+      } catch (e) {
+        print('Error updating user data: $e');
       }
-    } catch (e) {
-      print('Error updating user data: $e');
     }
   }
   bool startsWith015or011(String input) {
@@ -165,44 +202,61 @@ setState(() {
   }
 
   void validatePhonefirebase(String value) async {
-    CollectionReference playerchat = FirebaseFirestore.instance.collection('Users');
-    QuerySnapshot querySnapshot = await playerchat.get();
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    print("connectivityResult$connectivityResult");
+    print("connectivityResult${ConnectivityResult.none}");
+    if (connectivityResult[0] == ConnectivityResult.none) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'لا يوجد اتصال بالانترنت',
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Color(0xFF1F8C4B),
+        ),
+      );
+      print("لا يوجد اتصال بالانترنت");
+    }
+else{
+      CollectionReference playerchat = FirebaseFirestore.instance.collection('Users');
+      QuerySnapshot querySnapshot = await playerchat.get();
 
-    bool phoneFound = false;
+      bool phoneFound = false;
 
-    for (var doc in querySnapshot.docs) {
-      if (doc['phone'] == value) {
-        phoneFound = true;
+      for (var doc in querySnapshot.docs) {
+        if (doc['phone'] == value) {
+          phoneFound = true;
 
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString('phone', value);
-        FirebaseMessaging messaging = FirebaseMessaging.instance;
-        String? token = await messaging.getToken();
-        print("FCM Token: $token");
-await updatetoken(token!);
+          FirebaseMessaging messaging = FirebaseMessaging.instance;
+          String? token = await messaging.getToken();
+          print("FCM Token: $token");
+          await updatetoken(token!);
 
           await verifyPhone(value);
 
 
 
+        }
       }
-    }
 
-    if (!phoneFound) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            textAlign: TextAlign.center,
-            'رقم الهاتف غير موجود برجاء عمل حساب'.tr,
-            style: TextStyle(
-              color: Colors.white,
-              fontFamily: 'Cairo',
-              fontWeight: FontWeight.w700,
+      if (!phoneFound) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              textAlign: TextAlign.center,
+              'رقم الهاتف غير موجود برجاء عمل حساب'.tr,
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'Cairo',
+                fontWeight: FontWeight.w700,
+              ),
             ),
+            backgroundColor: Color(0xFF1F8C4B),
           ),
-          backgroundColor: Color(0xFF1F8C4B),
-        ),
-      );
+        );
+      }
     }
   }
   bool isConnected=false;
@@ -222,6 +276,18 @@ await updatetoken(token!);
     print("connectivityResult${ConnectivityResult.none}");
 
     if (connectivityResult[0] == ConnectivityResult.none) {
+      var connectivityResult = await (Connectivity().checkConnectivity());
+      print("connectivityResult$connectivityResult");
+      print("connectivityResult${ConnectivityResult.none}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'لا يوجد اتصال بالانترنت',
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Color(0xFF1F8C4B),
+        ),
+      );
       setState(() {
         isConnected = false;
         print("bvbbvbvbb$isConnected");

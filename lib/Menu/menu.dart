@@ -12,7 +12,7 @@ import '../../Register/SignInPage.dart';
 import '../../Register/SignUp.dart';
 import '../../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 import '../Favourite/Favourite_page.dart';
 import '../Home/Userclass.dart';
 import '../My_group/my_group.dart';
@@ -260,9 +260,18 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                 ),
               ),
               actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 12.0),
-                  child: Image.asset('assets/images/notification.png', height: 28, width: 28,),
+                GestureDetector(
+                  onTap: (){
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => Notification_page()),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 12.0),
+                    child: Image.asset('assets/images/notification.png', height: 28, width: 28,),
+                  ),
                 ),
 
               ],
@@ -335,18 +344,29 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                             ),
                           ],
                         ),
-                      ):Row(
+                      )
+                          :Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           user1.isNotEmpty && user1[0].img!=null &&user1[0].img!=""? Padding(
                             padding: const EdgeInsets.only(right: 8.0,left: 8.0),
                             child: ClipOval(
-                              child: Image(image:  NetworkImage(
+                              child: CachedNetworkImage(
+                                imageUrl:
                                 user1[0].img!,
-                              ),    width: 63,
+                                 width: 63,
                                 height: 63,
-                                fit: BoxFit.fitWidth,),
+                                fit: BoxFit.fitWidth,
+                                placeholder: (context, url) => Center(
+                                  child: CircularProgressIndicator(color: Color(0xFF4AD080),),
+                                ),
+                                errorWidget: (context, url, error) => Icon(
+                                  Icons.error,
+                                  color: Colors.red,
+                                  size: 40,
+                                ),
+                              ),
                             ),
                           ):
                           Padding(
@@ -408,55 +428,57 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                 ),
 
                 SizedBox(height:30 ,),
-                Padding(
-                  padding: const EdgeInsets.only(
-                      right: 22.0, left: 22, top: 5, bottom: 5),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Profilepage(),  settings: RouteSettings(arguments: {
-                          'from': 'menu_page'
-                        }),
-                        ),
-                      );
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
+                GestureDetector(
+                  onTap: () {
 
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Image.asset('assets/images/name.png', height: 22, width: 22, color:Color(0xFF064821)),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                'الملف الشخصى'.tr,
-                                style: TextStyle(
-                                  fontFamily: 'Cairo',
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF6C6A6A),
-                                  fontSize: 15,
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Profilepage(),
+                        settings: RouteSettings(arguments: {'from': 'menu_page'}),
+                      ),
+                    );
+                  },
+                  child:  Center(
+                    child: Container(
+                      color: Colors.transparent,
+                      padding: const EdgeInsets.only(right: 22.0, left: 22, top: 5, bottom: 5),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Image.asset('assets/images/name.png', height: 22, width: 22, color: Color(0xFF064821)),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'الملف الشخصى'.tr,
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF6C6A6A),
+                                    fontSize: 15,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8,right: 8),
-                          child: Icon(
-                            Icons.arrow_forward_ios,
-                            size: 15,
-                            color: Colors.grey.shade600
-                            ,
+                            ],
                           ),
-                        ),
-                      ],
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8,right: 8),
+
+                            child: Icon(
+                              Icons.arrow_forward_ios,
+                              size: 15,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
+
                 Padding(
                   padding: const EdgeInsets.only(
                       right: 22.0, left: 22, top: 0, bottom: 0),
@@ -704,51 +726,51 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                 ),
 
 
-                Padding(
-                  padding: const EdgeInsets.only(
-                      right: 22.0, left: 22, top: 5, bottom: 5),
-                  child: GestureDetector
-                    (
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => Notification_page()),
+                GestureDetector
+                  (
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Notification_page()),
 
-                      );
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Image.asset('assets/images/notification.png', height: 22, width: 22, color:Color(0xFF064821)),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                'الاشعارات'.tr,
-                                style: TextStyle(
-                                  fontFamily: 'Cairo',
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF6C6A6A),
-                                  fontSize: 15,
+                    );
+                  },
+                  child:  Center(
+                    child: Container(
+                      color: Colors.transparent,
+                      padding: const EdgeInsets.only(right: 22.0, left: 22, top: 5, bottom: 5),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Image.asset('assets/images/notification.png', height: 22, width: 22, color: Color(0xFF064821)),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'الاشعارات'.tr,
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF6C6A6A),
+                                    fontSize: 15,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8,right: 8),
-
-                          child: Icon(
-                            Icons.arrow_forward_ios,
-                            size: 15,
-                            color: Colors.grey.shade600
-                            ,
+                            ],
                           ),
-                        ),
-                      ],
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8,right: 8),
+
+                            child: Icon(
+                              Icons.arrow_forward_ios,
+                              size: 15,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

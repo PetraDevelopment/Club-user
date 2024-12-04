@@ -1,4 +1,3 @@
-import 'package:club_user/location/map_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -7,9 +6,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'Splach/PlayGroundSplach.dart';
 import 'package:intl/date_symbol_data_local.dart';
-
-import 'notification/notification_repo.dart';
-
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite/sqflite.dart';
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('Handling a background message: ${message.messageId}');
 }
@@ -19,6 +17,9 @@ FlutterLocalNotificationsPlugin();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  databaseFactory = databaseFactory;
+
   await Firebase.initializeApp(
     options: FirebaseOptions(
       apiKey: "AIzaSyAr4vHDaUehgTeW1Utt7Vp9xefjNIjXWdQ",

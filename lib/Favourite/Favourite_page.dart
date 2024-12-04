@@ -6,11 +6,13 @@ import '../Menu/menu.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../PlayGround_Name/PlayGroundName.dart';
 import 'package:get/get.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import '../my_reservation/my_reservation.dart';
+import '../notification/notification_page.dart';
 import '../playground_model/AddPlaygroundModel.dart';
 class FavouritePage extends StatefulWidget {
   @override
@@ -259,10 +261,19 @@ class FavouritePageState extends State<FavouritePage> {
               ),
             ),
             actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 18.0),
-                child: Image.asset('assets/images/notification.png', height: 24, width: 24,),
+              GestureDetector(
+                onTap: (){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Notification_page()),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 18.0),
+                  child: Image.asset('assets/images/notification.png', height: 24, width: 24,),
 
+                ),
               ),
             ],
           ),
@@ -350,11 +361,20 @@ class FavouritePageState extends State<FavouritePage> {
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(20.0),
-                                child:Image.network(
+                                child:CachedNetworkImage(
+                                  imageUrl:
                                   favlist[i].img!,
                                   height: 163,
                                   width: MediaQuery.of(context).size.width,
                                   fit: BoxFit.cover,
+                                  placeholder: (context, url) => Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                  errorWidget: (context, url, error) => Icon(
+                                    Icons.error,
+                                    color: Colors.red,
+                                    size: 40,
+                                  ),
                                 ),
                               ),
                             ),

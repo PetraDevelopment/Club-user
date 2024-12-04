@@ -85,6 +85,15 @@ class SignUpPageState extends State<SignUpPage>
     print("connectivityResult${ConnectivityResult.none}");
 
     if (connectivityResult[0] == ConnectivityResult.none) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'لا يوجد اتصال بالانترنت',
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Color(0xFF1F8C4B),
+        ),
+      );
       setState(() {
         isConnected = false;
         print("bvbbvbvbb$isConnected");
@@ -110,35 +119,60 @@ class SignUpPageState extends State<SignUpPage>
       );
     }
     else{
-      await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: '+2$phone',
-
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await FirebaseAuth.instance.signInWithCredential(credential).then((value) {
-            print("Successfully signed in with auto-retrieval.");
-          });
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          print("Verification failed: ${e.code}");
-          if (e.code == 'invalid-phone-number') {
-            print("The phone number entered is invalid!");
-          }
-        },
-        codeSent: (String verificationId, int? forceResendingToken) async {
-          print('Verification code sent to $phone');
-          isLoading=true;
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => OTP(verificationId, phone, '', ''),
+      var connectivityResult = await (Connectivity().checkConnectivity());
+      print("connectivityResult$connectivityResult");
+      print("connectivityResult${ConnectivityResult.none}");
+      if (connectivityResult[0] == ConnectivityResult.none) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'لا يوجد اتصال بالانترنت',
+              textAlign: TextAlign.center,
             ),
-          );
-        },
-        codeAutoRetrievalTimeout: (String verificationID) {
-          print("Auto retrieval timeout for verification ID: $verificationID");
-        },
-        timeout: const Duration(seconds: 60),
-      );
+            backgroundColor: Color(0xFF1F8C4B),
+          ),
+        );
+        print("لا يوجد اتصال بالانترنت");
+      }
+      else{
+        await FirebaseAuth.instance.verifyPhoneNumber(
+          phoneNumber: '+2$phone',
+
+          verificationCompleted: (PhoneAuthCredential credential) async {
+            await FirebaseAuth.instance.signInWithCredential(credential).then((value) {
+              print("Successfully signed in with auto-retrieval.");
+            });
+          },
+          verificationFailed: (FirebaseAuthException e) {
+            print("Verification failed: ${e.code}");
+            if (e.code == 'invalid-phone-number') {
+              print("The phone number entered is invalid!");
+            } else if (e.code == 'billing-not-enabled') {
+              print("Billing is not enabled for this project.");
+            } else {
+              print("An unknown error occurred: ${e.message}");
+            }
+            // if (e.code == 'invalid-phone-number') {
+            //   print("The phone number entered is invalid!");
+            // }
+          },
+          codeSent: (String verificationId, int? forceResendingToken) async {
+            print('Verification code sent to $phone');
+            isLoading=true;
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => OTP(verificationId, phone, '', ''),
+              ),
+            );
+          },
+          codeAutoRetrievalTimeout: (String verificationID) {
+            print("Auto retrieval timeout for verification ID: $verificationID");
+          },
+          timeout: const Duration(seconds: 60),
+        );
+      }
+
 
     }
     setState(() {
@@ -146,45 +180,61 @@ class SignUpPageState extends State<SignUpPage>
     });
   }
   Future<void> validatePhonefirebase(String value, BuildContext context) async {
-    CollectionReference playerChat = FirebaseFirestore.instance.collection('Users');
-
-    QuerySnapshot querySnapshot = await playerChat.where('phone', isEqualTo: value).get();
-
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('phone', value);
-    print('shared phone ${prefs.getString('phone') ?? ''}');
-    if (querySnapshot.docs.isNotEmpty) {
-
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    print("connectivityResult$connectivityResult");
+    print("connectivityResult${ConnectivityResult.none}");
+    if (connectivityResult[0] == ConnectivityResult.none) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'هذا الحساب موجود بالفعل برجاء تسجيل الدخول',
+            'لا يوجد اتصال بالانترنت',
             textAlign: TextAlign.center,
           ),
           backgroundColor: Color(0xFF1F8C4B),
         ),
       );
+      print("لا يوجد اتصال بالانترنت");
+    }else{
+      CollectionReference playerChat = FirebaseFirestore.instance.collection('Users');
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => SigninPage()),
-      );
-      print('Phone number exists, navigating to Sign-in page');
-    }
-    else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'برجاء الانتظار',
-            textAlign: TextAlign.center,
+      QuerySnapshot querySnapshot = await playerChat.where('phone', isEqualTo: value).get();
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('phone', value);
+      print('shared phone ${prefs.getString('phone') ?? ''}');
+      if (querySnapshot.docs.isNotEmpty) {
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'هذا الحساب موجود بالفعل برجاء تسجيل الدخول',
+              textAlign: TextAlign.center,
+            ),
+            backgroundColor: Color(0xFF1F8C4B),
           ),
-          backgroundColor: Color(0xFF1F8C4B),
-        ),
-      );
+        );
 
-      _sendData();
-      await verifyPhone(value.trim());
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SigninPage()),
+        );
+        print('Phone number exists, navigating to Sign-in page');
+      }
+      else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'برجاء الانتظار',
+              textAlign: TextAlign.center,
+            ),
+            backgroundColor: Color(0xFF1F8C4B),
+          ),
+        );
 
+        _sendData();
+        await verifyPhone(value.trim());
+
+      }
     }
   }
 
@@ -195,7 +245,6 @@ class SignUpPageState extends State<SignUpPage>
     print("FCM Token: $token");
     final name = _nameController.text;
     final phoneNumber = _phoneNumberController.text;
-  final imggggg=img_profile;
     final connectivityResult = await Connectivity().checkConnectivity();
 
     if (connectivityResult == ConnectivityResult.none) {
@@ -217,12 +266,13 @@ class SignUpPageState extends State<SignUpPage>
       return;
     }
 
-    if (name.isNotEmpty && phoneNumber.isNotEmpty ) {
+    if (name.isNotEmpty && phoneNumber.isNotEmpty &&PhoneErrorText.isEmpty &&selectedImages != null
+        && img_profile != '') {
 
       DocumentReference docRef = await FirebaseFirestore.instance.collection('Users').add({
         'name': name,
         'phone': phoneNumber,
-        'profile_image': imggggg,
+        'profile_image': img_profile,
         'fcm':token
       });
 
@@ -258,7 +308,7 @@ class SignUpPageState extends State<SignUpPage>
       isLoading=false;
 
     }
-    else if(imggggg.isEmpty) {
+    else if(img_profile.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -293,6 +343,7 @@ class SignUpPageState extends State<SignUpPage>
       setState(() {
         selectedImages = File(pickedFile.path);
          img_profile = pickedFile.path;
+
         setState(() {
 
         });
@@ -681,55 +732,72 @@ class SignUpPageState extends State<SignUpPage>
 
                     GestureDetector(
                       onTap: () async {
-                        if (_nameController.text.isEmpty ||
-                            _phoneNumberController.text.isEmpty ) {
-                          setState(() {
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'برجاء ادخال جميع البيانات',
-                                  textAlign: TextAlign.center,
-                                ),
-                                backgroundColor: Color(0xFF1F8C4B),
-                              ),
-                            );
-
-                            isLoading = false;
-                          });
-                        }
-                        else if (!isValidPhoneNumber(_phoneNumberController.text)) {
+                        var connectivityResult = await (Connectivity().checkConnectivity());
+                        print("connectivityResult$connectivityResult");
+                        print("connectivityResult${ConnectivityResult.none}");
+                        if (connectivityResult[0] == ConnectivityResult.none) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
+                                'لا يوجد اتصال بالانترنت',
                                 textAlign: TextAlign.center,
-                                'رقم الهاتف غير صحيح'.tr,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'Cairo',
-                                  fontWeight: FontWeight.w700,
-                                ),
                               ),
                               backgroundColor: Color(0xFF1F8C4B),
                             ),
                           );
+                          print("لا يوجد اتصال بالانترنت");
                         }
+                     else{
+                          if (_nameController.text.isEmpty ||
+                              _phoneNumberController.text.isEmpty ||img_profile==''||selectedImages==null) {
+                            setState(() {
 
-                        else {
-                          setState(() {
-                           isLoading = true;
-                          });
- if (!_isNavigating) {
-                            _isNavigating = true;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'برجاء ادخال جميع البيانات',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  backgroundColor: Color(0xFF1F8C4B),
+                                ),
+                              );
 
-                            await validatePhonefirebase(_phoneNumberController.text.trim(), context);
-
-                            _isNavigating = false;
+                              isLoading = false;
+                            });
+                          }
+                          else if (!isValidPhoneNumber(_phoneNumberController.text)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  textAlign: TextAlign.center,
+                                  'رقم الهاتف غير صحيح'.tr,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'Cairo',
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                backgroundColor: Color(0xFF1F8C4B),
+                              ),
+                            );
                           }
 
-                          setState(() {
-                            isLoading = true;
-                          });
+                          else {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            if (!_isNavigating) {
+                              _isNavigating = true;
+
+                              await validatePhonefirebase(_phoneNumberController.text.trim(), context);
+
+                              _isNavigating = false;
+                            }
+
+                            setState(() {
+                              isLoading = true;
+                            });
+                          }
                         }
                       },
                       child: Padding(

@@ -20,6 +20,7 @@ import '../Favourite/Favourite_page.dart';
 import '../Home/Userclass.dart';
 import '../Splach/LoadingScreen.dart';
 import '../my_reservation/my_reservation.dart';
+import '../notification/notification_page.dart';
 
 class Profilepage extends StatefulWidget {
   @override
@@ -278,7 +279,11 @@ class ProfilepageState extends State<Profilepage>
       print("Error getting user: $e");
     }
   }
-
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
   @override
   void initState() {
     super.initState();
@@ -292,6 +297,7 @@ class ProfilepageState extends State<Profilepage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(70.0),
@@ -340,12 +346,21 @@ class ProfilepageState extends State<Profilepage>
               ),
             ),
             actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 12.0),
-                child: Image.asset(
-                  'assets/images/notification.png',
-                  height: 28,
-                  width: 28,
+              GestureDetector(
+                onTap:(){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Notification_page()),
+                  );
+                } ,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 12.0),
+                  child: Image.asset(
+                    'assets/images/notification.png',
+                    height: 28,
+                    width: 28,
+                  ),
                 ),
               ),
             ],
@@ -470,6 +485,7 @@ class ProfilepageState extends State<Profilepage>
                   SizedBox(
                     height: 10,
                   ),
+
                   Container(
                     height: 48,
                     decoration: BoxDecoration(
@@ -498,8 +514,8 @@ class ProfilepageState extends State<Profilepage>
                           child: TextField(
                             controller: _nameController,
                             cursorColor: Color(0xFF064821),
-                            textInputAction: TextInputAction.next,
-                            keyboardType: TextInputType.text,
+                            // textInputAction: TextInputAction.next,
+                            keyboardType: TextInputType.name,
                             textAlign: TextAlign.start,
 
                             decoration: InputDecoration(
@@ -511,10 +527,10 @@ class ProfilepageState extends State<Profilepage>
                               border: InputBorder.none,
                             ),
 
-                            onEditingComplete: () async {
-
-                              FocusScope.of(context).nextFocus();
-                            },
+                            // onEditingComplete: () async {
+                            //
+                            //   FocusScope.of(context).nextFocus();
+                            // },
                           ),
                         ),
                       ],

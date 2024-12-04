@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jiffy/jiffy.dart';
@@ -20,8 +21,10 @@ import '../../Splach/LoadingScreen.dart';
 import '../../my_reservation/my_reservation.dart';
 import '../../notification/model/modelsendtodevice.dart';
 import '../../notification/model/send_modelfirebase.dart';
+import '../../notification/notification_page.dart';
 import '../../playground_model/AddPlaygroundModel.dart';
 import '../AddbookingModel/AddbookingModel.dart';
+import '../widgets_for_popover_cancel_and_add/reservation.dart';
 
 class book_playground_page extends StatefulWidget {
   String IdData;
@@ -44,10 +47,9 @@ class book_playground_pageState extends State<book_playground_page>
   List<String> dayss = [];
   String date = '';
   String date2 = '';
-
   List<DateTime> datees = [];
   int _currentIndex = 0;
-
+  bool isSlotSelected = false;
   late List<AddbookingModel> playgroundbook = [];
   List<AddbookingModel> matchedPlaygrounds = [];
   late List<AddPlayGroundModel> matchedplaygroundAllData = [];
@@ -175,10 +177,9 @@ class book_playground_pageState extends State<book_playground_page>
   var Phoone = '';
   String PhooneErrorText = '';
   String SelectedTimeErrorText = '';
-
+  int dissmiss=0;
   List<User> users = [];
-  final NavigationController navigationController =
-      Get.put(NavigationController());
+  final NavigationController navigationController = Get.put(NavigationController());
   List<bool> _isCheckedList = [false, false, false, false, false];
   List<String> timeSlots = [];
   String startTimeStr = '';
@@ -189,7 +190,7 @@ class book_playground_pageState extends State<book_playground_page>
   String? storeDate;
   int tappedIndex = 0;
   late AnimationController _animationController;
-
+  final ValueNotifier<int> _currentIndexNotifier = ValueNotifier<int>(0);
   String normalizeText(String text) {
     return text.trim();
   }
@@ -320,6 +321,8 @@ class book_playground_pageState extends State<book_playground_page>
 
             print('AdminId: ${playgroundbook[i].AdminId}');
             print('Day_of_booking: ${playgroundbook[i].Day_of_booking}');
+            print('timeeofbooking: ${playgroundbook[i].Day_of_booking}');
+
 
             print('Rent_the_ball: ${playgroundbook[i].rentTheBall}');
             print('phoneshoka: ${playgroundbook[i].UserPhone!}');
@@ -391,7 +394,8 @@ class book_playground_pageState extends State<book_playground_page>
             getPlaygroundbyname(playgroundbook[i].GroundId!);
           }
           if (timeSlots.isNotEmpty) {
-            startendtime(timeSlots.first, timeSlots.last);
+
+            startendtime(timeSlots.first+timeSlots.last);
             print("time for start: ${timeSlots.first} + ${timeSlots.last}");
           } else {
             print("timeSlots is empty.");
@@ -467,7 +471,7 @@ class book_playground_pageState extends State<book_playground_page>
       print('Error fetching document: $e');
     }
   }
-
+  late var availableData=[];
   Future<void> getPlaygroundbyname(String iiid) async {
     try {
       CollectionReference playerchat =
@@ -483,7 +487,12 @@ class book_playground_pageState extends State<book_playground_page>
           if (document.id == widget.IdData) {
             playgroundAllData.add(user);
             String? bookType = playgroundAllData[0].bookTypes![0].time;
-
+            availableData = playgroundAllData.isNotEmpty
+                ? playgroundAllData
+                .where((data) =>
+                data.bookTypes!.any((bt) => bt.day == selectedDayName))
+                .toList()
+                : [];
             String timeofAddedPlayground = bookType ?? '';
             print("timeofAddedPlayground: $timeofAddedPlayground");
             List<String> times = timeofAddedPlayground.split(' - ');
@@ -504,14 +513,15 @@ class book_playground_pageState extends State<book_playground_page>
                     costboll = 0;
                     costboll += bookType.cost!;
                     print("coopppppppp$costboll");
+                    costpeerhour=bookType.costPerHour!.toDouble();
+                    print('costpeerhour${costpeerhour=bookType.costPerHour!.toDouble()}');
                   });
                   print("tessst${bookType.cost! + bookType.costPerHour!}");
+
                 }
               }
               setState(() {
-
-                startTimeStr =
-                    startTime;
+                startTimeStr = startTime;
                 endTimeStr = endTime;
               });
 
@@ -519,8 +529,7 @@ class book_playground_pageState extends State<book_playground_page>
             } else {
               print("Invalid time format: $timeofAddedPlayground");
             }
-            print(
-                "PlayGroungboook Iiid : ${document.id}");
+            print("PlayGroungboook Iiid : ${document.id}");
             groundIiid = document.id;
             print("Docummmmmmbook$groundIiid");
           }
@@ -765,8 +774,6 @@ class book_playground_pageState extends State<book_playground_page>
           ),
         );
       } else {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        String phoooone = prefs.getString('phone') ?? '';
 
         final bookingModel = AddbookingModel(
             GroundId: widget.IdData,
@@ -779,9 +786,7 @@ class book_playground_pageState extends State<book_playground_page>
             AdminId: playgroundAllData[0].adminId,
             acceptorcancle: false,
             userID: useridd);
-        await FirebaseFirestore.instance
-            .collection('booking')
-            .add(bookingModel.toMap());
+        await FirebaseFirestore.instance.collection('booking').add(bookingModel.toMap());
         Map<String, dynamic>? user =
             await fetchadmindatabyid(playgroundAllData[0].adminId!);
         String ms = "تم اضافة حجز جديد";
@@ -789,9 +794,16 @@ class book_playground_pageState extends State<book_playground_page>
         String token = user!['FCMToken'];
 
         print("toooooooooook$token");
+        String idwidget=widget.IdData;
+        print("jjjjjjjjjjjjjjjjjjjjjj$idwidget");
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => book_playground_page(idwidget)),
+        );
         await _sendnotificationtofirebase(1,groundIiid,selectedDayName,selectedTimes);
-        await sp(ms, title,
-            token);
+        await sp(ms, title, token);
+        // await fetchBookingData();
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -832,10 +844,9 @@ class book_playground_pageState extends State<book_playground_page>
     final response = await http.post(uri, body: data.toMap());
     return response;
   }
-
   Future<void> sp(String ms, title, d_token) async {
     final notificationData =
-        NotificationData(message: ms, title: title, deviceToken: d_token);
+    NotificationData(message: ms, title: title, deviceToken: d_token);
     final response = await sendNotification(notificationData);
 
     if (response.statusCode == 200) {
@@ -845,6 +856,8 @@ class book_playground_pageState extends State<book_playground_page>
       print(response.body);
     }
   }
+
+  // }
 
   bool isAlreadySelected = false;
 
@@ -920,32 +933,44 @@ class book_playground_pageState extends State<book_playground_page>
       });
     }
   }
+  double costpeerhour=0;
 
-  List<String> startendtime(String startTimeStr, String endTimeStr) {
-    startTimeStr = startTimeStr.replaceAll(RegExp(r'\u202F'), ' ').trim();
-    endTimeStr = endTimeStr.replaceAll(RegExp(r'\u202F'), ' ').trim();
+  List<String> startendtime(String timeRange) {
+    // Split the input string into start and end times
+    List<String> times = timeRange.split(' - ');
+    String startTimeStr = times[0].trim();
+    String endTimeStr = times[1].trim();
 
     DateTime startTime = Jiffy.parse(startTimeStr, pattern: 'h:mm a').dateTime;
     DateTime endTime = Jiffy.parse(endTimeStr, pattern: 'h:mm a').dateTime;
 
-    print("starttimmme$startTime");
-    intl.DateFormat timeFormat = intl.DateFormat.jm();
+    // If the end time is before the start time, it means it goes to the next day
+    if (endTime.isBefore(startTime)) {
+      endTime = endTime.add(Duration(days: 1));
+    }
 
-    DateTime currentTime = startTime;
+    print("Start Time: $startTime");
+    print("End Time: $endTime");
+
+    // Prepare to format the time
     List<String> timeSlots = [];
 
-    while (currentTime.isBefore(endTime) ||
-        currentTime.isAtSameMomentAs(endTime)) {
-      timeSlots.add(timeFormat.format(currentTime));
+    // Generate time slots
+    DateTime currentTime = startTime;
+    while (currentTime.isBefore(endTime) || currentTime.isAtSameMomentAs(endTime)) {
+      // Add the hour to the list (in 12-hour format)
+      timeSlots.add(intl.DateFormat('h').format(currentTime));
       currentTime = currentTime.add(Duration(hours: 1));
     }
 
+    // Print the generated time slots
     for (String slot in timeSlots) {
-      print("sl00ot$slot");
+      print("Slot: $slot");
     }
 
     return timeSlots;
   }
+
 
   bool isConnected = true;
 
@@ -967,7 +992,6 @@ class book_playground_pageState extends State<book_playground_page>
     print("bvbbvbvbb$isConnected");
   }
   String adminoooken="";
-
   Future<void> deleteCancelByPhoneAndPlaygroundId(
       String userid,
       String a_id,
@@ -1056,14 +1080,12 @@ class book_playground_pageState extends State<book_playground_page>
 
             String title = "الغاء حجز ";
             await _sendnotificationtofirebase(2,playgroundId,dayName,selectedTime);
-            await sp(ms, title,
-                adminoooken);
+            await sp(ms, title, adminoooken);
           }else{
             String ms=" "+"تم إلغاء حجز ملعب "+" $g_name "+"يوم"+ " ${dayName} "+" ${selectedTime.substring(0,4)} "+"ص";
             print("message of delete is $ms");
             String title = "الغاء حجز ";
-            await sp(ms, title,
-                adminoooken);
+            await sp(ms, title, adminoooken);
             await _sendnotificationtofirebase(2,playgroundId,dayName,selectedTime);
           }
 
@@ -1089,7 +1111,7 @@ String iddd=widget.IdData;
     checkInternetConnection();
     _loadUserData();
     fetchBookingData();
-
+    print("initistatedone");
     _fetchData();
     getAllBookingDocuments();
     getPlaygroundbyname(widget.IdData);
@@ -1120,7 +1142,7 @@ String iddd=widget.IdData;
       selectedDates.add({dayName: day});
 
     }
-
+    // fetchBookingData();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
@@ -1153,12 +1175,21 @@ String iddd=widget.IdData;
               ),
             ),
             actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 15.0),
-                child: Image.asset(
-                  'assets/images/notification.png',
-                  height: 28,
-                  width: 28,
+              GestureDetector(
+                onTap: (){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Notification_page()),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 15.0),
+                  child: Image.asset(
+                    'assets/images/notification.png',
+                    height: 28,
+                    width: 28,
+                  ),
                 ),
               ),
             ],
@@ -1203,15 +1234,11 @@ String iddd=widget.IdData;
                                             enlargeCenterPage: true,
 
                                             onPageChanged: (index, reason) {
-                                              setState(() {
-                                                _currentIndex =
-                                                    index;
-                                                selectedDayName = daysOfWeek[
-                                                        index][
-                                                    'dayName']!;
-                                                storeDate = daysOfWeek[index]
-                                                    ['dayDate'];
-                                              });
+
+                                              _currentIndexNotifier.value = index;
+                                                selectedDayName = daysOfWeek[index]['dayName']!;
+                                                storeDate = daysOfWeek[index]['dayDate'];
+
                                             },
                                             scrollDirection: Axis.horizontal,
                                           ),
@@ -1219,154 +1246,155 @@ String iddd=widget.IdData;
                                             int itemIndex = daysOfWeek.indexOf(
                                                 dayInfo);
 
-                                            return GestureDetector(
-                                              onTap: () {
-                                                print(
-                                                    "Tapped on ${dayInfo['dayName']} - ${dayInfo['dayDate']}");
-                                                storeDate = dayInfo['dayDate'];
-                                                print(
-                                                    "objectstoreDate$storeDate");
-                                                setState(() {
-                                                  _currentIndex =
-                                                      itemIndex;
-                                                  selectedDayName =
-                                                      dayInfo['dayName']!;
+                                            return ValueListenableBuilder(
+                                              valueListenable: _currentIndexNotifier,
+                                                builder: (context, currentIndex, child) {
+                                              return GestureDetector(
+                                                onTap: () {
                                                   print(
-                                                      "objectselectedDayName$selectedDayName");
-                                                  getPlaygroundbyname(
-                                                      widget.IdData);
+                                                      "Tapped on ${dayInfo['dayName']} - ${dayInfo['dayDate']}");
+                                                  storeDate = dayInfo['dayDate'];
+                                                  print("objectstoreDate$storeDate");
+
+                                                  _currentIndex = itemIndex;
+                                                  selectedDayName = dayInfo['dayName']!;
+                                                  print("objectselectedDayName$selectedDayName");
+                                                  getPlaygroundbyname(widget.IdData);
                                                   selectedTimes = {};
-                                                });
-                                              },
-                                              child: Center(
-                                                child: AnimatedContainer(
-                                                  duration: Duration(
-                                                      milliseconds: 300),
-                                                  width: 87,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.only(
-                                                      bottomRight:
-                                                          Radius.circular(17),
-                                                      bottomLeft:
-                                                          Radius.circular(17),
-                                                      topRight:
-                                                          Radius.circular(22),
-                                                      topLeft:
-                                                          Radius.circular(22),
+                                                  setState(() {
+
+                                                  });
+                                                },
+                                                child: Center(
+                                                  child: AnimatedContainer(
+                                                    duration: Duration(
+                                                        milliseconds: 300),
+                                                    width: 87,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.only(
+                                                        bottomRight:
+                                                            Radius.circular(17),
+                                                        bottomLeft:
+                                                            Radius.circular(17),
+                                                        topRight:
+                                                            Radius.circular(22),
+                                                        topLeft:
+                                                            Radius.circular(22),
+                                                      ),
+                                                      color: _currentIndex ==
+                                                              itemIndex
+                                                          ? Colors.green.shade500
+                                                          : Colors.transparent,
                                                     ),
-                                                    color: _currentIndex ==
-                                                            itemIndex
-                                                        ? Colors.green.shade500
-                                                        : Colors.transparent,
-                                                  ),
-                                                  child: SingleChildScrollView(
-                                                    child: Column(
-                                                      children: [
-                                                        IntrinsicHeight(
-                                                          child: Container(
-                                                            height: 92,
-                                                            width: 87,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          20),
-                                                              color: Color(
-                                                                  0xFFF0F6FF),
-                                                            ),
-                                                            child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      top: 2.0),
-                                                              child: Column(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .center,
-                                                                children: [
-                                                                  Text(
-                                                                    dayInfo[
-                                                                        'dayName']!,
-                                                                    textAlign:
-                                                                        TextAlign
-                                                                            .center,
-                                                                    style:
-                                                                        TextStyle(
-                                                                      fontFamily:
-                                                                          'Cairo',
-                                                                      fontSize:
-                                                                          10.0,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w700,
-                                                                      color: Color(
-                                                                          0xFF334154),
-                                                                    ),
-                                                                  ),
-                                                                  SizedBox(
-                                                                      height:
-                                                                          8),
-                                                                  Text(
-                                                                    DateFormat(
-                                                                            'dd')
-                                                                        .format(
-                                                                            DateFormat('dd MMMM yyyy').parse(dayInfo['dayDate']!)
-                                                                            ),
-                                                                    style:
-                                                                        TextStyle(
-                                                                      fontFamily:
-                                                                          'Cairo',
-                                                                      fontSize:
-                                                                          22,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w700,
-                                                                      color: Color(
-                                                                          0xFF495A71),
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .only(
-                                                                  right: 18.0,
-                                                                  left: 12),
-                                                          child: Container(
-                                                            height: 2.5,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .only(
-                                                                bottomRight:
-                                                                    Radius
+                                                    child: SingleChildScrollView(
+                                                      child: Column(
+                                                        children: [
+                                                          IntrinsicHeight(
+                                                            child: Container(
+                                                              height: 92,
+                                                              width: 87,
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                borderRadius:
+                                                                    BorderRadius
                                                                         .circular(
-                                                                            22),
-                                                                bottomLeft: Radius
-                                                                    .circular(
-                                                                        22),
+                                                                            20),
+                                                                color: Color(
+                                                                    0xFFF0F6FF),
                                                               ),
-                                                              color: _currentIndex ==
-                                                                      itemIndex
-                                                                  ? Colors.green
-                                                                      .shade500
-                                                                  : Colors
-                                                                      .transparent,
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                        top: 2.0),
+                                                                child: Column(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .center,
+                                                                  children: [
+                                                                    Text(
+                                                                      dayInfo[
+                                                                          'dayName']!,
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .center,
+                                                                      style:
+                                                                          TextStyle(
+                                                                        fontFamily:
+                                                                            'Cairo',
+                                                                        fontSize:
+                                                                            10.0,
+                                                                        fontWeight:
+                                                                            FontWeight
+                                                                                .w700,
+                                                                        color: Color(
+                                                                            0xFF334154),
+                                                                      ),
+                                                                    ),
+                                                                    SizedBox(
+                                                                        height:
+                                                                            8),
+                                                                    Text(
+                                                                      DateFormat(
+                                                                              'dd')
+                                                                          .format(
+                                                                              DateFormat('dd MMMM yyyy').parse(dayInfo['dayDate']!)
+                                                                              ),
+                                                                      style:
+                                                                          TextStyle(
+                                                                        fontFamily:
+                                                                            'Cairo',
+                                                                        fontSize:
+                                                                            22,
+                                                                        fontWeight:
+                                                                            FontWeight
+                                                                                .w700,
+                                                                        color: Color(
+                                                                            0xFF495A71),
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
                                                             ),
                                                           ),
-                                                        ),
-                                                      ],
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    right: 18.0,
+                                                                    left: 12),
+                                                            child: Container(
+                                                              height: 2.5,
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .only(
+                                                                  bottomRight:
+                                                                      Radius
+                                                                          .circular(
+                                                                              22),
+                                                                  bottomLeft: Radius
+                                                                      .circular(
+                                                                          22),
+                                                                ),
+                                                                color: _currentIndex ==
+                                                                        itemIndex
+                                                                    ? Colors.green
+                                                                        .shade500
+                                                                    : Colors
+                                                                        .transparent,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
+                                              );}
                                             );
                                           }).toList(),
                                         )
@@ -1392,9 +1420,7 @@ String iddd=widget.IdData;
                             ),
                           ),
                         ),
-                        playgroundAllData.isNotEmpty &&
-                                    playgroundAllData.any((data) => data
-                                        .bookTypes!.any((bt) => bt.day == selectedDayName))
+                        availableData.isNotEmpty
                                 ? FutureBuilder<List<Widget>>(
                                     future: _generateRows(
                                         selectedTimes, selectedDayName),
@@ -1402,12 +1428,14 @@ String iddd=widget.IdData;
                                       if (snapshot.connectionState ==
                                           ConnectionState.waiting) {
                                         return Center(
-                                          child: _isLoading
-                                              ? CircularProgressIndicator(
-                                                  color: Colors.green,
-                                                )
-                                              : Container(),
-                                        );
+                                        child:  Column(
+                                          children: [
+                                            CircularProgressIndicator(
+                                                      color: Colors.green,),
+                                            SizedBox(height: 40,)
+                                          ],
+                                        ));
+
                                       }
                                       if (snapshot.hasError) {
                                         return Center(
@@ -1420,12 +1448,7 @@ String iddd=widget.IdData;
                                               MainAxisAlignment.start,
                                           children:
                                               snapshot.data!.map((slotWidget) {
-                                            return GestureDetector(
-                                              onTap: () {
-
-                                              },
-                                              child: slotWidget,
-                                            );
+                                            return slotWidget;
                                           }).toList(),
                                         );
                                       }
@@ -1440,9 +1463,7 @@ String iddd=widget.IdData;
                                             "لا يوجد حجز متاح لهذا اليوم")),
                                   ),
 
-                        playgroundAllData.isNotEmpty &&
-                                playgroundAllData.any((data) => data.bookTypes!
-                                    .any((bt) => bt.day == selectedDayName))
+                        availableData.isNotEmpty
                             ? Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
@@ -1491,8 +1512,9 @@ String iddd=widget.IdData;
                                                 color: Color(0xFF106A35))),
                                     value: _isCheckedList[0],
                                     onChanged: (bool? newValue) {
+                                      _isCheckedList[0] = newValue ?? false;
                                       setState(() {
-                                        _isCheckedList[0] = newValue ?? false;
+
                                       });
                                     },
                                   )
@@ -1504,6 +1526,7 @@ String iddd=widget.IdData;
                               ? null
                               : () async {
                                   await _sendData(context, _isCheckedList[0]);
+
                                   await _fetchData();
                                   print(
                                       "addddmin${playgroundAllData[0].adminId!}");
@@ -1539,8 +1562,7 @@ String iddd=widget.IdData;
                         ),
 
                         //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@222
-                        matchedPlaygrounds.isNotEmpty &&
-                                matchedplaygroundAllData.isNotEmpty
+                        matchedPlaygrounds.isNotEmpty
                             ? IntrinsicHeight(
                                 child: Container(
                                   child: Wrap(
@@ -1548,6 +1570,7 @@ String iddd=widget.IdData;
                                         matchedPlaygrounds.length, (index) {
                                       final user = matchedPlaygrounds[index];
                                       print("objectmatching${matchedPlaygrounds.length}");
+
                                    return   Stack(
                                         children: [
                                           Padding(
@@ -1567,13 +1590,16 @@ String iddd=widget.IdData;
                                             ),
                                           ),
 
-                                      Dismissible(
-                                        key: Key('${user.UserPhone}_${index}'),
+                                            Dismissible(
+                                        key: Key(user.userID!),
 
-                                      direction: DismissDirection.horizontal,
+                                              direction: DismissDirection.horizontal,
                                       onDismissed: (direction) async {
-                                        updateCancelCount(
-                                          user.userID!,);
+                                       setState(() {
+                                         dissmiss=1;
+                                       });
+                                        updateCancelCount(user.userID!,);
+
                                         deleteCancelByPhoneAndPlaygroundId(
                                             user.userID!,
                                             user.AdminId!,
@@ -1581,18 +1607,16 @@ String iddd=widget.IdData;
                                             user.GroundId!,
                                             user.selectedTimes!.first,
                                             user.dateofBooking!);
-                                        setState(() {
-                                          matchedPlaygrounds.removeAt(
-                                              index);
-                                          String i = widget.IdData;
-                                          Navigator.pushAndRemoveUntil(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    book_playground_page(i)),
-                                                (Route<dynamic> route) => false,
-                                          );
-                                        });
+
+                                          // String i = widget.IdData;
+                                          // Navigator.pushAndRemoveUntil(
+                                          //   context,
+                                          //   MaterialPageRoute(
+                                          //       builder: (context) =>
+                                          //           book_playground_page(i)),
+                                          //       (Route<dynamic> route) => false,
+                                          // );
+
                                       },
                                       confirmDismiss: (direction) async {
                                       return await showDialog<bool>(
@@ -1753,11 +1777,13 @@ String iddd=widget.IdData;
                                       crossAxisAlignment: CrossAxisAlignment
                                           .start,
                                       children: [
+
                                       Row(
                                       mainAxisAlignment: MainAxisAlignment
                                           .start,
                                       crossAxisAlignment: CrossAxisAlignment.end,
                                       children: [
+                                        SizedBox(width: MediaQuery.of(context).size.width/35,),
                                       Text(
                                       'ج.م',
                                       textAlign: TextAlign.end,
@@ -1767,12 +1793,12 @@ String iddd=widget.IdData;
                                       fontFamily: 'Cairo',
                                       fontWeight: FontWeight.w700,
                                       height: 0,
-                                      letterSpacing: -0.43,
+                                     letterSpacing: -0.43,
                                       ),
                                       ),
-                                      SizedBox(width: 8),
+                                    //  SizedBox(width: 8),
                                       Text(
-                                      " ${toArabicNumerals(matchedPlaygrounds[index].totalcost!,0)}",
+                                      "  ${toArabicNumerals(matchedPlaygrounds[index].totalcost!,0)}",
                                       textAlign: TextAlign.end,
                                       style: TextStyle(
                                       color: Color(0xFF7C90AB),
@@ -1957,12 +1983,83 @@ String iddd=widget.IdData;
     );
   }
 
-
+// Function to show the dialog
+  void _showDialog(BuildContext context) {
+  showDialog(
+  context: context,
+  builder: (BuildContext context) {
+  return AlertDialog(
+  title: Center(
+  child: Row(
+  crossAxisAlignment: CrossAxisAlignment.center,
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+  Text(
+  "ج.م".tr,
+  style: TextStyle(
+  color: Color(0xFF374957),
+  fontWeight: FontWeight.w700,
+  fontSize: 15,
+  fontFamily: 'Cairo',
+  ),
+  ),
+  Text(
+    '$costpeerhour',
+  style: TextStyle(
+  color: Color(0xFF374957),
+  fontWeight: FontWeight.w700,
+  fontSize: 15,
+  fontFamily: 'Cairo',
+  ),
+  ),
+  ],
+  ),
+  ),
+  content: Text(
+  "التكلفة أجمالية".tr,
+  textAlign: TextAlign.center,
+  style: TextStyle(
+  color: Color(0xFF374957),
+  fontFamily: 'Cairo',
+  ),
+  ),
+  actions: [
+  Center(
+  child: ElevatedButton(
+  onPressed: () async {
+  // Your onPressed functionality here
+  Navigator.of(context).pop(); // Close the dialog
+  },
+  style: ElevatedButton.styleFrom(
+  backgroundColor: Color(0xFF064821),
+  shape: RoundedRectangleBorder(
+  borderRadius: BorderRadius.circular(20),
+  ),
+  padding: EdgeInsets.symmetric(
+  vertical: 12,
+  horizontal: 20,
+  ),
+  ),
+  child: Text(
+  "حجز".tr,
+  style: TextStyle(
+  color: Colors.white,
+  fontFamily: 'Cairo',
+  ),
+  ),
+  ),
+  ),
+  ],
+  );
+  },
+  );
+  }
   Future<Widget> _generateTimeSlotWidget(
     String slot,
     bool isSelected,
     bool isAlreadySelected,
-  ) async {
+  )
+  async {
     String currentDay =
         selectedDayName;
     bool isSlotBooked =
@@ -1977,34 +2074,102 @@ String iddd=widget.IdData;
           onTap: () {
             if (isClickable) {
               setState(() {
+
                 selectedTimes.clear();
                 selectedTimes.add(slot);
+
+                print(("done in reservation"));
               });
+              _showDialog(context);
             }
+
           },
-          child: Container(
-            width: MediaQuery.of(context).size.width / 4,
-            decoration: BoxDecoration(
-              color: selectedTimes.contains(slot)
-                  ? Color(0xFFC3FFDC)
-                  : isSlotBooked
-                      ? Color(0xFFFFBEC5)
-                      : Color(0xFFEFF6FF),
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(6.0),
-              child: Text(
-                slot.characters.length == 7 ? "$slot   " : slot,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontFamily: 'Cairo',
-                  color: isSelected ? Colors.black87 : Color(0xFF495A71),
-                  fontWeight: FontWeight.w500,
+          child: Column(
+            children: [
+              Container(
+                width: MediaQuery.of(context).size.width / 4,
+                decoration: BoxDecoration(
+                  color: selectedTimes.contains(slot)
+                      ? Color(0xFFC3FFDC)
+                      : isSlotBooked
+                          ? Color(0xFFFFBEC5)
+                          : Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: Text(
+                    slot.characters.length == 7 ? "$slot   " : slot,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'Cairo',
+                      color: isSelected ? Colors.black87 : Color(0xFF495A71),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ),
-            ),
+    //           selectedTimes.length!=0?   Dialog(
+    //   shape: RoundedRectangleBorder(
+    //       borderRadius: BorderRadius.circular(20.0),
+    // ),
+    // child: IntrinsicHeight(
+    // child: Container(
+    // padding: EdgeInsets.all(16),
+    // width: MediaQuery.of(context).size.width / 1.5,
+    // child: Column(
+    // mainAxisSize: MainAxisSize.min,
+    // children: [
+    // Text(
+    // '620',
+    // style: TextStyle(
+    // fontFamily: 'Cairo',
+    // fontSize: 23,
+    // color: Color(0xFF7D90AC),
+    // fontWeight: FontWeight.bold,
+    // ),
+    // ),
+    // Text(
+    // 'التكلفة أجمالية',
+    // style: TextStyle(
+    // fontFamily: 'Cairo',
+    // fontSize: 16,
+    // color: Color(0xFF334154),
+    // fontWeight: FontWeight.bold,
+    // ),
+    // ),
+    // SizedBox(height: 25),
+    // GestureDetector(
+    // onTap: () {
+    // // Handle booking action here
+    // Navigator.pop(context); // Close the dialog
+    // },
+    // child: Container(
+    // height: 45,
+    // decoration: BoxDecoration(
+    // borderRadius: BorderRadius.circular(40.0),
+    // color: Color(0xFF106A35),
+    // ),
+    // child: Center(
+    // child: Text(
+    // 'حجـــــز',
+    // style: TextStyle(
+    // fontSize: 16.0,
+    // fontFamily: 'Cairo',
+    // fontWeight: FontWeight.w500,
+    // color: Colors.white,
+    // ),
+    // ),
+    // ),
+    // ),
+    // ),
+    // ],
+    // ),
+    // ),
+    // ),
+    // ):Container()
+            ],
           ),
         ),
       ),
@@ -2073,9 +2238,75 @@ String iddd=widget.IdData;
 
     return combinedTimeSlots;
   }
+  void showBookingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: IntrinsicHeight(
+            child: Container(
+              padding: EdgeInsets.all(16),
+              width: MediaQuery.of(context).size.width / 1.5,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '620',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 23,
+                      color: Color(0xFF7D90AC),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'التكلفة أجمالية',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 16,
+                      color: Color(0xFF334154),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 25),
+                  GestureDetector(
+                    onTap: () {
+                      // Handle booking action here
+                      Navigator.pop(context); // Close the dialog
+                    },
+                    child: Container(
+                      height: 45,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(40.0),
+                        color: Color(0xFF106A35),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'حجـــــز',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            fontFamily: 'Cairo',
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
-  Future<List<Widget>> _generateRows(
-      Set<String> selectedTimes, String selectedDay) async {
+  Future<List<Widget>> _generateRows(Set<String> selectedTimes, String selectedDay) async {
+
     List<Widget> rows = [];
     List<Widget> currentRowChildren = [];
 
@@ -2100,21 +2331,28 @@ String iddd=widget.IdData;
             } else {
               setState(() {
                 selectedTimes.add(slot);
+print("slotttttttttttttttttt$slot");
               });
             }
           },
-          child: FutureBuilder<Widget>(
-            future: _generateTimeSlotWidget(slot, isSelected, isTimeSlotBooked),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Container();
-              } else if (snapshot.hasError) {
-                return Container();
-              } else {
-                return snapshot.data ??
-                    Container();
-              }
-            },
+          child: Stack(
+            children: [
+              FutureBuilder<Widget>(
+                future: _generateTimeSlotWidget(slot, isSelected, isTimeSlotBooked),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Container();
+                  } else if (snapshot.hasError) {
+                    return Container();
+                  } else {
+                    return snapshot.data ??
+                        Container();
+                  }
+                },
+              ),
+
+
+            ],
           ),
         ),
       );

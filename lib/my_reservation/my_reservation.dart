@@ -18,6 +18,7 @@ import '../booking_playground/AddbookingModel/AddbookingModel.dart';
 import '../location/map_page.dart';
 import '../notification/model/modelsendtodevice.dart';
 import '../notification/model/send_modelfirebase.dart';
+import '../notification/notification_page.dart';
 import '../playground_model/AddPlaygroundModel.dart';
 import '../Home/HomePage.dart';
 import '../Home/Userclass.dart';
@@ -196,7 +197,6 @@ class my_reservationState extends State<my_reservation>
     super.initState();
     checkInternetConnection();
     _loadUserData();
-    _load_Accepted_book();
 
     fetchBookingData();
 
@@ -234,7 +234,7 @@ class my_reservationState extends State<my_reservation>
 
       final querySnapshot = await firestore
           .collection('cancel_book')
-          .where('userid', isEqualTo:  docId)
+          .where('userId', isEqualTo:  docId)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
@@ -244,7 +244,7 @@ class my_reservationState extends State<my_reservation>
           Map<String, dynamic> data = doc.data();
           int numberOfCancel = data['numberofcancel'] ?? 0;
 
-          print('User Phone: ${data['userid']}');
+          print('User Phone: ${data['userId']}');
           print('Number of Cancels: $numberOfCancel');
           numbercanceled = numberOfCancel;
         });
@@ -273,7 +273,7 @@ class my_reservationState extends State<my_reservation>
           Map<String, dynamic> data = doc.data();
           int numberOfaccepted = data['accepted_number'] ?? 0;
 
-          print('User Phone: ${data['userId']}');
+          print('User userId: ${data['userId']}');
           print('Number of accepted: $numberOfaccepted');
           numberaccepted = numberOfaccepted;
         });
@@ -292,23 +292,7 @@ class my_reservationState extends State<my_reservation>
 
 
 
-  void _load_Accepted_book() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? phoneValue = prefs.getString('phonev');
-    print("newphoneValue${phoneValue.toString()}");
 
-    if (phoneValue != null && phoneValue.isNotEmpty) {
-      String? normalizedPhoneNumber = phoneValue.replaceFirst('+20', '0');
-
-      getAccepted_bookDataByPhone(normalizedPhoneNumber);
-    }
-    else if (user?.phoneNumber != null) {
-      String? normalizedPhoneNumber = user?.phoneNumber !.replaceFirst(
-          '+20', '0');
-
-      getAccepted_bookDataByPhone(normalizedPhoneNumber!);
-    }
-  }
   Future<void> getPlaygroundbynameE(String iiid) async {
     try {
       CollectionReference playerchat =
@@ -360,7 +344,7 @@ class my_reservationState extends State<my_reservation>
 
           user.id = document.id;
         }
-        wait = playgroundbook.length - numberaccepted;
+        wait = playgroundbook.length - acccepteeed;
         print("wait${wait}");
       }
     } catch (e) {
@@ -417,7 +401,7 @@ class my_reservationState extends State<my_reservation>
       print('Error fetching document: $e');
     }
   }
-
+  int acccepteeed=0;
   Future<void> fetchBookingData() async {
 
     try {
@@ -476,6 +460,9 @@ class my_reservationState extends State<my_reservation>
 
             print('Rent_the_ball: ${playgroundbook[i].rentTheBall}');
             print('phoneshoka: ${playgroundbook[i].UserPhone!}');
+            if( playgroundbook[i].acceptorcancle==true){
+              acccepteeed++;
+            }
           }
         } else {
           print('No matching bookings found for the phone number.');
@@ -527,6 +514,9 @@ class my_reservationState extends State<my_reservation>
             print('Day_of_booking: ${playgroundbook[i].Day_of_booking}');
             print('Rent_the_ball: ${playgroundbook[i].rentTheBall}');
             print('phoneshoka: ${playgroundbook[i].UserPhone!}');
+            if( playgroundbook[i].acceptorcancle==true){
+              acccepteeed++;
+            }
             getPlaygroundbynameE(playgroundbook[i].GroundId!);
           }
         } else {
@@ -806,10 +796,19 @@ class my_reservationState extends State<my_reservation>
                 ),
               ),
               actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 12.0),
-                  child: Image.asset(
-                    'assets/images/notification.png', height: 28, width: 28,),
+                GestureDetector(
+                  onTap: (){
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => Notification_page()),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 12.0),
+                    child: Image.asset(
+                      'assets/images/notification.png', height: 28, width: 28,),
+                  ),
                 ),
 
               ],
@@ -975,7 +974,7 @@ class my_reservationState extends State<my_reservation>
                               child: Column(
                                 children: [
                                   Text(
-                                    "${ numberaccepted}",
+                                    "${ acccepteeed}",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
@@ -1112,6 +1111,7 @@ class my_reservationState extends State<my_reservation>
                                     ),
                                     Row(
                                       children: [
+                                        SizedBox(width: MediaQuery.of(context).size.width/50,),
                                         Text(
                                           "ج.م ",
 
@@ -1136,7 +1136,7 @@ class my_reservationState extends State<my_reservation>
                                         SizedBox(width: MediaQuery
                                             .of(context)
                                             .size
-                                            .width / 4.2,),
+                                            .width / 4,),
                                         Text(
                                           "${playgroundbook[i].UserPhone}",
 
@@ -1161,8 +1161,8 @@ class my_reservationState extends State<my_reservation>
 
                                     ),
                                     fit: BoxFit.fitWidth,
-                                    height: 30,
-                                    width: 30,
+                                    height: 46,
+                                    width: 38,
                                   ),
                                 )
                               ],
@@ -1191,7 +1191,7 @@ class my_reservationState extends State<my_reservation>
                                         color: Color(0xFF334154),
                                       ),
                                     ),
-                                     SizedBox(width: MediaQuery.of(context).size.width/6.7,),
+                                     SizedBox(width: MediaQuery.of(context).size.width/8.5,),
                                     Text(
 
                                       "${formatDate(playgroundbook[i].dateofBooking!)}",
@@ -1207,7 +1207,7 @@ class my_reservationState extends State<my_reservation>
 
                                   ],
                                 ),
-                                SizedBox(width: 10,),
+                                SizedBox(width: MediaQuery.of(context).size.width/40,),
                                 RichText(
                                   text: TextSpan(
                                     style: TextStyle(
@@ -1330,66 +1330,8 @@ class my_reservationState extends State<my_reservation>
                               ),
 
                             ],
-                          ):Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    top: 12.0, bottom: 7, left: 22),
-                                child: GestureDetector(
-
-                                  child: Container(
-                                    height: 29,
-                                    width: 114,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(30.0),
-                                      shape: BoxShape.rectangle,
-
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        "".tr,
-                                        style: TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontSize: 12.0,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    top: 12.0, bottom: 7, right: 22),
-                                child: GestureDetector(
-
-                                  child: Container(
-                                    height: 29,
-                                    width: 114,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(30.0),
-
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        "".tr,
-                                        style: TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontSize: 12.0,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                            ],
-                          ),
-                          SizedBox(height: 5),
+                          ):Container(height: 10,)
+                        ,  SizedBox(height: 5),
 
                         ],
                       ) : Container(),

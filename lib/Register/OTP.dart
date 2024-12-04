@@ -97,6 +97,9 @@ Future<void> verifyOtp(String verificationId, String otp, BuildContext context) 
 
 class OTPState extends State<OTP>  with SingleTickerProviderStateMixin{
   TextEditingController controller = TextEditingController();
+  String phonenn='';
+  String  verificationId='';
+
   String? otpcode;
   late int _counter = 60;
   late Timer _timer;
@@ -157,7 +160,7 @@ class OTPState extends State<OTP>  with SingleTickerProviderStateMixin{
     await FirebaseMessaging.instance.getToken();
     print("tokenFCM$tokenFCM");
   }
-String phonewithstars='';
+  String phonewithstars='';
   @override
   void initState() {
     String numericPart = widget.phone.replaceAll(RegExp(r'\D'), '');
@@ -346,21 +349,40 @@ String phonewithstars='';
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             _counter != 0
-                                ? Text(
-
-                              ' $_counter${' ثانية  '.tr}',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 12.32,
-                                color: Colors.green.shade600,
-                                fontWeight: FontWeight.normal,
-                              ),
-                            )
+                                ? Row(
+                                  children: [
+                                    Text(
+                                    '${'ثانية   '.tr}',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 12.32,
+                                    color: Colors.green.shade600,
+                                    fontWeight: FontWeight.normal,
+                                     ),
+                                      ),
+                                    Text(
+                                      '$_counter',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 12.32,
+                                        color: Colors.green.shade600,
+                                        fontWeight: FontWeight.normal,
+                                      ),
+                                    )
+                                  ],
+                                )
                                 : GestureDetector(
                               onTap: () {
+                                verificationId=widget.verificationId;
                                 sendOtp(phone);
-
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => OTP(verificationId,phone,'',''),
+                                  ),
+                                );
                                 setState(() {
                                   _counter = 60;
                                   _startTimer();
@@ -392,7 +414,7 @@ String phonewithstars='';
                         ),
                       ),
                     ),
-                    Padding(
+                    _counter != 0 ?  Padding(
                       padding: const EdgeInsets.only(
                           top: 120.0, left: 31.46, right: 31.46, bottom: 29),
                       child: Align(
@@ -522,7 +544,7 @@ String phonewithstars='';
                           ),
                         ),
                       ),
-                    ),
+                    ):Container(),
                   ],
                 ),
               ),

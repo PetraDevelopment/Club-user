@@ -18,6 +18,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import '../my_reservation/my_reservation.dart';
+import '../notification/notification_page.dart';
 import '../playground_model/AddPlaygroundModel.dart';
 
 class Searchpage extends StatefulWidget {
@@ -238,12 +239,18 @@ class SearchpageState extends State<Searchpage> {
                 ),
               ),
               actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 15.0),
-                  child: Image.asset(
-                    'assets/images/notification.png',
-                    height: 28,
-                    width: 28,
+                GestureDetector(
+                  onTap: (){
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => Notification_page()),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 12.0),
+                    child: Image.asset(
+                      'assets/images/notification.png', height: 28, width: 28,),
                   ),
                 ),
               ],

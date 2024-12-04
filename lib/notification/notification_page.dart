@@ -248,19 +248,25 @@ int x=0;
               ),
             ),
             actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 15.0),
-                child: Image.asset(
-                  'assets/images/notification.png',
-                  height: 28,
-                  width: 28,
+              GestureDetector(
+                onTap: (){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Notification_page()),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 12.0),
+                  child: Image.asset(
+                    'assets/images/notification.png', height: 28, width: 28,),
                 ),
               ),
             ],
           ),
         ),
       ),
-      body:notificationlist.isNotEmpty?SingleChildScrollView(
+    body:notificationlist.isNotEmpty?SingleChildScrollView(
         child: Column(
           children: [
             SizedBox(height: 15,),
@@ -459,7 +465,43 @@ int x=0;
             )
           ],
         ),
-      ):Container(),
+      )
+        :Center(
+    child: SizedBox(
+    height: MediaQuery.of(context).size.height/4,
+    child: Stack(
+    children: [
+    Center(
+    child: Align(
+    alignment: Alignment.bottomCenter,
+    child: Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+
+    Opacity(
+    opacity: 0.5,
+    child: Image.asset(
+    "assets/images/notification_zero.png",
+    width: 156.96,
+    height: 134.16,
+    ),
+    ),
+    Text(
+    'لا يوجد أشعارات حتى الان',
+    style: TextStyle(
+    fontFamily: 'Cairo',
+    fontSize: 14.62,
+    fontWeight: FontWeight.w500,
+    color: Color(0xFF181A20),
+    ),
+    ),
+    ]),
+    ),
+    ),
+    ],
+    ),
+    ),
+    ),
       bottomNavigationBar: CurvedNavigationBar(
         height: 60,
         index: 2,

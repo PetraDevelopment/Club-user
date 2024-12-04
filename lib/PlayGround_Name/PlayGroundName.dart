@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:async';
-
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:share/share.dart';
 import '../Controller/NavigationController.dart';
@@ -614,7 +614,7 @@ class PlaygroundNameState extends State<PlaygroundName>
   Widget build(BuildContext context) {
 
     double filledStars = _averageRating.toDouble();
-
+print("filledStarsava$filledStars");
     return Scaffold(
 
       body: isConnected?Stack(
@@ -659,13 +659,28 @@ class PlaygroundNameState extends State<PlaygroundName>
                                       child: allplaygrounds[0]
                                           .img!
                                           .isNotEmpty
-                                          ? Image.network(
-                                        allplaygrounds[0]
-                                            .img![index],
+                                          ?
+                                      CachedNetworkImage(
+                                        imageUrl: allplaygrounds[0].img![index],
                                         height: 200,
                                         width: 274,
                                         fit: BoxFit.cover,
+                                        placeholder: (context, url) => Center(
+                                          child: CircularProgressIndicator(color: Color(0xFF4AD080),),
+                                        ),
+                                        errorWidget: (context, url, error) => Icon(
+                                          Icons.error,
+                                          color: Colors.red,
+                                          size: 40,
+                                        ),
                                       )
+                                      // Image.network(
+                                      //   allplaygrounds[0]
+                                      //       .img![index],
+                                      //   height: 200,
+                                      //   width: 274,
+                                      //   fit: BoxFit.cover,
+                                      // )
                                           : Image.asset(
                                         'assets/images/newwadi.png',
                                         height: 163,
@@ -840,167 +855,316 @@ class PlaygroundNameState extends State<PlaygroundName>
                   height: 10,
                 ),
 
-                Padding(
-                  padding:
-                  const EdgeInsets.only(right: 15.0, left: 26, bottom: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: Get.context!,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                backgroundColor: Colors.white,
-                                title: Stack(
-                                  children: [
-                                    Align(
-                                      alignment: Alignment.center,
-                                      child: Padding(
-                                        padding:
-                                        const EdgeInsets.only(top: 30.0,left: 10),
-                                        child: Text(
-                                          "أضافة تقييم",
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontFamily: 'Cairo',
-                                            fontSize: 16.0,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF334154),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      right: 1,
-                                      bottom: 16,
-                                      left: 201,
-                                      child: IconButton(
-                                        icon: Icon(
-                                          Icons.cancel_outlined,
-                                          color: Colors.grey.shade900,
-                                          size: 25,
-                                        ),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                content: StatefulBuilder(
+                // Padding(
+                //   padding:
+                //   const EdgeInsets.only(right: 15.0, left: 26, bottom: 20),
+                //   child: Row(
+                //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //     children: [
+                //       GestureDetector(
+                //         onTap: () {
+                //           showDialog(
+                //             context: Get.context!,
+                //             builder: (BuildContext context) {
+                //               return AlertDialog(
+                //                 backgroundColor: Colors.white,
+                //                 title: Stack(
+                //                   children: [
+                //                     Align(
+                //                       alignment: Alignment.center,
+                //                       child: Padding(
+                //                         padding:
+                //                         const EdgeInsets.only(top: 30.0,left: 10),
+                //                         child: Text(
+                //                           "أضافة تقييم",
+                //                           textAlign: TextAlign.center,
+                //                           style: TextStyle(
+                //                             fontFamily: 'Cairo',
+                //                             fontSize: 16.0,
+                //                             fontWeight: FontWeight.bold,
+                //                             color: Color(0xFF334154),
+                //                           ),
+                //                         ),
+                //                       ),
+                //                     ),
+                //                     Positioned(
+                //                       right: 1,
+                //                       bottom: 16,
+                //                       left: 201,
+                //                       child: IconButton(
+                //                         icon: Icon(
+                //                           Icons.cancel_outlined,
+                //                           color: Colors.grey.shade900,
+                //                           size: 25,
+                //                         ),
+                //                         onPressed: () {
+                //                           Navigator.of(context).pop();
+                //                         },
+                //                       ),
+                //                     ),
+                //                   ],
+                //                 ),
+                //                 content: StatefulBuilder(
+                //
+                //                   builder: (BuildContext context,
+                //                       StateSetter setState) {
+                //                     return Container(
+                //                       height: 45.82,
+                //                       child: Row(
+                //                         mainAxisAlignment:
+                //                         MainAxisAlignment.center,
+                //                         children: [
+                //                           for (int i = 0; i < 5; i++)
+                //                             GestureDetector(
+                //                               onTap: () {
+                //                                 setState(() {
+                //                                   isstared[i] = !isstared[i];
+                //                                   if (totalRating < 5 &&
+                //                                       isstared[i] == true) {
+                //                                     totalRating += 1;
+                //                                   }
+                //
+                //                                   print(
+                //                                       "starrrr value${isstared[i]}");
+                //                                 });
+                //                               },
+                //                               child: Icon(
+                //                                 isstared[i]
+                //                                     ? Icons.star
+                //                                     : Icons
+                //                                     .star_border_outlined,
+                //                                 color: isstared[i]
+                //                                     ? Color(0xFFFFCC00)
+                //                                     : Colors.grey,
+                //                               ),
+                //                             )
+                //                         ],
+                //                       ),
+                //                     );
+                //                   },
+                //                 ),
+                //                 actions: [
+                //                   GestureDetector(
+                //                     onTap: () {
+                //                       List<bool> rating = List.generate(
+                //                         5,
+                //                             (index) => isstared[index],
+                //                       );
+                //                       sendRating(rating);
+                //                     },
+                //                     child: Padding(
+                //                       padding: const EdgeInsets.only(
+                //                           top: 5,
+                //                           right: 20,
+                //                           left: 20,
+                //                           bottom: 20),
+                //                       child: Container(
+                //                         height: 45,
+                //                         width: double.infinity,
+                //                         decoration: BoxDecoration(
+                //                           borderRadius:
+                //                           BorderRadius.circular(30.0),
+                //                           color: Color(0xFF064821),
+                //                         ),
+                //                         child: Center(
+                //                           child: Text(
+                //                             'تقديـــم تقييــم',
+                //                             style: TextStyle(
+                //                               fontFamily: 'Cairo',
+                //                               fontSize: 16.0,
+                //                               fontWeight: FontWeight.w500,
+                //                               color: Colors.white,
+                //                             ),
+                //                           ),
+                //                         ),
+                //                       ),
+                //                     ),
+                //                   ),
+                //                 ],
+                //               );
+                //             },
+                //           );
+                //         },
+                //         child: Text(
+                //           "أضافة تقييم".tr,
+                //           style: TextStyle(
+                //               decoration: TextDecoration.underline,
+                //               fontFamily: 'Cairo',
+                //               fontSize: 14.0,
+                //               fontWeight: FontWeight.w500,
+                //               color: Color(0xFF064821)),
+                //         ),
+                //       ),
+                //
+                //       Row(
+                //         mainAxisAlignment: MainAxisAlignment.end,
+                //         children: [
+                //           for (int i = 5; i > 0; i--)
+                //             GestureDetector(
+                //               onTap: () {
+                //                 setState(() {
+                //
+                //                 });
+                //               },
+                //               child: Icon(
+                //                 i <= filledStars ? Icons.star : Icons.star_border_outlined,
+                //                 color: i <= filledStars ? Color(0xFFFFCC00) : Colors.grey,
+                //               ),
+                //             )
+                //         ],
+                //       )
+                //     ],
+                //   ),
+                // ),
+    Padding(
+    padding: const EdgeInsets.only(right: 15.0, left: 26, bottom: 20),
+    child: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+    GestureDetector(
+    onTap: () {
+    showDialog(
+    context: Get.context!,
+    builder: (BuildContext context) {
+    return AlertDialog(
+    backgroundColor: Colors.white,
+    title: Stack(
+    children: [
+    Align(
+    alignment: Alignment.center,
+    child: Padding(
+    padding: const EdgeInsets.only(top: 30.0, left: 10),
+    child: Text(
+    "اضافة تقييم",
+    textAlign: TextAlign.center,
+    style: TextStyle(
+    fontFamily: 'Cairo',
+    fontSize: 16.0,
+    fontWeight: FontWeight.bold,
+    color: Color(0xFF334154),
+    ),
+    ),
+    ),
+    ),
+    Positioned(
+    right: 1,
+    bottom: 16,
+    left: 201,
+    child: IconButton(
+    icon: Icon(
+    Icons.cancel_outlined,
+    color: Colors.grey.shade900,
+    size: 25,
+    ),
+    onPressed: () {
+    Navigator.of(context).pop();
+    },
+    ),
+    ),
+    ],
+    ),
+    content: StatefulBuilder(
+    builder: (BuildContext context, StateSetter setState) {
+    return Container(
+    height: 45.82,
+    child: Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+    for (int i = 0; i < 5; i++)
+    GestureDetector(
+    onTap: () {
+    setState(() {
+    totalRating = i + 1; // Set total rating based on star clicked
+    for (int j = 0; j < 5; j++) {
+    isstared[j] = j < totalRating; // Fill stars up to the clicked star
+    }
+    });
+    },
+    child: Icon(
+    isstared[i]
+    ? Icons.star
+        : Icons.star_border_outlined,
+    color: isstared[i]
+    ? Color(0xFFFFCC00)
+        : Colors.grey,
+    ),
+    )
+    ],
+    ),
+    );
+    },
+    ),
+    actions: [
+    GestureDetector(
+    onTap: () {
+    List<bool> rating = List.generate(
+    5,
+    (index) => isstared[index],
+    );
+    sendRating(rating);
+    Navigator.of(context).pop(); // Close dialog after sending rating
+    },
+    child: Padding(
+    padding: const EdgeInsets.only(
+    top: 5, right: 20, left: 20, bottom: 20),
+    child: Container(
+    height: 45,
+    width: double.infinity,
+    decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(30.0),
+    color: Color(0xFF064821),
+    ),
+    child: Center(
+    child: Text(
+    'تقديـــم تقييــم',
+    style: TextStyle(
+    fontFamily: 'Cairo',
+    fontSize: 16.0,
+    fontWeight: FontWeight.w500,
+    color: Colors.white,
+    ),
+    ),
+    ),
+    ),
+    ),
+    ),
+    ],
+    );
+    },
+    );
+    },
+    child: Text(
+    "اضافة تقييم".tr,
+    style: TextStyle(
+    decoration: TextDecoration.underline,
+    fontFamily: 'Cairo',
+    fontSize: 14.0,
+    fontWeight: FontWeight.w500,
+    color: Color(0xFF064821),
+    ),
+    ),
+    ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                for (int i = 5; i > 0; i--)
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
 
-                                  builder: (BuildContext context,
-                                      StateSetter setState) {
-                                    return Container(
-                                      height: 45.82,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                        MainAxisAlignment.center,
-                                        children: [
-                                          for (int i = 0; i < 5; i++)
-                                            GestureDetector(
-                                              onTap: () {
-                                                setState(() {
-                                                  isstared[i] = !isstared[i];
-                                                  if (totalRating < 5 &&
-                                                      isstared[i] == true) {
-                                                    totalRating += 1;
-                                                  }
+                      });
+                    },
+                    child: Icon(
+                      i <= filledStars ? Icons.star : Icons.star_border_outlined,
+                      color: i <= filledStars ? Color(0xFFFFCC00) : Colors.grey,
+                    ),
+                  )
+              ],
+            )
+    ],
+    ),
+    ),
 
-                                                  print(
-                                                      "starrrr value${isstared[i]}");
-                                                });
-                                              },
-                                              child: Icon(
-                                                isstared[i]
-                                                    ? Icons.star
-                                                    : Icons
-                                                    .star_border_outlined,
-                                                color: isstared[i]
-                                                    ? Color(0xFFFFCC00)
-                                                    : Colors.grey,
-                                              ),
-                                            )
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                                actions: [
-                                  GestureDetector(
-                                    onTap: () {
-                                      List<bool> rating = List.generate(
-                                        5,
-                                            (index) => isstared[index],
-                                      );
-                                      sendRating(rating);
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                          top: 5,
-                                          right: 20,
-                                          left: 20,
-                                          bottom: 20),
-                                      child: Container(
-                                        height: 45,
-                                        width: double.infinity,
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                          BorderRadius.circular(30.0),
-                                          color: Color(0xFF064821),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            'تقديـــم تقييــم',
-                                            style: TextStyle(
-                                              fontFamily: 'Cairo',
-                                              fontSize: 16.0,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                        child: Text(
-                          "أضافة تقييم".tr,
-                          style: TextStyle(
-                              decoration: TextDecoration.underline,
-                              fontFamily: 'Cairo',
-                              fontSize: 14.0,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF064821)),
-                        ),
-                      ),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          for (int i = 5; i > 0; i--)
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-
-                                });
-                              },
-                              child: Icon(
-                                i <= filledStars ? Icons.star : Icons.star_border_outlined,
-                                color: i <= filledStars ? Color(0xFFFFCC00) : Colors.grey,
-                              ),
-                            )
-                        ],
-                      )
-                    ],
-                  ),
-                ),
 
                 Padding(
                   padding:

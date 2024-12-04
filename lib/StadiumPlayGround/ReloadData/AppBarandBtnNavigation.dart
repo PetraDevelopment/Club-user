@@ -5,6 +5,7 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import '../../Controller/NavigationController.dart';
 import '../../Home/HomePage.dart';
 import '../../my_reservation/my_reservation.dart';
+import '../../notification/notification_page.dart';
 import 'GetxController.dart';
 
 class AppBarandNavigationBTN extends StatelessWidget {
@@ -91,10 +92,19 @@ class AppBarandNavigationBTN extends StatelessWidget {
                 ),
               ),
               actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 18.0),
-                  child: Image.asset('assets/images/notification.png', height: 28, width: 28,),
-
+                GestureDetector(
+                  onTap: (){
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => Notification_page()),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 12.0),
+                    child: Image.asset(
+                      'assets/images/notification.png', height: 28, width: 28,),
+                  ),
                 ),
               ],
             ),

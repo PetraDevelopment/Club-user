@@ -7,16 +7,13 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../Controller/NavigationController.dart';
-import '../Favourite/Favourite_page.dart';
-import '../Home/HomePage.dart';
 import '../Home/Userclass.dart';
 import '../Menu/menu.dart';
-import '../PlayGround_Name/PlayGroundName.dart';
 import '../Register/SignInPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import '../my_reservation/my_reservation.dart';
+import '../notification/notification_page.dart';
 import '../playground_model/AddPlaygroundModel.dart';
 import 'group2.dart';
 import 'modelofgroup.dart';
@@ -223,12 +220,21 @@ class My_groupState extends State<My_group> {
               ),
             ),
             actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 12.0),
-                child: Image.asset(
-                  'assets/images/notification.png',
-                  height: 28,
-                  width: 28,
+              GestureDetector(
+                onTap: (){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Notification_page()),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 12.0),
+                  child: Image.asset(
+                    'assets/images/notification.png',
+                    height: 28,
+                    width: 28,
+                  ),
                 ),
               ),
             ],
@@ -252,92 +258,97 @@ class My_groupState extends State<My_group> {
                     ? Padding(
                         padding: const EdgeInsets.only(
                             top: 10.0, bottom: 10, right: 20, left: 20),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20.0),
-                            shape: BoxShape.rectangle,
-                            color: Color(0xFFF0F6FF),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.7),
+                        child: Column(
+                          children: [
+                            SizedBox( height: MediaQuery.of(context).size.height/21,),
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20.0),
+                                shape: BoxShape.rectangle,
+                                color: Color(0xFFF0F6FF),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.7),
 
-                                spreadRadius: 0,
+                                    spreadRadius: 0,
 
-                                blurRadius: 2,
+                                    blurRadius: 2,
 
-                                offset: Offset(0,
-                                    0),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(left: 33.0),
-                                child: Image.asset(
-                                  'assets/images/callgroup.png',
-                                  color: Colors.green,
-                                  width: 28,
-                                  height: 28,
-                                ),
-                              ),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        bottom: 14.0, right: 12),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: [
-                                        SizedBox(
-                                          height: 5,
-                                        ),
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 8.0),
-                                          child: Text(
-                                            "${stordataofgroup[0].name!}",
-                                            style: TextStyle(
-                                              fontFamily: 'Cairo',
-                                              fontSize: 16.0,
-                                              fontWeight: FontWeight.w700,
-                                              color: Color(0xFF334154),
-                                            ),
-                                          ),
-                                        ),
-
-                                        Text(
-                                          stordataofgroup[0].phone!,
-                                          style: TextStyle(
-                                            fontFamily: 'Cairo',
-                                            fontSize: 15.0,
-                                            fontWeight: FontWeight.w500,
-                                            color: Color(0xFF7D90AC),
-                                          ),
-                                        )
-  ],
-                                    ),
+                                    offset: Offset(0,
+                                        0),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 22.0,right: 10),
-                                    child: ClipOval(
-                                      child: Image(image:  NetworkImage(
-                                        stordataofgroup[0].profileImage!,
-
-                                      ),
-                                        fit: BoxFit.fitWidth,
-                                        height: 32,
-                                        width: 32,
-                                      ),
-                                    ),
-                                  )
                                 ],
                               ),
-                            ],
-                          ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 33.0),
+                                    child: Image.asset(
+                                      'assets/images/callgroup.png',
+                                      color: Colors.green,
+                                      width: 28,
+                                      height: 28,
+                                    ),
+                                  ),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            bottom: 14.0, right: 12),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            SizedBox(
+                                              height: 5,
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.only(top: 8.0),
+                                              child: Text(
+                                                "${stordataofgroup[0].name!}",
+                                                style: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  fontSize: 16.0,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Color(0xFF334154),
+                                                ),
+                                              ),
+                                            ),
+
+                                            Text(
+                                              stordataofgroup[0].phone!,
+                                              style: TextStyle(
+                                                fontFamily: 'Cairo',
+                                                fontSize: 15.0,
+                                                fontWeight: FontWeight.w500,
+                                                color: Color(0xFF7D90AC),
+                                              ),
+                                            )
+                              ],
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(bottom: 22.0,right: 10),
+                                        child: ClipOval(
+                                          child: Image(image:  NetworkImage(
+                                            stordataofgroup[0].profileImage!,
+
+                                          ),
+                                            fit: BoxFit.fitWidth,
+                                            height: 32,
+                                            width: 32,
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       )
                     :Center(

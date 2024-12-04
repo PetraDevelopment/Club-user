@@ -6,8 +6,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 FirebaseMessaging messaging = FirebaseMessaging.instance;
 FlutterLocalNotificationsPlugin fltNotification =
 FlutterLocalNotificationsPlugin();
-FlutterLocalNotificationsPlugin rideNotification =
-FlutterLocalNotificationsPlugin();
 bool isGeneral = false;
 int id = 0;
 bool background=false;
@@ -27,8 +25,7 @@ var androidDetails = const AndroidNotificationDetails(
   visibility: NotificationVisibility.private,
 );
 
-const iosDetails = DarwinNotificationDetails(
-    presentAlert: true, presentBadge: true, presentSound: true);
+const iosDetails = DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true);
 
 var generalNotificationDetails =
 NotificationDetails(android: androidDetails, iOS: iosDetails);
@@ -78,8 +75,6 @@ notificationHandleBackground(context){
         MaterialPageRoute(
             builder: (context) =>
            Notification_page()));
-
-
 
   });
 }

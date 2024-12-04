@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
@@ -1054,6 +1054,7 @@ if(selectedTime.contains("PM")){
                                 user1.isNotEmpty && user1[0].name!.isNotEmpty
                                     ? Text(
                                   user1[0].name!,
+                                  textAlign: TextAlign.start,
                                   style: TextStyle(
                                     fontFamily: 'Cairo',
                                     fontSize: 16.0,
@@ -1068,12 +1069,20 @@ if(selectedTime.contains("PM")){
                           user1.isNotEmpty && user1[0].img!=null&&user1[0].img!=""? Padding(
                               padding: const EdgeInsets.only(right: 34.0),
                               child:ClipOval(
-                                child: Image(image:  NetworkImage(
-                                  user1[0].img!,
-
-                                ),     width: 63,
+                                child:   CachedNetworkImage(
+                                  imageUrl:    user1[0].img!,
+                                     width: 63,
                                   height: 63,
-                                  fit: BoxFit.fitWidth,),
+                                  fit: BoxFit.fitWidth,
+                                  placeholder: (context, url) => Center(
+                                    child: CircularProgressIndicator(color: Color(0xFF4AD080),),
+                                  ),
+                                  errorWidget: (context, url, error) => Icon(
+                                    Icons.error,
+                                    color: Colors.red,
+                                    size: 40,
+                                  ),
+                                ),
                               )
                           ):
                           Padding(
@@ -1088,88 +1097,113 @@ if(selectedTime.contains("PM")){
                           ),
                         ],
                       ),
-                    ):Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Padding(
-                          padding:
-                          const EdgeInsets.only(bottom: 14.0, right: 12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                "مرحبا بك".tr,
-                                style: TextStyle(
-                                  fontFamily: 'Cairo',
-                                  fontSize: 15.0,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF7D90AC),
-                                ),
-                              ),
-                              user1.isNotEmpty && user1[0].name!.isNotEmpty
-                                  ? Text(
-                                user1[0].name!.length<20? user1[0].name!:user1[0].name!.substring(0,20),
-                                style: TextStyle(
-                                  fontFamily: 'Cairo',
-                                  fontSize: 16.0,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF334154),
-                                ),
-                              )
-                                  : Container()
-                           ],
+                    )
+                        :GestureDetector(
+                      onTap: (){
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Profilepage(),
+                            settings: RouteSettings(arguments: {
+                              'from': 'home'
+                            }),
                           ),
-                        ),
-
-                        user1.isNotEmpty && user1[0].img!=null&&user1[0].img!=""?
-                        GestureDetector(
-                          onTap: (){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Profilepage(),
-                                settings: RouteSettings(arguments: {
-                                  'from': 'home'
-                                }),
-                              ),
-                            );
-                          },
-                          child: Padding(
-                              padding: const EdgeInsets.only(right: 34.0),
-                              child:ClipOval(
-                                child: Image(image:  NetworkImage(
-                                  user1[0].img!,
-
-                                ),    width: 63,
-                                  height: 63,
-                                  fit: BoxFit.fitWidth,),
-                              )
-                          ),
-                        ):
-                        GestureDetector(
-                          onTap: (){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Profilepage(),
-                                settings: RouteSettings(arguments: {
-                                  'from': 'home'
-                                }),
-                              ),
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 34.0),
-                            child: Image.asset(
-                              "assets/images/profile.png",
-                              width: 63,
-                              height: 63,
-
+                        );
+                      },
+                          child: Row(
+                                                crossAxisAlignment: CrossAxisAlignment.end,
+                                                children: [
+                          Padding(
+                            padding:
+                            const EdgeInsets.only(bottom: 14.0, right: 12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  "مرحبا بك".tr,
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 15.0,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF7D90AC),
+                                  ),
+                                ),
+                                user1.isNotEmpty && user1[0].name!.isNotEmpty
+                                    ? Text(
+                                  user1[0].name!.length<20? user1[0].name!:user1[0].name!.substring(0,20),
+                                  textAlign: TextAlign.start,
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF334154),
+                                  ),
+                                )
+                                    : Container()
+                             ],
                             ),
                           ),
+
+                          user1.isNotEmpty && user1[0].img!=null&&user1[0].img!=""?
+                          GestureDetector(
+                            onTap: (){
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Profilepage(),
+                                  settings: RouteSettings(arguments: {
+                                    'from': 'home'
+                                  }),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                                padding: const EdgeInsets.only(right: 34.0),
+                                child:ClipOval(
+                                  child: CachedNetworkImage(
+                                    imageUrl:
+                                    user1[0].img!,
+                                     width: 63,
+                                    height: 63,
+                                    fit: BoxFit.fitWidth,
+                                    placeholder: (context, url) => Center(
+                                      child: CircularProgressIndicator(color: Color(0xFF4AD080),),
+                                    ),
+                                    errorWidget: (context, url, error) => Icon(
+                                      Icons.error,
+                                      color: Colors.red,
+                                      size: 40,
+                                    ),
+
+                                  ),
+                                )
+                            ),
+                          ):
+                          GestureDetector(
+                            onTap: (){
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Profilepage(),
+                                  settings: RouteSettings(arguments: {
+                                    'from': 'home'
+                                  }),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 34.0),
+                              child: Image.asset(
+                                "assets/images/profile.png",
+                                width: 63,
+                                height: 63,
+
+                              ),
+                            ),
+                          ),
+                                                ],
+                                              ),
                         ),
-                      ],
-                    ),
                   ],
                 ),
                 SizedBox(
@@ -1282,11 +1316,20 @@ if(selectedTime.contains("PM")){
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(20.0),
                                         child: fourtypes[i].img!.isNotEmpty
-                                            ? Image.network(
-                                          fourtypes[i].img![0],
+                                            ? CachedNetworkImage(
+                                          imageUrl:  fourtypes[i].img![0],
                                           height: 163,
                                           width: 274,
                                           fit: BoxFit.cover,
+                                          placeholder: (context, url) => Center(
+                                            child: CircularProgressIndicator(color: Color(0xFF4AD080),),
+                                          ),
+                                          errorWidget: (context, url, error) => Icon(
+                                            Icons.error,
+                                            color: Colors.red,
+                                            size: 40,
+                                          ),
+
                                         )
                                             : Image.asset(
                                           'assets/images/newwadi.png',
@@ -1445,14 +1488,15 @@ if(selectedTime.contains("PM")){
                                         ),
                                         SizedBox(width: 10),
                                         ClipOval(
-                                          child: Image(image:  NetworkImage(
-                                            playgroundbook [i].logoimage!,
+                                          child: Image(
+                                            image: NetworkImage(
+                                            playgroundbook [i].logoimage!,),
 
-                                          ),
+
                                             fit: BoxFit.fitWidth,
                                             height: 30,
                                             width: 30,
-                                          ),
+                                          )
                                         )
                                       ],
                                     ),
@@ -1777,11 +1821,19 @@ if(selectedTime.contains("PM")){
                                       ),
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(20.0),
-                                        child: Nearbystadiums[i].img!.isNotEmpty?Image.network(
-                                         Nearbystadiums[i].img![0],
+                                        child: Nearbystadiums[i].img!.isNotEmpty?CachedNetworkImage(
+                                          imageUrl:   Nearbystadiums[i].img![0],
                                           height: 163,
                                           width: 274,
                                           fit: BoxFit.fill,
+                                          placeholder: (context, url) => Center(
+                                            child: CircularProgressIndicator(color: Color(0xFF4AD080),),
+                                          ),
+                                          errorWidget: (context, url, error) => Icon(
+                                            Icons.error,
+                                            color: Colors.red,
+                                            size: 40,
+                                          ),
                                         ):Image(
                                           image: AssetImage("assets/images/newground.png"),
                                           color: Colors.white,
@@ -1868,11 +1920,19 @@ if(selectedTime.contains("PM")){
                                     ),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      child: playgroundAllData[i].img!.isNotEmpty?Image.network(
-                                        playgroundAllData[i].img![0],
+                                      child: playgroundAllData[i].img!.isNotEmpty?CachedNetworkImage(
+                                        imageUrl:     playgroundAllData[i].img![0],
                                         height: 163,
                                         width: 274,
                                         fit: BoxFit.fill,
+                                        placeholder: (context, url) => Center(
+                                          child: CircularProgressIndicator(color: Color(0xFF4AD080),),
+                                        ),
+                                        errorWidget: (context, url, error) => Icon(
+                                          Icons.error,
+                                          color: Colors.red,
+                                          size: 40,
+                                        ),
                                       ):Image(
                                         image: AssetImage("assets/images/newground.png"),
                                         color: Colors.white,
@@ -2035,11 +2095,19 @@ if(selectedTime.contains("PM")){
                                     ),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      child: rat_list2[i].PlayGroundimg!.isNotEmpty ? Image.network(
-                                        rat_list2[i].PlayGroundimg!,
+                                      child: rat_list2[i].PlayGroundimg!.isNotEmpty ?CachedNetworkImage(
+                                        imageUrl:  rat_list2[i].PlayGroundimg!,
                                         height: 163,
                                         width: 274,
                                         fit: BoxFit.fill,
+                                        placeholder: (context, url) => Center(
+                                          child: CircularProgressIndicator(color: Color(0xFF4AD080),),
+                                        ),
+                                        errorWidget: (context, url, error) => Icon(
+                                          Icons.error,
+                                          color: Colors.red,
+                                          size: 40,
+                                        ),
                                       ) : Image(
                                         image: AssetImage("assets/images/newground.png"),
                                         color: Colors.white,
