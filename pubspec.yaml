@@ -71,7 +71,6 @@ dev_dependencies:
   showcaseview: ^3.0.0
   image_picker: ^1.1.2
   firebase_storage: ^12.3.2
-
   share: ^2.0.4
   dio: ^5.7.0
   cached_network_image: ^3.4.1

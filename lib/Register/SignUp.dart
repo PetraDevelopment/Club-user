@@ -120,6 +120,7 @@ class SignUpPageState extends State<SignUpPage>
 
   String errorrr='';
   Future<void> verifyPhone(String phone) async {
+
     print('verificationIddd  ' + '+2$phone');
     if(phone.startsWith("011")||phone.startsWith("015")){
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -168,7 +169,8 @@ class SignUpPageState extends State<SignUpPage>
               _showErrorSnackbar('Billing is not enabled for this project.');
             } else {
               errorrr = 'unknown-error';
-              _showErrorSnackbar('An internal error occurred: ${e.message}');
+              _showErrorSnackbar('${e.message}');
+
             }
             setState(() {}); // Update UI to reflect the stopped loading state
           },
@@ -240,6 +242,9 @@ class SignUpPageState extends State<SignUpPage>
         print('Phone number exists, navigating to Sign-in page');
       }
       else {
+
+
+        _sendData();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -250,7 +255,7 @@ class SignUpPageState extends State<SignUpPage>
           ),
         );
 
-        _sendData();
+
         await verifyPhone(value.trim());
 
       }
@@ -284,24 +289,6 @@ class SignUpPageState extends State<SignUpPage>
       );
       return;
     }
-
-    if (name.isNotEmpty && phoneNumber.isNotEmpty &&PhoneErrorText.isEmpty &&selectedImages != null
-        && img_profile != '') {
-
-      DocumentReference docRef = await FirebaseFirestore.instance.collection('Users').add({
-        'name': name,
-        'phone': phoneNumber,
-        'profile_image': img_profile,
-        'fcm':token
-      });
-
-      String docId = docRef.id;
-      print("Document ID: $docId");
-
-      _nameController.clear();
-      _phoneNumberController.clear();
-
-    }
     else if(name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -327,7 +314,8 @@ class SignUpPageState extends State<SignUpPage>
       isLoading=false;
 
     }
-    else if(img_profile.isEmpty) {
+    else if(selectedImages == null
+        && img_profile == '') {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -353,6 +341,23 @@ class SignUpPageState extends State<SignUpPage>
       isLoading=false;
 
     }
+   else{
+
+      DocumentReference docRef = await FirebaseFirestore.instance.collection('Users').add({
+        'name': name,
+        'phone': phoneNumber,
+        'profile_image': img_profile,
+        'fcm':token
+      });
+
+      String docId = docRef.id;
+      print("Document ID: $docId");
+      _nameController.clear();
+      _phoneNumberController.clear();
+      selectedImages=null;
+      img_profile='';
+   }
+
 
   }
   Future<void> takePhoto() async {
@@ -494,7 +499,7 @@ class SignUpPageState extends State<SignUpPage>
                                         height: 164,
                                         color: Color(0xFFDCDCDC),
                                             child: ClipOval(
-                                                                                    child: Image(
+                                              child: Image(
                                             image: NetworkImage(img_profile),
                                             width: 200,
                                             height: 164,
@@ -754,7 +759,7 @@ class SignUpPageState extends State<SignUpPage>
                         var connectivityResult = await (Connectivity().checkConnectivity());
                         print("connectivityResult$connectivityResult");
                         print("connectivityResult${ConnectivityResult.none}");
-                        if (connectivityResult[0] == ConnectivityResult.none) {
+                        if ( connectivityResult[0]== ConnectivityResult.none) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
@@ -766,9 +771,48 @@ class SignUpPageState extends State<SignUpPage>
                           );
                           print("لا يوجد اتصال بالانترنت");
                         }
+                        else if(_nameController.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'يجب ادخال الاسم',
+                                textAlign: TextAlign.center,
+                              ),
+                              backgroundColor: Color(0xFF1F8C4B),
+                            ),
+                          );
+                          isLoading=false;
+                        }
+                        else if(_phoneNumberController.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'يجب ادخال رقم التليفون',
+                                textAlign: TextAlign.center,
+                              ),
+                              backgroundColor: Color(0xFF1F8C4B),
+                            ),
+                          );
+                          isLoading=false;
+
+                        }
+                        else if(selectedImages == null
+                            && img_profile == '') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'يجب ادخال الصورة',
+                                textAlign: TextAlign.center,
+                              ),
+                              backgroundColor: Color(0xFF1F8C4B),
+                            ),
+                          );
+                          isLoading=false;
+
+                        }
                      else{
-                          if (_nameController.text.isEmpty ||
-                              _phoneNumberController.text.isEmpty ||img_profile==''||selectedImages==null) {
+                          if (_nameController.text.isEmpty &&
+                              _phoneNumberController.text.isEmpty &&img_profile==''&&selectedImages==null) {
                             setState(() {
 
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -803,6 +847,7 @@ class SignUpPageState extends State<SignUpPage>
 
                           else {
                             setState(() {
+
                               isLoading = true;
                             });
                             if (!_isNavigating) {
@@ -814,6 +859,7 @@ class SignUpPageState extends State<SignUpPage>
                             }
 
                             setState(() {
+
                               isLoading = true;
                             });
                           }

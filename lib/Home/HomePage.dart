@@ -557,6 +557,7 @@ class HomePageState extends State<HomePage> {
     } catch (e) {
       print("Error getting user: $e");
     }
+
   }
   List<Rate_fetched> rat_list = [];
   List<Rate_fetched> rat_list2 = [];
@@ -1277,7 +1278,7 @@ if(selectedTime.contains("PM")){
                 Stack(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(right: 5, left: 5, bottom: 10,top: 10),
+                      padding: const EdgeInsets.only(right: 17, left: 17, bottom: 10,top: 10),
                       child: CarouselSlider(
                         options: CarouselOptions(
                           height: 165.0,
@@ -1289,6 +1290,7 @@ if(selectedTime.contains("PM")){
                           enlargeCenterPage: true,
                           scrollDirection: Axis.horizontal,
                           reverse: true,
+                          padEnds: false,
                         ),
                         items: [
                           for (int i = 0; i < fourtypes.length; i++)

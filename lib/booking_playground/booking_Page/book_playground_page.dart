@@ -24,8 +24,7 @@ import '../../notification/model/send_modelfirebase.dart';
 import '../../notification/notification_page.dart';
 import '../../playground_model/AddPlaygroundModel.dart';
 import '../AddbookingModel/AddbookingModel.dart';
-import '../widgets_for_popover_cancel_and_add/reservation.dart';
-
+import 'package:showcaseview/showcaseview.dart';
 class book_playground_page extends StatefulWidget {
   String IdData;
 
@@ -613,8 +612,7 @@ class book_playground_pageState extends State<book_playground_page>
       return AddbookingModel.fromMap(doc.data() as Map<String, dynamic>);
     }).toList();
     for (var booking in bookings) {
-      String day =
-          booking.Day_of_booking ?? '';
+      String day = booking.Day_of_booking ?? '';
       Set<String> selectedTimes = booking.selectedTimes?.toSet() ?? {};
       Set<String> formattedTimes = selectedTimes.map((time) {
         return time
@@ -796,10 +794,17 @@ class book_playground_pageState extends State<book_playground_page>
         print("toooooooooook$token");
         String idwidget=widget.IdData;
         print("jjjjjjjjjjjjjjjjjjjjjj$idwidget");
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => book_playground_page(idwidget)),
-        );
+       _loadUserData();
+
+        await fetchBookingData();
+        print("initistatedone");
+        await  _fetchData();
+        await getAllBookingDocuments();
+        await getPlaygroundbyname(widget.IdData);
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => book_playground_page(idwidget)),
+        // );
         await _sendnotificationtofirebase(1,groundIiid,selectedDayName,selectedTimes);
         await sp(ms, title, token);
         // await fetchBookingData();
@@ -971,7 +976,8 @@ class book_playground_pageState extends State<book_playground_page>
     return timeSlots;
   }
 
-
+  List<Widget> slotWidgets = [];
+  String errorMessage = '';
   bool isConnected = true;
 
   Future<void> checkInternetConnection() async {
@@ -1110,6 +1116,7 @@ String iddd=widget.IdData;
   void initState() {
     checkInternetConnection();
     _loadUserData();
+
     fetchBookingData();
     print("initistatedone");
     _fetchData();
@@ -1127,7 +1134,7 @@ String iddd=widget.IdData;
     _animationController.dispose();
     super.dispose();
   }
-
+int ro=0;
   @override
   Widget build(BuildContext context) {
     DateTime today = DateTime.now();
@@ -1243,16 +1250,14 @@ String iddd=widget.IdData;
                                             scrollDirection: Axis.horizontal,
                                           ),
                                           items: daysOfWeek.map((dayInfo) {
-                                            int itemIndex = daysOfWeek.indexOf(
-                                                dayInfo);
+                                            int itemIndex = daysOfWeek.indexOf(dayInfo);
 
                                             return ValueListenableBuilder(
                                               valueListenable: _currentIndexNotifier,
                                                 builder: (context, currentIndex, child) {
                                               return GestureDetector(
                                                 onTap: () {
-                                                  print(
-                                                      "Tapped on ${dayInfo['dayName']} - ${dayInfo['dayDate']}");
+                                                  print("Tapped on ${dayInfo['dayName']} - ${dayInfo['dayDate']}");
                                                   storeDate = dayInfo['dayDate'];
                                                   print("objectstoreDate$storeDate");
 
@@ -1422,45 +1427,34 @@ String iddd=widget.IdData;
                         ),
                         availableData.isNotEmpty
                                 ? FutureBuilder<List<Widget>>(
-                                    future: _generateRows(
-                                        selectedTimes, selectedDayName),
+                                    future: _generateRows(selectedTimes, selectedDayName),
                                     builder: (context, snapshot) {
-                                      if (snapshot.connectionState ==
-                                          ConnectionState.waiting) {
-                                        return Center(
-                                        child:  Column(
-                                          children: [
-                                            CircularProgressIndicator(
-                                                      color: Colors.green,),
-                                            SizedBox(height: 40,)
-                                          ],
-                                        ));
 
-                                      }
                                       if (snapshot.hasError) {
-                                        return Center(
-                                            child: Text(
-                                                "Error: ${snapshot.error}"));
+                                        return Container();
                                       }
                                       if (snapshot.hasData) {
                                         return Column(
                                           mainAxisAlignment:
                                               MainAxisAlignment.start,
-                                          children:
-                                              snapshot.data!.map((slotWidget) {
+                                          children: snapshot.data!.map((slotWidget) {
                                             return slotWidget;
                                           }).toList(),
                                         );
                                       }
-                                      return Center(
-                                          child: Text("No data available"));
+                                      return Column(
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.start,
+                                        children:[
+
+                                        ]
+                                      );
                                     },
                                   )
                                 : Container(
                                     height: 99,
                                     child: Center(
-                                        child: Text(
-                                            "لا يوجد حجز متاح لهذا اليوم")),
+                                        child: Text("لا يوجد حجز متاح لهذا اليوم")),
                                   ),
 
                         availableData.isNotEmpty
@@ -1571,7 +1565,7 @@ String iddd=widget.IdData;
                                       final user = matchedPlaygrounds[index];
                                       print("objectmatching${matchedPlaygrounds.length}");
 
-                                   return   Stack(
+                                   return  Stack(
                                         children: [
                                           Padding(
                                             padding: const EdgeInsets.only(
@@ -1590,13 +1584,13 @@ String iddd=widget.IdData;
                                             ),
                                           ),
 
-                                            Dismissible(
+                                        Dismissible(
                                         key: Key(user.userID!),
-
-                                              direction: DismissDirection.horizontal,
+                                        direction: DismissDirection.horizontal,
                                       onDismissed: (direction) async {
                                        setState(() {
                                          dissmiss=1;
+
                                        });
                                         updateCancelCount(user.userID!,);
 
@@ -1909,9 +1903,6 @@ String iddd=widget.IdData;
                                       )
                                         ],
                                       );
-
-
-
                                     }),
                                   ),
                                 ),
@@ -1983,7 +1974,6 @@ String iddd=widget.IdData;
     );
   }
 
-// Function to show the dialog
   void _showDialog(BuildContext context) {
   showDialog(
   context: context,
@@ -2003,6 +1993,15 @@ String iddd=widget.IdData;
   fontFamily: 'Cairo',
   ),
   ),
+    Text(
+      " ".tr,
+      style: TextStyle(
+        color: Color(0xFF374957),
+        fontWeight: FontWeight.w700,
+        fontSize: 15,
+        fontFamily: 'Cairo',
+      ),
+    ),
   Text(
     '$costpeerhour',
   style: TextStyle(
@@ -2066,7 +2065,8 @@ String iddd=widget.IdData;
         fetchedSelectedTimesPerDay[currentDay]?.contains(slot) ?? false;
     bool isClickable = !isSlotBooked;
 
-    return Padding(
+ return   ShowCaseWidget(
+        builder: (context) =>    Padding(
       padding: const EdgeInsets.all(6.0),
       child: Opacity(
         opacity: isClickable ? 1.0 : 0.5,
@@ -2173,7 +2173,7 @@ String iddd=widget.IdData;
           ),
         ),
       ),
-    );
+    ));
   }
 
   Future<List<String>> _fetchBookedTimes(String selectedDay) async {
@@ -2238,72 +2238,6 @@ String iddd=widget.IdData;
 
     return combinedTimeSlots;
   }
-  void showBookingDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-          child: IntrinsicHeight(
-            child: Container(
-              padding: EdgeInsets.all(16),
-              width: MediaQuery.of(context).size.width / 1.5,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '620',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 23,
-                      color: Color(0xFF7D90AC),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    'التكلفة أجمالية',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 16,
-                      color: Color(0xFF334154),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 25),
-                  GestureDetector(
-                    onTap: () {
-                      // Handle booking action here
-                      Navigator.pop(context); // Close the dialog
-                    },
-                    child: Container(
-                      height: 45,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(40.0),
-                        color: Color(0xFF106A35),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'حجـــــز',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            fontFamily: 'Cairo',
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   Future<List<Widget>> _generateRows(Set<String> selectedTimes, String selectedDay) async {
 
@@ -2340,9 +2274,11 @@ print("slotttttttttttttttttt$slot");
               FutureBuilder<Widget>(
                 future: _generateTimeSlotWidget(slot, isSelected, isTimeSlotBooked),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Container();
-                  } else if (snapshot.hasError) {
+                  // if (snapshot.connectionState == ConnectionState.waiting) {
+                  //   return Container();
+                  // }
+                  // else
+                    if (snapshot.hasError) {
                     return Container();
                   } else {
                     return snapshot.data ??
