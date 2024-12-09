@@ -16,6 +16,7 @@ import '../../Register/SignInPage.dart';
 import '../../my_reservation/my_reservation.dart';
 import '../My_group/my_group.dart';
 import '../PlayGround_Name/PlayGroundName.dart';
+import '../StadiumPlayGround/ReloadData/AppBarandBtnNavigation.dart';
 import 'model/send_modelfirebase.dart';
 
 class Notification_page extends StatefulWidget {
@@ -114,7 +115,7 @@ class Notification_pageState extends State<Notification_page> with TickerProvide
   }
   bool isConnected=false;
   final NavigationController navigationController = Get.put(NavigationController());
-
+int first =0;
   Future<void> fetchnotificationdatabyid(String userid) async {
 
       CollectionReference notificationdata =
@@ -134,6 +135,7 @@ if(notification.adminreply==true){
   Map<String, dynamic>? Grounddata =   await fetchgrounddatabyid(notification);
   notification.groundname = Grounddata!['groundName'];
   notificationlist.add(notification);
+
   print("Notification data: ${docData}");
   notification.idd=docId;
   print("Document ID: $docId");
@@ -141,6 +143,7 @@ if(notification.adminreply==true){
 
         }
       } else {
+        first++;
         print('No notifications found for this userid.');
       }
 
@@ -466,7 +469,7 @@ int x=0;
           ],
         ),
       )
-        :Center(
+        :first>0?Center(
     child: SizedBox(
     height: MediaQuery.of(context).size.height/4,
     child: Stack(
@@ -501,11 +504,48 @@ int x=0;
     ],
     ),
     ),
+    ):Center(
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height/4,
+        child: Stack(
+          children: [
+            Center(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+
+                      Opacity(
+                        opacity: 0.2,
+                        child: Image.asset(
+                          "assets/images/notification_zero.png",
+                          width: 156.96,
+                          height: 134.16,
+                        ),
+                      ),
+                      Opacity(
+                        opacity: 0.2,
+                        child: Text(
+                          'لا يوجد أشعارات حتى الان',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.62,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF181A20),
+                          ),
+                        ),
+                      ),
+                    ]),
+              ),
+            ),
+          ],
+        ),
+      ),
     ),
       bottomNavigationBar: CurvedNavigationBar(
         height: 60,
-        index: 2,
-        // Use the dynamic index
+        index: 0,
         items: [
           Icon(Icons.more_horiz, color: Colors.white, size: 25),
 
@@ -516,38 +556,30 @@ int x=0;
           Image.asset('assets/images/home.png',
               height: 21, width: 21, color: Colors.white),
         ],
-
         color: Color(0xFF064821),
         buttonBackgroundColor: Color(0xFFBACCE6),
         backgroundColor: Colors.white,
-
-
         animationCurve: Curves.easeInOut,
         animationDuration: Duration(milliseconds: 600),
         onTap: (index) {
-          setState(() {
-            selectedIndex = index;
-            opacity= 0.5;
-          });
-
+          navigationController
+              .updateIndex(index);
           switch (index) {
             case 0:
-              Get.to(() => menupage())?.then((_) {
-                navigationController
-                    .updateIndex(0);
-              });
-              break;
 
+              break;
             case 1:
               Get.to(() => my_reservation())?.then((_) {
                 navigationController
                     .updateIndex(1);
               });
+
               break;
             case 2:
-
+              Get.to(() => AppBarandNavigationBTN())?.then((_) {
+                navigationController.updateIndex(2);
+              });
               break;
-
             case 3:
               Get.to(() => HomePage())?.then((_) {
                 navigationController.updateIndex(3);

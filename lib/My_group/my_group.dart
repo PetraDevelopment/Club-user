@@ -53,6 +53,7 @@ class My_groupState extends State<My_group> {
 
   }
   String docId='';
+  int first =0 ;
   Future<void> getUserByPhone(String phoneNumber) async {
     try {
       String normalizedPhoneNumber = phoneNumber.replaceFirst('+20', '0');
@@ -110,6 +111,8 @@ class My_groupState extends State<My_group> {
 
         print("GroupModel : $groupdata");
         await getGroupdata(groupdata[0].TeamId!);
+      }else{
+        first++;
       }
     } catch (e) {
       print("Error getting user: $e");
@@ -360,7 +363,7 @@ class My_groupState extends State<My_group> {
                           ],
                         ),
                       )
-                    :Center(
+                    :first>0?Center(
                       child: SizedBox(
                                     height: MediaQuery.of(context).size.height/2,
                         child: Stack(
@@ -380,13 +383,16 @@ class My_groupState extends State<My_group> {
                                       height: 200,
                                       ),
                                     ),
-                                      Text(
-                                        'لم يتم أضافتك فى مجموعة حتى الأن',
-                                        style: TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontSize: 14.62,
-                                          fontWeight: FontWeight.w500,
-                                          color: Color(0xFF181A20),
+                                      Opacity(
+                                        opacity: 0.5,
+                                        child: Text(
+                                          'لم يتم أضافتك فى مجموعة حتى الأن',
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            fontSize: 14.62,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xFF181A20),
+                                          ),
                                         ),
                                       ),
                                     ]),
@@ -395,7 +401,45 @@ class My_groupState extends State<My_group> {
                           ],
                         ),
                       ),
-                    )
+                    ):Center(
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height/2,
+                child: Stack(
+                  children: [
+                    Center(
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+
+                              Opacity(
+                                opacity: 0.2,
+                                child: Image.asset(
+                                  "assets/images/Group4.png",
+                                  width: 200,
+                                  height: 200,
+                                ),
+                              ),
+                              Opacity(
+                                opacity: 0.2,
+                                child: Text(
+                                  'لم يتم أضافتك فى مجموعة حتى الأن',
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 14.62,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF181A20),
+                                  ),
+                                ),
+                              ),
+                            ]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
             ,
           ],
         ),

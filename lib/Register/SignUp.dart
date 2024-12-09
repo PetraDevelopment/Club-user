@@ -49,7 +49,7 @@ class SignUpPageState extends State<SignUpPage>
 
   bool isLoading = false;
   File? selectedImages;
-  String img_profile = '';
+  String img_profile = "";
 
   String NameErrorTxT ='';
 
@@ -116,7 +116,6 @@ class SignUpPageState extends State<SignUpPage>
       ),
     );
   }
-
 
   String errorrr='';
   Future<void> verifyPhone(String phone) async {
@@ -234,7 +233,8 @@ class SignUpPageState extends State<SignUpPage>
             backgroundColor: Color(0xFF1F8C4B),
           ),
         );
-
+        _nameController.clear();
+        _phoneNumberController.clear();
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => SigninPage()),
@@ -244,6 +244,7 @@ class SignUpPageState extends State<SignUpPage>
       else {
 
 
+      if(x>0)  {
         _sendData();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -257,12 +258,72 @@ class SignUpPageState extends State<SignUpPage>
 
 
         await verifyPhone(value.trim());
+      }
+
 
       }
     }
   }
+  Future<void> takePhoto() async {
+    final pickedFile =
+    await ImagePicker().pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      setState(() {
+        selectedImages = File(pickedFile.path);
+        print("selectedImagesselectedImagesselectedImages${selectedImages}");
+        img_profile = pickedFile.path;
+print('img_profileimg_profile$img_profile');
+        setState(() {
 
+        });
+      });
+    }
+  }
+int x=0;
+  Future<File?> pickImageFromGallery() async {
+    final XFile? image =
+    await ImagePicker().pickImage(source: ImageSource.gallery);
+    return image != null ? File(image.path) : null;
+  }
+
+  Future<void> uploadImagesAndSaveUrls() async {
+    setState(() {
+      x=0;
+    });
+    File? image = await pickImageFromGallery();
+    if (image == null) return;
+    setState(() {
+      selectedImages = image;
+      img_profile = "";
+    });
+
+    try {
+      String downloadUrl = await _uploadImage(image);
+      setState(() {
+        img_profile = downloadUrl;
+        x++;
+        print("prinnnnt$x");
+      });
+
+      print("Image uploaded successfully: $downloadUrl");
+    } catch (e) {
+      print("Failed to upload image: $e");
+
+    }
+  }
+
+  Future<String> _uploadImage(File image) async {
+    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+    Reference storageRef = FirebaseStorage.instance.ref().child('Users/$fileName');
+
+    await storageRef.putFile(image);
+    String downloadUrl = await storageRef.getDownloadURL();
+
+    return downloadUrl;
+  }
   void _sendData() async {
+
+
     FirebaseMessaging messaging = FirebaseMessaging.instance;
 
     String? token = await messaging.getToken();
@@ -296,7 +357,7 @@ class SignUpPageState extends State<SignUpPage>
             'يجب ادخال الاسم',
             textAlign: TextAlign.center,
           ),
-          backgroundColor: Color(0xFF1F8C4B),
+          backgroundColor: Colors.red,
         ),
       );
       isLoading=false;
@@ -308,21 +369,21 @@ class SignUpPageState extends State<SignUpPage>
             'يجب ادخال رقم التليفون',
             textAlign: TextAlign.center,
           ),
-          backgroundColor: Color(0xFF1F8C4B),
+          backgroundColor: Colors.red,
         ),
       );
       isLoading=false;
 
     }
     else if(selectedImages == null
-        && img_profile == '') {
+        && img_profile == "") {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             'يجب ادخال الصورة',
             textAlign: TextAlign.center,
           ),
-          backgroundColor: Color(0xFF1F8C4B),
+          backgroundColor: Colors.red,
         ),
       );
       isLoading=false;
@@ -355,61 +416,12 @@ class SignUpPageState extends State<SignUpPage>
       _nameController.clear();
       _phoneNumberController.clear();
       selectedImages=null;
-      img_profile='';
+      img_profile="";
    }
 
 
   }
-  Future<void> takePhoto() async {
-    final pickedFile =
-    await ImagePicker().pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
-      setState(() {
-        selectedImages = File(pickedFile.path);
-         img_profile = pickedFile.path;
 
-        setState(() {
-
-        });
-      });
-    }
-  }
-
-  Future<File?> pickImageFromGallery() async {
-    final XFile? image =
-    await ImagePicker().pickImage(source: ImageSource.gallery);
-    return image != null ? File(image.path) : null;
-  }
-
-  Future<void> uploadImagesAndSaveUrls() async {
-    File? image = await pickImageFromGallery();
-    if (image == null) return;
-    setState(() {
-      selectedImages = image;
-      img_profile = "";
-    });
-
-    try {
-      String downloadUrl = await _uploadImage(image);
-      setState(() {
-        img_profile = downloadUrl;
-      });
-      print("Image uploaded successfully: $downloadUrl");
-    } catch (e) {
-      print("Failed to upload image: $e");
-
-    }
-  }
-
-  Future<String> _uploadImage(File image) async {
-    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-    Reference storageRef = FirebaseStorage.instance.ref().child('Users/$fileName');
-
-    await storageRef.putFile(image);
-    String downloadUrl = await storageRef.getDownloadURL();
-
-    return downloadUrl;
-  }
 
   @override
   void initState() {
@@ -442,7 +454,8 @@ class SignUpPageState extends State<SignUpPage>
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          SingleChildScrollView(
+          (isLoading == true)
+              ? const Positioned(top: 0,bottom: 0, child: Loading()):   SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.only(top: 15.0,bottom: 15,right: 22,left: 22),
               child: Column(
@@ -484,7 +497,7 @@ class SignUpPageState extends State<SignUpPage>
                                   child: Align(
                                       alignment: Alignment.topCenter,
                                       child: selectedImages == null
-                                          ? img_profile == ''
+                                          ? img_profile == ""
                                           ? ClipOval(
                                             child: Container(
                                                                                     width: 200,
@@ -778,7 +791,7 @@ class SignUpPageState extends State<SignUpPage>
                                 'يجب ادخال الاسم',
                                 textAlign: TextAlign.center,
                               ),
-                              backgroundColor: Color(0xFF1F8C4B),
+                              backgroundColor: Colors.red,
                             ),
                           );
                           isLoading=false;
@@ -790,21 +803,21 @@ class SignUpPageState extends State<SignUpPage>
                                 'يجب ادخال رقم التليفون',
                                 textAlign: TextAlign.center,
                               ),
-                              backgroundColor: Color(0xFF1F8C4B),
+                              backgroundColor: Colors.red,
                             ),
                           );
                           isLoading=false;
 
                         }
                         else if(selectedImages == null
-                            && img_profile == '') {
+                            && img_profile == "") {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
                                 'يجب ادخال الصورة',
                                 textAlign: TextAlign.center,
                               ),
-                              backgroundColor: Color(0xFF1F8C4B),
+                              backgroundColor: Colors.red,
                             ),
                           );
                           isLoading=false;
@@ -812,7 +825,7 @@ class SignUpPageState extends State<SignUpPage>
                         }
                      else{
                           if (_nameController.text.isEmpty &&
-                              _phoneNumberController.text.isEmpty &&img_profile==''&&selectedImages==null) {
+                              _phoneNumberController.text.isEmpty &&img_profile==""&&selectedImages==null) {
                             setState(() {
 
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -840,7 +853,7 @@ class SignUpPageState extends State<SignUpPage>
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
-                                backgroundColor: Color(0xFF1F8C4B),
+                                backgroundColor: Colors.red,
                               ),
                             );
                           }
@@ -922,9 +935,7 @@ class SignUpPageState extends State<SignUpPage>
             ),
 
           ),
-          (isLoading == true)
-              ? const Positioned(top: 0, child: Loading())
-              : Container(),
+
         ],
       ),
 
@@ -955,9 +966,9 @@ class SignUpPageState extends State<SignUpPage>
                 ),
                 TextButton(
                   child:  Icon(Icons.photo_library_outlined,color:Color(0xFF064821)),
-                  onPressed: () {
+                  onPressed: () async {
                     Navigator.of(context).pop();
-                    uploadImagesAndSaveUrls();
+                   await uploadImagesAndSaveUrls();
                   },
                 ),
               ],)

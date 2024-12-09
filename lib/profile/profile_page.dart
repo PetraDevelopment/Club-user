@@ -370,7 +370,8 @@ class ProfilepageState extends State<Profilepage>
       body:isConnected? Directionality(
         textDirection: TextDirection.rtl,
         child: Stack(
-            children: [ SingleChildScrollView(
+            children: [  (_isLoading == true)
+                ? const Positioned(top: 0,bottom: 0, child: Loading()):SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.only(
                     top: 13.0, bottom: 13, right: 25, left: 25),
@@ -723,9 +724,8 @@ await  getUserByPhone(_phoneNumberController.text);
                 ]),
               ),
             ),
-              (_isLoading == true)
-                  ? const Positioned(top: 0, child: Loading())
-                  : Container(),
+
+
             ]
         ),):  _buildNoInternetUI(),
       bottomNavigationBar: CurvedNavigationBar(

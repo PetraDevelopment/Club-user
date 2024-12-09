@@ -46,6 +46,11 @@ class HomePageState extends State<HomePage> {
   User? user = FirebaseAuth.instance.currentUser;
   bool _isLoading = true;
   String start="";
+ int first =0;
+ int sec =0;
+ int third =0;
+ int fourth =0;
+
 
   String end ="";
   Future<void> _loadData() async {
@@ -269,6 +274,7 @@ class HomePageState extends State<HomePage> {
             bookingData.groundphone = Grounddata['phone'];
             bookingData.groundImage = Grounddata['img'][0];
             bookingData.logoimage=Grounddata['LogoImg'];
+
             playgroundbook.add(bookingData);
             print("bookingData is equal $bookingData");
           }
@@ -280,6 +286,7 @@ class HomePageState extends State<HomePage> {
 
 
         if (playgroundbook.isNotEmpty) {
+
           for (int i = 0; i < playgroundbook.length; i++) {
 
             if (playgroundbook[i].AdminId != null) {
@@ -296,6 +303,7 @@ class HomePageState extends State<HomePage> {
             }
           }
         } else {
+          first++;
           print('No matching bookings found for the phone number.');
         }
       }
@@ -359,6 +367,7 @@ class HomePageState extends State<HomePage> {
             getPlaygroundbynameE(playgroundbook[i].GroundId!);
           }
         } else {
+          first++;
           print('No matching bookings found for the user’s phone number.');
         }
       }
@@ -495,20 +504,22 @@ class HomePageState extends State<HomePage> {
               setState(() {
               });
 
-            } else {
+            }
+            else {
               print("Invalid time format: $timeofAddedPlayground");
             }
-            print(
-                "PlayGroungboook Iiid : ${document.id}");
-
+            print("PlayGroungboook Iiid : ${document.id}");
             user.id = document.id;
-          }else{
+          }
+          else{
 
           }
 
 
 
         }
+      }else{
+        sec++;
       }
     } catch (e) {
       print("Error getting playground: $e");
@@ -826,6 +837,8 @@ if(selectedTime.contains("PM")){
         print("legthikfjkvhk Ratings: ${rat_list2.length}");
 
         setState(() {});
+      }else{
+        third++;
       }
     } catch (e) {
       print('Error fetching ratings: $e');
@@ -882,6 +895,8 @@ if(selectedTime.contains("PM")){
 
         loadfourtype();
         updateMissingTypes();
+      }else{
+        fourth++;
       }
     } catch (e) {
       print("Error getting playground: $e");
@@ -1054,7 +1069,7 @@ if(selectedTime.contains("PM")){
                                 ),
                                 user1.isNotEmpty && user1[0].name!.isNotEmpty
                                     ? Text(
-                                  user1[0].name!.substring(0,12),
+                                    user1[0].name!.length>12?     user1[0].name!.substring(0,12):user1[0].name!,
                                   textAlign: TextAlign.start,
                                   style: TextStyle(
                                     fontFamily: 'Cairo',
@@ -1131,7 +1146,7 @@ if(selectedTime.contains("PM")){
                                 ),
                                 user1.isNotEmpty && user1[0].name!.isNotEmpty
                                     ? Text(
-                                  user1[0].name!.length<15? user1[0].name!:user1[0].name!.substring(0,12),
+                                  user1[0].name!.length<12? user1[0].name!:user1[0].name!.substring(0,12),
                                   textAlign: TextAlign.start,
                                   style: TextStyle(
                                     fontFamily: 'Cairo',
@@ -1274,7 +1289,6 @@ if(selectedTime.contains("PM")){
                 SizedBox(height: 10,),
 
                 fourtypes.isNotEmpty?
-
                 Stack(
                   children: [
                     Padding(
@@ -1388,8 +1402,7 @@ if(selectedTime.contains("PM")){
                     ),
                   ],
                 )
-                    :
-                allplaygrounds.isEmpty&&fourtypes.isEmpty&&rat_list2.isEmpty &&playgroundbook.isEmpty?   Center(
+                    :fourth>0? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -1408,18 +1421,54 @@ if(selectedTime.contains("PM")){
                         ),
                       ),
                       SizedBox(height: 2,),
-                      Text(
-                        'لم يتم اضافة بيانات يمكن عرضها بعد',
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 14.62,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF181A20),
+                      Opacity(
+                        opacity: 0.5,
+                        child: Text(
+                          'لم يتم اضافة بيانات يمكن عرضها بعد',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.62,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF181A20),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ):Container(),
+                ):Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Center(
+                        child: Container(
+                          height: 142.51,
+                          width: 142.51,
+
+                          child:  Opacity(
+                            opacity: 0.2,
+                            child: Image.asset(
+                              "assets/images/amico.png",
+
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 2,),
+                      Opacity(
+                        opacity: 0.2,
+                        child: Text(
+                          'لم يتم اضافة بيانات يمكن عرضها بعد',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.62,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF181A20),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 SizedBox(height: 10,),
                 Padding(
                   padding: const EdgeInsets.only(right: 25,left: 26,top: 10,bottom: 10,),
@@ -1614,7 +1663,7 @@ if(selectedTime.contains("PM")){
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       GestureDetector(
-                                        onTap: (){
+                                        onTap: () async {
                                           print("groundName${playgroundbook[i]
                                               .groundName!}");
                                             updateCancelCount(
@@ -1626,6 +1675,10 @@ if(selectedTime.contains("PM")){
                                               playgroundbook[i].GroundId!,
                                               playgroundbook[i].selectedTimes!.first,
                                               playgroundbook[i].dateofBooking!);
+                                        await  getPlaygroundbyname();
+                                          await getfourplaygroundsbytype();
+                                          await _loadData();
+                                          _initialize();
                                         },
                                         child: Padding(
                                           padding: const EdgeInsets.only(right: 14.0,left: 14.0,top: 5,bottom: 5),
@@ -1757,7 +1810,7 @@ if(selectedTime.contains("PM")){
                     ),
 
                   ),
-                ):
+                ):first>0?
                 Center(
                   child: Column(
                     children: [
@@ -1774,13 +1827,46 @@ if(selectedTime.contains("PM")){
                         ),
                       ),
                       SizedBox(height: 2,),
-                      Text(
-                        'لم يتم اضافة حجوزات يمكن عرضها بعد',
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 14.62,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF181A20),
+                      Opacity(
+                        opacity: 0.5,
+                        child: Text(
+                          'لم يتم اضافة حجوزات يمكن عرضها بعد',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.62,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF181A20),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ):Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 142.51,
+                        width: 142.51,
+
+                        child:  Opacity(
+                          opacity: 0.2,
+                          child: Image.asset(
+                            "assets/images/Folder.png",
+
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 2,),
+                      Opacity(
+                        opacity: 0.2,
+                        child: Text(
+                          'لم يتم اضافة حجوزات يمكن عرضها بعد',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.62,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF181A20),
+                          ),
                         ),
                       ),
                     ],
@@ -2029,7 +2115,8 @@ if(selectedTime.contains("PM")){
                         ],
                       ),
                     )
-                ): Center(
+                ):
+                sec>0? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -2047,13 +2134,48 @@ if(selectedTime.contains("PM")){
                         ),
                       ),
                       SizedBox(height: 2,),
-                      Text(
-                        'لم يتم اضافة بيانات يمكن عرضها بعد',
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 14.62,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF181A20),
+                      Opacity(
+                        opacity: 0.5,
+                        child: Text(
+                          'لم يتم اضافة بيانات يمكن عرضها بعد',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.62,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF181A20),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ):Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Center(
+                        child: Container(
+                          height: 142.51,
+                          width: 142.51,
+
+                          child:  Opacity(
+                            opacity: 0.2,
+                            child: Image.asset(
+                              "assets/images/amico.png",
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 2,),
+                      Opacity(
+                        opacity: 0.2,
+                        child: Text(
+                          'لم يتم اضافة بيانات يمكن عرضها بعد',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.62,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF181A20),
+                          ),
                         ),
                       ),
                     ],
@@ -2204,7 +2326,8 @@ if(selectedTime.contains("PM")){
                       ],
                     ),
                   ),
-                ): Center(
+                ):
+                third>0? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -2222,13 +2345,48 @@ if(selectedTime.contains("PM")){
                         ),
                       ),
                       SizedBox(height: 2,),
-                      Text(
-                        'لم يتم اضافة بيانات يمكن عرضها بعد',
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 14.62,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF181A20),
+                      Opacity(
+                        opacity: 0.5,
+                        child: Text(
+                          'لم يتم اضافة بيانات يمكن عرضها بعد',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.62,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF181A20),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ):Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Center(
+                        child: Container(
+                          height: 142.51,
+                          width: 142.51,
+
+                          child:  Opacity(
+                            opacity: 0.2,
+                            child: Image.asset(
+                              "assets/images/amico.png",
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 2,),
+                      Opacity(
+                        opacity: 0.2,
+                        child: Text(
+                          'لم يتم اضافة بيانات يمكن عرضها بعد',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.62,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF181A20),
+                          ),
                         ),
                       ),
                     ],

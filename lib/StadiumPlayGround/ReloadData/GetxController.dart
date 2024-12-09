@@ -43,7 +43,7 @@ class SportsController extends GetxController {
     getPlaygroundbyname();
 
   }
-
+int first=0;
   void selectCategory(String category) {
     selectedCategory.value = category;
     checkInternetConnection();
@@ -83,7 +83,9 @@ if (querySnapshot.docs.isNotEmpty) {
     user.id = document.id;
   }
 
-      }
+      }else{
+  first++;
+}
     } catch (e) {
       print("Error getting playground: $e");
     }

@@ -704,15 +704,15 @@ class book_playground_pageState extends State<book_playground_page>
         .collection('notification')
         .add(notificationModel.toMap());
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'تم ارسال البيانات بنجاح',
-          textAlign: TextAlign.center,
-        ),
-        backgroundColor: Color(0xFF1F8C4B),
-      ),
-    );
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(
+    //     content: Text(
+    //       'تم ارسال البيانات بنجاح',
+    //       textAlign: TextAlign.center,
+    //     ),
+    //     backgroundColor: Color(0xFF1F8C4B),
+    //   ),
+    // );
 
     setState(() {
       _isLoading = false;
@@ -725,7 +725,7 @@ class book_playground_pageState extends State<book_playground_page>
     });
     final name = user1[0].name!;
     final phooneNumber = user1[0].phoneNumber!;
-
+    matchedPlaygrounds.clear();
     final selectedDay = selectedDayName;
     num totalCost = 0;
     for (var selectedTime in selectedTimes) {
@@ -772,7 +772,15 @@ class book_playground_pageState extends State<book_playground_page>
           ),
         );
       } else {
-
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'برجاء الانتظار',
+              textAlign: TextAlign.center,
+            ),
+            backgroundColor: Color(0xFF1F8C4B),
+          ),
+        );
         final bookingModel = AddbookingModel(
             GroundId: widget.IdData,
             groundImage: playgroundAllData[0].img![0],
@@ -793,21 +801,16 @@ class book_playground_pageState extends State<book_playground_page>
 
         print("toooooooooook$token");
         String idwidget=widget.IdData;
-        print("jjjjjjjjjjjjjjjjjjjjjj$idwidget");
+        print("   $idwidget");
        _loadUserData();
 
         await fetchBookingData();
         print("initistatedone");
-        await  _fetchData();
+        //await  _fetchData();
         await getAllBookingDocuments();
         await getPlaygroundbyname(widget.IdData);
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => book_playground_page(idwidget)),
-        // );
         await _sendnotificationtofirebase(1,groundIiid,selectedDayName,selectedTimes);
         await sp(ms, title, token);
-        // await fetchBookingData();
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -862,7 +865,6 @@ class book_playground_pageState extends State<book_playground_page>
     }
   }
 
-  // }
 
   bool isAlreadySelected = false;
 
@@ -941,34 +943,25 @@ class book_playground_pageState extends State<book_playground_page>
   double costpeerhour=0;
 
   List<String> startendtime(String timeRange) {
-    // Split the input string into start and end times
     List<String> times = timeRange.split(' - ');
     String startTimeStr = times[0].trim();
     String endTimeStr = times[1].trim();
 
     DateTime startTime = Jiffy.parse(startTimeStr, pattern: 'h:mm a').dateTime;
     DateTime endTime = Jiffy.parse(endTimeStr, pattern: 'h:mm a').dateTime;
-
-    // If the end time is before the start time, it means it goes to the next day
     if (endTime.isBefore(startTime)) {
       endTime = endTime.add(Duration(days: 1));
     }
 
     print("Start Time: $startTime");
     print("End Time: $endTime");
-
-    // Prepare to format the time
     List<String> timeSlots = [];
-
-    // Generate time slots
     DateTime currentTime = startTime;
     while (currentTime.isBefore(endTime) || currentTime.isAtSameMomentAs(endTime)) {
-      // Add the hour to the list (in 12-hour format)
       timeSlots.add(intl.DateFormat('h').format(currentTime));
       currentTime = currentTime.add(Duration(hours: 1));
     }
 
-    // Print the generated time slots
     for (String slot in timeSlots) {
       print("Slot: $slot");
     }
@@ -1149,7 +1142,6 @@ int ro=0;
       selectedDates.add({dayName: day});
 
     }
-    // fetchBookingData();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
@@ -1522,10 +1514,8 @@ int ro=0;
                                   await _sendData(context, _isCheckedList[0]);
 
                                   await _fetchData();
-                                  print(
-                                      "addddmin${playgroundAllData[0].adminId!}");
-                                  await notifyAdmin(
-                                      playgroundAllData[0].adminId!);
+                                  print("addddmin${playgroundAllData[0].adminId!}");
+                                  await notifyAdmin(playgroundAllData[0].adminId!);
                                 },
                           child: Padding(
                             padding: const EdgeInsets.only(
@@ -1587,10 +1577,10 @@ int ro=0;
                                         Dismissible(
                                         key: Key(user.userID!),
                                         direction: DismissDirection.horizontal,
-                                      onDismissed: (direction) async {
+                                        onDismissed: (direction) async {
                                        setState(() {
                                          dissmiss=1;
-
+                                         matchedPlaygrounds.removeWhere((item) => item.userID == user.userID);
                                        });
                                         updateCancelCount(user.userID!,);
 
@@ -1602,14 +1592,7 @@ int ro=0;
                                             user.selectedTimes!.first,
                                             user.dateofBooking!);
 
-                                          // String i = widget.IdData;
-                                          // Navigator.pushAndRemoveUntil(
-                                          //   context,
-                                          //   MaterialPageRoute(
-                                          //       builder: (context) =>
-                                          //           book_playground_page(i)),
-                                          //       (Route<dynamic> route) => false,
-                                          // );
+
 
                                       },
                                       confirmDismiss: (direction) async {
@@ -1790,7 +1773,6 @@ int ro=0;
                                      letterSpacing: -0.43,
                                       ),
                                       ),
-                                    //  SizedBox(width: 8),
                                       Text(
                                       "  ${toArabicNumerals(matchedPlaygrounds[index].totalcost!,0)}",
                                       textAlign: TextAlign.end,
@@ -2022,33 +2004,7 @@ int ro=0;
   fontFamily: 'Cairo',
   ),
   ),
-  actions: [
-  Center(
-  child: ElevatedButton(
-  onPressed: () async {
-  // Your onPressed functionality here
-  Navigator.of(context).pop(); // Close the dialog
-  },
-  style: ElevatedButton.styleFrom(
-  backgroundColor: Color(0xFF064821),
-  shape: RoundedRectangleBorder(
-  borderRadius: BorderRadius.circular(20),
-  ),
-  padding: EdgeInsets.symmetric(
-  vertical: 12,
-  horizontal: 20,
-  ),
-  ),
-  child: Text(
-  "حجز".tr,
-  style: TextStyle(
-  color: Colors.white,
-  fontFamily: 'Cairo',
-  ),
-  ),
-  ),
-  ),
-  ],
+  actions: [ ],
   );
   },
   );
@@ -2110,65 +2066,7 @@ int ro=0;
                   ),
                 ),
               ),
-    //           selectedTimes.length!=0?   Dialog(
-    //   shape: RoundedRectangleBorder(
-    //       borderRadius: BorderRadius.circular(20.0),
-    // ),
-    // child: IntrinsicHeight(
-    // child: Container(
-    // padding: EdgeInsets.all(16),
-    // width: MediaQuery.of(context).size.width / 1.5,
-    // child: Column(
-    // mainAxisSize: MainAxisSize.min,
-    // children: [
-    // Text(
-    // '620',
-    // style: TextStyle(
-    // fontFamily: 'Cairo',
-    // fontSize: 23,
-    // color: Color(0xFF7D90AC),
-    // fontWeight: FontWeight.bold,
-    // ),
-    // ),
-    // Text(
-    // 'التكلفة أجمالية',
-    // style: TextStyle(
-    // fontFamily: 'Cairo',
-    // fontSize: 16,
-    // color: Color(0xFF334154),
-    // fontWeight: FontWeight.bold,
-    // ),
-    // ),
-    // SizedBox(height: 25),
-    // GestureDetector(
-    // onTap: () {
-    // // Handle booking action here
-    // Navigator.pop(context); // Close the dialog
-    // },
-    // child: Container(
-    // height: 45,
-    // decoration: BoxDecoration(
-    // borderRadius: BorderRadius.circular(40.0),
-    // color: Color(0xFF106A35),
-    // ),
-    // child: Center(
-    // child: Text(
-    // 'حجـــــز',
-    // style: TextStyle(
-    // fontSize: 16.0,
-    // fontFamily: 'Cairo',
-    // fontWeight: FontWeight.w500,
-    // color: Colors.white,
-    // ),
-    // ),
-    // ),
-    // ),
-    // ),
-    // ],
-    // ),
-    // ),
-    // ),
-    // ):Container()
+
             ],
           ),
         ),
@@ -2274,10 +2172,6 @@ print("slotttttttttttttttttt$slot");
               FutureBuilder<Widget>(
                 future: _generateTimeSlotWidget(slot, isSelected, isTimeSlotBooked),
                 builder: (context, snapshot) {
-                  // if (snapshot.connectionState == ConnectionState.waiting) {
-                  //   return Container();
-                  // }
-                  // else
                     if (snapshot.hasError) {
                     return Container();
                   } else {

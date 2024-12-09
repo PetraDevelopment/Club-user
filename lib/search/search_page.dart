@@ -123,7 +123,7 @@ class SearchpageState extends State<Searchpage> {
         if (searchPlaygrounds.isNotEmpty) {
           print("searchPlaygrounds: $searchPlaygrounds");
         } else {
-
+first++;
           print("this play round not found");
         }
       }
@@ -198,7 +198,7 @@ class SearchpageState extends State<Searchpage> {
   }
   final NavigationController navigationController = Get.put(NavigationController());
   double opacity = 1.0;
-
+int first=0;
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -430,7 +430,8 @@ textDirection: TextDirection.rtl,
                     ],
                   ),
                 ),
-              ): Padding(
+              ):
+              first>0? Padding(
                 padding: const EdgeInsets.only(top: 100.0),
                 child: Center(
                   child: Column(
@@ -452,13 +453,53 @@ textDirection: TextDirection.rtl,
                         ),
                       ),
                       SizedBox(height: 2,),
-                      Text(
-                        'لا يوجد نتائج لهذا البحث',
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 14.62,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF181A20),
+                      Opacity(
+                        opacity: 0.5,
+                        child: Text(
+                          'لا يوجد نتائج لهذا البحث',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.62,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF181A20),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ):Padding(
+                padding: const EdgeInsets.only(top: 100.0),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Center(
+                        child: Container(
+                          height: 142.51,
+                          width: 142.51,
+
+                          child:  Opacity(
+                            opacity: 0.2,
+                            child: Image.asset(
+                              "assets/images/searchzero.png",
+
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 2,),
+                      Opacity(
+                        opacity: 0.2,
+                        child: Text(
+                          'لا يوجد نتائج لهذا البحث',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.62,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF181A20),
+                          ),
                         ),
                       ),
                     ],

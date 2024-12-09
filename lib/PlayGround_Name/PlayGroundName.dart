@@ -764,7 +764,7 @@ print("filledStarsava$filledStars");
                           SizedBox(
                             width: 10,
                           ),
-                          ClipOval(
+                          allplaygrounds[0].logoimage!=null&& allplaygrounds[0].logoimage!=''?  ClipOval(
                         child: Image(image:  NetworkImage(
                             allplaygrounds[0].logoimage!,
  ),
@@ -772,7 +772,7 @@ print("filledStarsava$filledStars");
                           height: 30,
                           width: 30,
                         ),
-                      )
+                      ):Container()
                         ],
                       ),
                     )
@@ -1063,72 +1063,138 @@ print("filledStarsava$filledStars");
     ),
     ],
     ),
-    content: StatefulBuilder(
-    builder: (BuildContext context, StateSetter setState) {
-    return Container(
-    height: 45.82,
-    child: Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-    for (int i = 0; i < 5; i++)
-    GestureDetector(
-    onTap: () {
-    setState(() {
-    totalRating = i + 1; // Set total rating based on star clicked
-    for (int j = 0; j < 5; j++) {
-    isstared[j] = j < totalRating; // Fill stars up to the clicked star
-    }
-    });
-    },
-    child: Icon(
-    isstared[i]
-    ? Icons.star
-        : Icons.star_border_outlined,
-    color: isstared[i]
-    ? Color(0xFFFFCC00)
-        : Colors.grey,
-    ),
-    )
-    ],
-    ),
-    );
-    },
-    ),
-    actions: [
-    GestureDetector(
-    onTap: () {
-    List<bool> rating = List.generate(
-    5,
-    (index) => isstared[index],
-    );
-    sendRating(rating);
-    Navigator.of(context).pop(); // Close dialog after sending rating
-    },
-    child: Padding(
-    padding: const EdgeInsets.only(
-    top: 5, right: 20, left: 20, bottom: 20),
-    child: Container(
-    height: 45,
-    width: double.infinity,
-    decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(30.0),
-    color: Color(0xFF064821),
-    ),
-    child: Center(
-    child: Text(
-    'تقديـــم تقييــم',
-    style: TextStyle(
-    fontFamily: 'Cairo',
-    fontSize: 16.0,
-    fontWeight: FontWeight.w500,
-    color: Colors.white,
-    ),
-    ),
-    ),
-    ),
-    ),
-    ),
-    ],
+      content: StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          return Container(
+            height: 45.82,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (int i = 4; i >= 0; i--) // Change the loop to go from 4 to 0
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        totalRating = i + 1; // Set total rating based on star clicked
+                        for (int j = 0; j < 5; j++) {
+                          isstared[j] = j < totalRating; // Fill stars up to the clicked star
+                        }
+                      });
+                    },
+                    child: Icon(
+                      isstared[i]
+                          ? Icons.star
+                          : Icons.star_border_outlined,
+                      color: isstared[i]
+                          ? Color(0xFFFFCC00)
+                          : Colors.grey,
+                    ),
+                  )
+              ],
+            ),
+          );
+        },
+      ),
+      actions: [
+        GestureDetector(
+          onTap: () {
+            List<bool> rating = List.generate(
+              5,
+                  (index) => isstared[index],
+            );
+            sendRating(rating);
+            Navigator.of(context).pop(); // Close dialog after sending rating
+          },
+          child: Padding(
+            padding: const EdgeInsets.only(
+                top: 5, right: 20, left: 20, bottom: 20),
+            child: Container(
+              height: 45,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30.0),
+                color: Color(0xFF064821),
+              ),
+              child: Center(
+                child: Text(
+                  'تقديـــم تقييــم',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    // content: StatefulBuilder(
+    // builder: (BuildContext context, StateSetter setState) {
+    // return Container(
+    // height: 45.82,
+    // child: Row(
+    // mainAxisAlignment: MainAxisAlignment.center,
+    // children: [
+    // for (int i = 0; i < 5; i++)
+    // GestureDetector(
+    // onTap: () {
+    // setState(() {
+    // totalRating = i + 1; // Set total rating based on star clicked
+    // for (int j = 0; j < 5; j++) {
+    // isstared[j] = j < totalRating; // Fill stars up to the clicked star
+    // }
+    // });
+    // },
+    // child: Icon(
+    // isstared[i]
+    // ? Icons.star
+    //     : Icons.star_border_outlined,
+    // color: isstared[i]
+    // ? Color(0xFFFFCC00)
+    //     : Colors.grey,
+    // ),
+    // )
+    // ],
+    // ),
+    // );
+    // },
+    // ),
+    // actions: [
+    // GestureDetector(
+    // onTap: () {
+    // List<bool> rating = List.generate(
+    // 5,
+    // (index) => isstared[index],
+    // );
+    // sendRating(rating);
+    // Navigator.of(context).pop(); // Close dialog after sending rating
+    // },
+    // child: Padding(
+    // padding: const EdgeInsets.only(
+    // top: 5, right: 20, left: 20, bottom: 20),
+    // child: Container(
+    // height: 45,
+    // width: double.infinity,
+    // decoration: BoxDecoration(
+    // borderRadius: BorderRadius.circular(30.0),
+    // color: Color(0xFF064821),
+    // ),
+    // child: Center(
+    // child: Text(
+    // 'تقديـــم تقييــم',
+    // style: TextStyle(
+    // fontFamily: 'Cairo',
+    // fontSize: 16.0,
+    // fontWeight: FontWeight.w500,
+    // color: Colors.white,
+    // ),
+    // ),
+    // ),
+    // ),
+    // ),
+    // ),
+    // ],
     );
     },
     );

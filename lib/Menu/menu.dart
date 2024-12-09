@@ -315,7 +315,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                                   user1.isNotEmpty
                                       ? user1[0].name!.isNotEmpty
                                       ? Text(
-                                    user1[0].name!.substring(0,14),
+                                    user1[0].name!.length>12?     user1[0].name!.substring(0,12):user1[0].name!,
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
                                       fontSize: 16.0,
@@ -387,7 +387,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                                 user1.isNotEmpty
                                     ? user1[0].name!.isNotEmpty
                                     ? Text(
-                                  user1[0].name!.substring(0,14),
+                                  user1[0].name!.length>12?     user1[0].name!.substring(0,12):user1[0].name!,
                                   style: TextStyle(
                                     fontFamily: 'Cairo',
                                     fontSize: 16.0,
@@ -865,7 +865,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                                       },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor:
-                                        Color(0xFFFFBEC5),
+                                        Colors.red,
                                         shape: RoundedRectangleBorder(
                                           borderRadius:
                                           BorderRadius.circular(20),
@@ -996,7 +996,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor:
-                                      Color(0xFFFFBEC5),
+                                      Colors.red,
                                       shape: RoundedRectangleBorder(
                                         borderRadius:
                                         BorderRadius.circular(20),

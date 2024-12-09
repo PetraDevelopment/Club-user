@@ -148,6 +148,7 @@ class FavouritePageState extends State<FavouritePage> {
                 }
 
               } else {
+                first++;
                 print("this user not have favourite playground");
               }
             }
@@ -164,6 +165,7 @@ class FavouritePageState extends State<FavouritePage> {
       });
     }
   }
+  int first=0;
   @override
   void initState() {
     super.initState();
@@ -423,7 +425,8 @@ class FavouritePageState extends State<FavouritePage> {
                   ),
                 ),
             ],
-          ):Center(
+          ):
+          first>0?Center(
             child: SizedBox(
               height: MediaQuery.of(context).size.height/2,
               child: Stack(
@@ -438,18 +441,59 @@ class FavouritePageState extends State<FavouritePage> {
                             Opacity(
                               opacity: 0.5,
                               child: Image.asset(
-                                "assets/images/bro.png",
+                                "assets/images/f_zerostate.png",
                                 width: 200,
                                 height: 200,
                               ),
                             ),
-                            Text(
-                              'لم يتم اضافة ملاعب بعد',
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 14.62,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF181A20),
+                            Opacity(
+                              opacity: 0.5,
+                              child: Text(
+                                'لم يتم اضافة ملاعب بعد',
+                                style: TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 14.62,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF181A20),
+                                ),
+                              ),
+                            ),
+                          ]),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ):Center(
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height/2,
+              child: Stack(
+                children: [
+                  Center(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+
+                            Opacity(
+                              opacity: 0.2,
+                              child: Image.asset(
+                                "assets/images/f_zerostate.png",
+                                width: 200,
+                                height: 200,
+                              ),
+                            ),
+                            Opacity (
+                              opacity: 0.2,
+                              child: Text(
+                                'لم يتم اضافة ملاعب بعد',
+                                style: TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 14.62,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF181A20),
+                                ),
                               ),
                             ),
                           ]),

@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/services.dart';
@@ -234,7 +234,7 @@ class my_reservationState extends State<my_reservation>
 
       final querySnapshot = await firestore
           .collection('cancel_book')
-          .where('userId', isEqualTo:  docId)
+          .where('userid', isEqualTo:  docId)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
@@ -292,7 +292,7 @@ class my_reservationState extends State<my_reservation>
 
 
 
-
+int first=0;
   Future<void> getPlaygroundbynameE(String iiid) async {
     try {
       CollectionReference playerchat =
@@ -339,6 +339,8 @@ class my_reservationState extends State<my_reservation>
                 "PlayGroungboook Iiid : ${document.id}");
 
             String playType = user.playType!.trim();
+          }else{
+            first++;
           }
 
 
@@ -1033,7 +1035,7 @@ class my_reservationState extends State<my_reservation>
                       Center(
                         child: Align(
                           alignment: Alignment.bottomCenter,
-                          child: Column(
+                          child:first>0? Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
 
@@ -1045,13 +1047,40 @@ class my_reservationState extends State<my_reservation>
                                     height: 200,
                                   ),
                                 ),
-                                Text(
-                                  'لا يوجد حجوزات حتى الأن',
-                                  style: TextStyle(
-                                    fontFamily: 'Cairo',
-                                    fontSize: 14.62,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF181A20),
+                                Opacity(
+                                  opacity: 0.5,
+                                  child: Text(
+                                    'لا يوجد حجوزات حتى الأن',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 14.62,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF181A20),
+                                    ),
+                                  ),
+                                ),
+                              ]):Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+
+                                Opacity(
+                                  opacity: 0.2,
+                                  child: Image.asset(
+                                    "assets/images/reservationzerostate.png",
+                                    width: 200,
+                                    height: 200,
+                                  ),
+                                ),
+                                Opacity(
+                                  opacity: 0.2,
+                                  child: Text(
+                                    'لا يوجد حجوزات حتى الأن',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 14.62,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF181A20),
+                                    ),
                                   ),
                                 ),
                               ]),
@@ -1152,19 +1181,31 @@ class my_reservationState extends State<my_reservation>
                                   ],
                                 ),
                                 SizedBox(width: 10),
-
                                 ClipOval(
-                                  child: Image(image:  NetworkImage(
-                                      playgroundbook[i].logoimage!,
-
-                                      // Adjust size as needed
-
+                                  child: CachedNetworkImage(
+                                    imageUrl: playgroundbook[i].logoimage ?? '', // Handle null safety
+                                    fit: BoxFit.cover,
+                                    height: 30,
+                                    width: 30,
+                                    placeholder: (context, url) => Center(
+                                      child: CircularProgressIndicator(
+                                        color: Color(0xFF4AD080),
+                                        strokeWidth: 2,
+                                      ),
                                     ),
-                                    fit: BoxFit.fitWidth,
-                                    height: 46,
-                                    width: 38,
+                                    errorWidget: (context, url, error) => Container(
+                                      height: 46,
+                                      width: 38,
+                                      color: Colors.grey.shade300, // Fallback color
+                                      child: Icon(
+                                        Icons.image_not_supported,
+                                        color: Colors.grey,
+                                        size: 20,
+                                      ),
+                                    ),
                                   ),
                                 )
+
                               ],
                             ),
                           ),
@@ -1407,7 +1448,7 @@ class my_reservationState extends State<my_reservation>
                 break;
 
               case 1:
-
+break;
               case 2:
                 Get.to(() => AppBarandNavigationBTN())?.then((_) {
                   navigationController.updateIndex(2);

@@ -83,6 +83,7 @@ class SigninPageState extends State<SigninPage>
           backgroundColor: Color(0xFF1F8C4B),
         ),
       );
+      PhoneController.clear();
     }
     else{
       var connectivityResult = await (Connectivity().checkConnectivity());
@@ -132,7 +133,7 @@ class SigninPageState extends State<SigninPage>
           },
           timeout: const Duration(seconds: 60),
         );
-
+        PhoneController.clear();
       }
       setState(() {
         isLoading=true;
@@ -238,6 +239,8 @@ else{
 
 
 
+        }else{
+
         }
       }
 
@@ -246,14 +249,14 @@ else{
           SnackBar(
             content: Text(
               textAlign: TextAlign.center,
-              'رقم الهاتف غير موجود برجاء عمل حساب'.tr,
+              'رقم الهاتف غير موجود برجاء انشاء حساب'.tr,
               style: TextStyle(
                 color: Colors.white,
                 fontFamily: 'Cairo',
                 fontWeight: FontWeight.w700,
               ),
             ),
-            backgroundColor: Color(0xFF1F8C4B),
+            backgroundColor: Colors.red,
           ),
         );
       }
@@ -440,6 +443,7 @@ else{
                                 print("phoneeee" + " " + Phone);
                                 setState(() {
                                   validatePhone(value);
+
                                 });
                               },
                               onSubmitted: (value) {
@@ -490,7 +494,7 @@ else{
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
-                              backgroundColor: Color(0xFF1F8C4B),
+                              backgroundColor: Colors.red,
                             ),
                           );
                         }
@@ -506,7 +510,7 @@ else{
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
-                              backgroundColor: Color(0xFF1F8C4B),
+                              backgroundColor: Colors.red,
                             ),
                           );
                         }
@@ -543,7 +547,7 @@ else{
                     GestureDetector(
                       onTap: () {
                         setState(() {
-
+                          PhoneController.clear();
                           Navigator.push(
                             context,
                             MaterialPageRoute(
