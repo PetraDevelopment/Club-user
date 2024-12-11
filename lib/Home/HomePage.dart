@@ -1314,9 +1314,13 @@ if(selectedTime.contains("PM")){
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => PlaygroundName(fourtypes[i].id!),
+                                    builder: (context) =>  PlaygroundName(fourtypes[i].id!),
+                                    settings: RouteSettings(arguments: {
+                                      'from': 'home'
+                                    }),
                                   ),
                                 );
+
                               },
                               child: Stack(
                                 children: [
@@ -1902,9 +1906,13 @@ if(selectedTime.contains("PM")){
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => PlaygroundName(Nearbystadiums[i].id!),
+                                    builder: (context) =>  PlaygroundName(Nearbystadiums[i].id!),
+                                    settings: RouteSettings(arguments: {
+                                      'from': 'home'
+                                    }),
                                   ),
                                 );
+
                               },
                               child: Card(
                                 shape: RoundedRectangleBorder(
@@ -2001,9 +2009,13 @@ if(selectedTime.contains("PM")){
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => PlaygroundName(playgroundAllData[i].id!),
+                                  builder: (context) =>  PlaygroundName(playgroundAllData[i].id!),
+                                  settings: RouteSettings(arguments: {
+                                    'from': 'home'
+                                  }),
                                 ),
                               );
+
                             },
                             child: Card(
                               shape: RoundedRectangleBorder(
@@ -2208,13 +2220,16 @@ if(selectedTime.contains("PM")){
                             onTap: () {
                               print("length equal ${rat_list2.length}");
                               print("objectidddddd ${rat_list2[i].playgroundIdstars!}");
-
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => PlaygroundName(rat_list2[i].playgroundIdstars!),
+                                  builder: (context) =>  PlaygroundName(rat_list2[i].playgroundIdstars!),
+                                  settings: RouteSettings(arguments: {
+                                    'from': 'home'
+                                  }),
                                 ),
                               );
+
                             },
                             child: Card(
                               shape: RoundedRectangleBorder(

@@ -341,9 +341,14 @@ class FavouritePageState extends State<FavouritePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => PlaygroundName(favlist[i].playground_id),
+                        builder: (context) =>  PlaygroundName(favlist[i].playground_id),
+                        settings: RouteSettings(arguments: {
+                          'from': 'fav_page'
+                        }),
                       ),
                     );
+
+
                   },
                   child: Padding(
                     padding: const EdgeInsets.only(right: 23,left: 23,top: 8),

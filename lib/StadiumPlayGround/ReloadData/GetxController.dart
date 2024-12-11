@@ -149,9 +149,13 @@ if (querySnapshot.docs.isNotEmpty) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => PlaygroundName(id),
+                  builder: (context) =>  PlaygroundName(id),
+                  settings: RouteSettings(arguments: {
+                    'from': 'playground'
+                  }),
                 ),
               );
+
               print("Document ID: $id");
             },
             child: Stack(

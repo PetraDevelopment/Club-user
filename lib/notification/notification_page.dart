@@ -381,6 +381,9 @@ int x=0;
                              context,
                              MaterialPageRoute(
                                builder: (context) => PlaygroundName(notificationlist[x].groundid),
+                               settings: RouteSettings(arguments: {
+                                 'from': 'notification'
+                               }),
                              ),
                            );
                          },

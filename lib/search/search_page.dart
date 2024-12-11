@@ -356,6 +356,9 @@ textDirection: TextDirection.rtl,
                               context,
                               MaterialPageRoute(
                                 builder: (context) => PlaygroundName(searchPlaygrounds[i].id!),
+                                settings: RouteSettings(arguments: {
+                              'from': 'search'
+                              }),
 
                               ),
                             );

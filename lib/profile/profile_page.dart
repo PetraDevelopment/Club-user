@@ -328,7 +328,8 @@ class ProfilepageState extends State<Profilepage>
                       builder: (context) => menupage(),
                     ),
                   );
-                } else {
+                }
+                else {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
