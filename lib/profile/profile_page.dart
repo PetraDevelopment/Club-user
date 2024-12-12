@@ -371,8 +371,7 @@ class ProfilepageState extends State<Profilepage>
       body:isConnected? Directionality(
         textDirection: TextDirection.rtl,
         child: Stack(
-            children: [  (_isLoading == true)
-                ? const Positioned(top: 0,bottom: 0, child: Loading()):SingleChildScrollView(
+            children: [ SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.only(
                     top: 13.0, bottom: 13, right: 25, left: 25),
@@ -661,7 +660,7 @@ class ProfilepageState extends State<Profilepage>
                           });
 
                           await _updateName(_nameController.text);
-await  getUserByPhone(_phoneNumberController.text);
+                          await  getUserByPhone(_phoneNumberController.text);
                           if (selectedImages != null) {
                             String downloadUrl = await _uploadImage(
                                 selectedImages!);
@@ -725,11 +724,13 @@ await  getUserByPhone(_phoneNumberController.text);
                 ]),
               ),
             ),
-
+              (_isLoading == true)
+                  ? const Positioned(child: Loading())
+                  : Container(height: 5,),
 
             ]
         ),):  _buildNoInternetUI(),
-      bottomNavigationBar: CurvedNavigationBar(
+        bottomNavigationBar:_isLoading == false? CurvedNavigationBar(
         height: 60,
         index: 0,
 
@@ -774,7 +775,7 @@ await  getUserByPhone(_phoneNumberController.text);
               break;
           }
         },
-      ),
+      ):Loading(),
     );
   }
 

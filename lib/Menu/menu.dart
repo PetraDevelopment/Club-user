@@ -786,6 +786,140 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                 ),
 
 
+//                 Padding(
+//                   padding: const EdgeInsets.only(
+//                       right: 22.0, left: 22, top: 5, bottom: 5),
+//                   child: GestureDetector
+//                     (
+//                     onTap: () async {
+//                       final connectivityResult =
+//                           await Connectivity().checkConnectivity();
+//                       if (connectivityResult != ConnectivityResult.none) {
+//                         showDialog(
+//                           context: context,
+//                           builder: (BuildContext context) {
+//                             return AlertDialog(
+//                               title: Center(
+//                                   child: Text("تسجيل الخروج".tr,
+//                                       style: TextStyle(
+//                                         color: Color(0xFF374957),
+//                                         fontWeight: FontWeight.w700,
+//                                         fontSize: 15,
+//                                         fontFamily: 'Cairo',
+//                                       ))),
+//                               content: Text(
+//                                   "هل تريد التأكيد على تسجيل الخروج؟".tr,
+//                                   textAlign: TextAlign.center,
+//                                   style: TextStyle(
+//                                     color: Color(0xFF374957),
+//                                     fontFamily: 'Cairo',
+//                                   )),
+//                               actions: [
+//                                 Row(
+//                                   mainAxisAlignment:
+//                                   MainAxisAlignment.spaceBetween,
+//                                   children: [
+//
+//                                     ElevatedButton(
+//                                       onPressed: () async {
+//
+//                                           SharedPreferences prefs =
+//                                           await SharedPreferences.getInstance();
+//                                           await prefs.clear();
+//                                           FirebaseAuth.instance.signOut();
+//                                           Navigator.pushAndRemoveUntil(
+//                                             context,
+//                                             MaterialPageRoute(
+//                                                 builder: (context) =>
+//                                                     SigninPage()),
+//                                                 (Route<dynamic> route) => false,
+//                                           );
+//
+//
+//
+//                                       },
+//                                       style: ElevatedButton.styleFrom(
+//                                         backgroundColor:
+//                                         Color(0xFF064821),
+//                                         shape: RoundedRectangleBorder(
+//                                           borderRadius:
+//                                           BorderRadius.circular(20),
+//                                         ),
+//                                         padding: EdgeInsets.symmetric(
+//                                           vertical: 12,
+//                                           horizontal: 20,
+//                                         ),
+//                                       ),
+//                                       child: Text(
+//                                         "تسجيل الخروج".tr,
+//                                         style: TextStyle(
+//                                           color: Colors.white,
+//                                           fontFamily: 'Cairo',
+//                                         ),
+//                                       ),
+//                                     ),
+//
+//                                     ElevatedButton(
+//                                       onPressed: () {
+//                                         Navigator.of(context).pop();
+//                                       },
+//                                       style: ElevatedButton.styleFrom(
+//                                         backgroundColor:
+//                                         Colors.red,
+//                                         shape: RoundedRectangleBorder(
+//                                           borderRadius:
+//                                           BorderRadius.circular(20),
+//                                         ),
+//                                         padding: EdgeInsets.symmetric(
+//                                           vertical: 12,
+//                                           horizontal: 20,
+//                                         ),
+//                                       ),
+//                                       child: Text(
+//                                         "إلغاء".tr,
+//                                         style: TextStyle(
+//                                           color: Colors.white,
+//                                           fontFamily: 'Cairo',
+//                                         ),
+//                                       ),
+//                                     ),
+//                                   ],
+//                                 ),
+//                               ],
+//                             );
+//                           },
+//                         );
+//                       }
+//                     },
+//
+//
+//                     child: Row(
+//                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                       children: [
+//                         Row(
+//
+//                           mainAxisAlignment: MainAxisAlignment.end,
+//                           children: [
+//                             Image.asset('assets/images/logout.png', height: 22, width: 22, color:Color(0xFF064821)),
+//                             Padding(
+//                               padding: const EdgeInsets.all(8.0),
+//                               child: Text(
+//                                 'تسجيل الخروج'.tr,
+//                                 style: TextStyle(
+//                                   fontFamily: 'Cairo',
+//                                   fontWeight: FontWeight.w600,
+//                                   color: Color(0xFF6C6A6A),
+//                                   fontSize: 15,
+//                                 ),
+//                               ),
+//                             ),
+//                           ],
+//                         ),
+// Icon(Icons.abc,color: Colors.white,)
+//                       ],
+//                     ),
+//                   ),
+//                 ),
                 Padding(
                   padding: const EdgeInsets.only(
                       right: 22.0, left: 22, top: 5, bottom: 5),
@@ -793,7 +927,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                     (
                     onTap: () async {
                       final connectivityResult =
-                          await Connectivity().checkConnectivity();
+                      await Connectivity().checkConnectivity();
                       if (connectivityResult != ConnectivityResult.none) {
                         showDialog(
                           context: context,
@@ -823,17 +957,17 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                                     ElevatedButton(
                                       onPressed: () async {
 
-                                          SharedPreferences prefs =
-                                          await SharedPreferences.getInstance();
-                                          await prefs.clear();
-                                          FirebaseAuth.instance.signOut();
-                                          Navigator.pushAndRemoveUntil(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    SigninPage()),
-                                                (Route<dynamic> route) => false,
-                                          );
+                                        SharedPreferences prefs =
+                                        await SharedPreferences.getInstance();
+                                        await prefs.clear();
+                                        FirebaseAuth.instance.signOut();
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  SigninPage()),
+                                              (Route<dynamic> route) => false,
+                                        );
 
 
 
@@ -865,7 +999,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                                       },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor:
-                                        Colors.red,
+                                        Colors.red.shade900,
                                         shape: RoundedRectangleBorder(
                                           borderRadius:
                                           BorderRadius.circular(20),
@@ -891,32 +1025,34 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                         );
                       }
                     },
-
-
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-
-                          mainAxisAlignment: MainAxisAlignment.end,
+                    child:  Center(
+                      child: Container(  // Wrap entire area with Container
+                        color: Colors.transparent, // Add a background color to make the entire container tappable
+                        // padding: const EdgeInsets.only(right: 22.0, left: 22, top: 5, bottom: 5),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Image.asset('assets/images/logout.png', height: 22, width: 22, color:Color(0xFF064821)),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                'تسجيل الخروج'.tr,
-                                style: TextStyle(
-                                  fontFamily: 'Cairo',
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF6C6A6A),
-                                  fontSize: 15,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Image.asset('assets/images/logout.png', height: 22, width: 22, color: Color(0xFF064821)),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'تسجيل الخروج'.tr,
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF6C6A6A),
+                                      fontSize: 15,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                           ],
                         ),
-
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -931,131 +1067,121 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                 ),
 
 
-                GestureDetector
-                  (
-                  onTap: () async {
-                    final connectivityResult =
-                    await Connectivity().checkConnectivity();
-                    if (connectivityResult != ConnectivityResult.none) {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Center(
-                                child: Text("حذف الحساب".tr,
-                                    style: TextStyle(
-                                      color: Color(0xFF374957),
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 15,
-                                      fontFamily: 'Cairo',
-                                    ))),
-                            content: Text(
-                                "هل تريد التأكيد على حذف حسابك ؟".tr,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Color(0xFF374957),
-                                  fontFamily: 'Cairo',
-                                )),
-                            actions: [
-                              Row(
-                                mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
-                                children: [
-
-                                  ElevatedButton(
-                                    onPressed: () async {
-
-                                      await deleteUser(docId);
-
-
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                      Color(0xFF064821),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                        BorderRadius.circular(20),
-                                      ),
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 12,
-                                        horizontal: 20,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      " حذف الحساب".tr,
+                Padding(
+                  padding: const EdgeInsets.only(
+                      right: 22.0, left: 22, top: 5, bottom: 5),
+                  child: GestureDetector(
+                    onTap: () async {
+                      final connectivityResult = await Connectivity().checkConnectivity();
+                      if (connectivityResult != ConnectivityResult.none) {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Center(
+                                  child: Text("حذف الحساب".tr,
                                       style: TextStyle(
-                                        color: Colors.white,
+                                        color: Color(0xFF374957),
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 15,
                                         fontFamily: 'Cairo',
-                                      ),
-                                    ),
-                                  ),
-
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                      Colors.red,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                        BorderRadius.circular(20),
-                                      ),
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 12,
-                                        horizontal: 20,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      "إلغاء".tr,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontFamily: 'Cairo',
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    }
-                  },
-
-                  child: Center(
-                    child: Padding(
-                        padding: const EdgeInsets.only(
-                            right: 22.0, left: 22, top: 5, bottom: 5),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                             Icon(Icons.delete_outline, color: Color(0xFFB3261E), size: 25),
-
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  "مسح الحساب".tr,
+                                      ))),
+                              content: Text(
+                                  "هل تريد التأكيد على حذف حسابك ؟".tr,
+                                  textAlign: TextAlign.center,
                                   style: TextStyle(
+                                    color: Color(0xFF374957),
                                     fontFamily: 'Cairo',
-                                    fontWeight: FontWeight.w600,
-                                    color:  Color(0xFFB3261E),
-                                    fontSize: 15,
+                                  )),
+                              actions: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    ElevatedButton(
+                                      onPressed: () async {
+                                        await deleteUser(docId);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Color(0xFF064821),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 12,
+                                          horizontal: 20,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        " حذف الحساب".tr,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontFamily: 'Cairo',
+                                        ),
+                                      ),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 12,
+                                          horizontal: 20,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        "إلغاء".tr,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontFamily: 'Cairo',
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    },
+                    child: Container(
+                      // Add your container decoration or properties here
+                      color: Colors.transparent, // Ensure background color is tappable
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Icon(Icons.delete_outline, color: Color(0xFFB3261E), size: 25),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    "مسح الحساب".tr,
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFFB3261E),
+                                      fontSize: 15,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-
-                        ],
+                              ],
+                            ),
+                            Text(""),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
+
                 SizedBox(height: 40,),
 
               ],

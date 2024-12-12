@@ -1528,7 +1528,7 @@ if(selectedTime.contains("PM")){
                                             Padding(
                                               padding: const EdgeInsets.only(top: 4.0),
                                               child: Text(
-                                                "${ playgroundbook[i].groundName.toString()!}",
+                                                playgroundbook[i].groundName!.length>12?     playgroundbook[i].groundName!.substring(0,12):playgroundbook[i].groundName!,
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
                                                   fontFamily: 'Cairo',

@@ -803,7 +803,7 @@ print("filledStarsava$filledStars");
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             Text(
-                              allplaygrounds[0].playgroundName!,
+                              allplaygrounds[0].playgroundName!.length>10?     allplaygrounds[0].playgroundName!.substring(0,10):allplaygrounds[0].playgroundName!,
                               style: TextStyle(
                                 fontFamily: 'Cairo',
                                 fontSize: 16,
@@ -815,15 +815,27 @@ print("filledStarsava$filledStars");
                             SizedBox(
                               width: 10,
                             ),
-                            allplaygrounds[0].logoimage!=null&& allplaygrounds[0].logoimage!=''?  ClipOval(
-                          child: Image(image:  NetworkImage(
-                              allplaygrounds[0].logoimage!,
-       ),
-                            fit: BoxFit.fitWidth,
-                            height: 30,
-                            width: 30,
-                          ),
-                        ):Container()
+
+                            ClipOval(
+                              child: allplaygrounds[0].logoimage != null && allplaygrounds[0].logoimage != ''
+                                  ? CachedNetworkImage(
+                                imageUrl: allplaygrounds[0].logoimage!,
+                                fit: BoxFit.cover, // Use BoxFit.cover for circular images
+                                height: 30,
+                                width: 30,
+                                placeholder: (context, url) => Center(
+                                  child: CircularProgressIndicator(
+                                    color: Color(0xFF4AD080),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Icon(
+                                  Icons.image_not_supported,
+                                  color: Colors.grey,
+                                  size: 30,
+                                ),
+                              )
+                                  : Container(), // Provide a fallback widget if the image is null or empty
+                            ),
                           ],
                         ),
                       )
@@ -924,7 +936,8 @@ print("filledStarsava$filledStars");
                             right: 20, left: 13, top: 8, bottom: 8),
                         child: allplaygrounds.isNotEmpty
                             ? Text(
-                          allplaygrounds[0].playgroundName!,
+                          allplaygrounds[0].playgroundName!.length>18?     allplaygrounds[0].playgroundName!.substring(0,18):allplaygrounds[0].playgroundName!,
+
                           style: TextStyle(
                             fontFamily: 'Cairo',
                             fontSize: 20,
@@ -1163,16 +1176,30 @@ print("filledStarsava$filledStars");
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  for (int i = 4; i >= 0; i--) // Change the loop to go from 4 to 0
+                  for (int i = 4; i >= 0; i--)
                     GestureDetector(
                       onTap: () {
                         setState(() {
-                          totalRating = i + 1; // Set total rating based on star clicked
+                          if (totalRating == i + 1) {
+                            totalRating = 0;
+                          } else {
+                            totalRating = i + 1;
+                          }
+
                           for (int j = 0; j < 5; j++) {
-                            isstared[j] = j < totalRating; // Fill stars up to the clicked star
+                            isstared[j] = j < totalRating;
                           }
                         });
                       },
+
+                      // onTap: () {
+                      //   setState(() {
+                      //     totalRating = i + 1; // Set total rating based on star clicked
+                      //     for (int j = 0; j < 5; j++) {
+                      //       isstared[j] = j < totalRating; // Fill stars up to the clicked star
+                      //     }
+                      //   });
+                      // },
                       child: Icon(
                         isstared[i]
                             ? Icons.star
@@ -1386,11 +1413,9 @@ print("filledStarsava$filledStars");
                                 children: [
                                   allplaygrounds.isNotEmpty
                                       ? Text(
-                                    allplaygrounds[0].width!.length < 5 && allplaygrounds[0]
-                                        .length!
-                                        .length < 5
+                                    allplaygrounds[0].width!.length < 5 && allplaygrounds[0].length!.length < 5
                                         ? '   ${allplaygrounds[0].width!}x${allplaygrounds[0].length!} م '
-                                        :  '   ${allplaygrounds[0].width!.length>10?allplaygrounds[0].width!.substring(0,5):allplaygrounds[0].width!}x${allplaygrounds[0].length!.length>10?allplaygrounds[0].length!.substring(0,5):allplaygrounds[0].length!} م ',
+                                        :  '   ${allplaygrounds[0].width!.substring(0,5)}x${allplaygrounds[0].length!.substring(0,5)} م ',
                                     textDirection: TextDirection.rtl,
                                     style: TextStyle(
                                       fontFamily: 'Cairo',

@@ -16,6 +16,8 @@ import '../../Controller/NavigationController.dart';
 import '../../Home/HomePage.dart';
 import '../../Home/Userclass.dart';
 import '../../Menu/menu.dart';
+import '../../My_group/group2.dart';
+import '../../My_group/modelofgroup.dart';
 import '../../Register/SignInPage.dart';
 import '../../Splach/LoadingScreen.dart';
 import '../../my_reservation/my_reservation.dart';
@@ -248,11 +250,11 @@ class book_playground_pageState extends State<book_playground_page>
           .get();
 
       if (docSnapshot.exists) {
-        Map<String, dynamic>? data =
-            docSnapshot.data() as Map<String, dynamic>?;
+        Map<String, dynamic>? data = docSnapshot.data() as Map<String, dynamic>?;
 
         if (data != null) {
           print("grounddaaaaaaaaaaaaata$data");
+
           return data;
 
         } else {
@@ -284,8 +286,7 @@ class book_playground_pageState extends State<book_playground_page>
         print('shared phooone $normalizedPhoneNumber');
         if (adminSnapshot.docs.isNotEmpty) {
           var adminDoc = adminSnapshot.docs.first;
-          String docId = adminDoc
-              .id;
+          String docId = adminDoc.id;
           print("Matched user docId: $docId");
           useridddd = docId;
         }
@@ -294,8 +295,9 @@ class book_playground_pageState extends State<book_playground_page>
             .where('userID', isEqualTo: useridddd)
             .get();
 
-        if (bookingSnapshot.docs.isNotEmpty) {
+        if (bookingSnapshot.docs.isNotEmpty &&ddddd==true) {//in group
           playgroundbook = [];
+
           for (var document in bookingSnapshot.docs) {
             Map<String, dynamic> userData =
                 document.data() as Map<String, dynamic>;
@@ -314,7 +316,26 @@ class book_playground_pageState extends State<book_playground_page>
           }
           setState(() {});
         }
+else if (bookingSnapshot.docs.isNotEmpty &&ddddd==false) {
+          playgroundbook = [];
+          for (var document in bookingSnapshot.docs) {
+            Map<String, dynamic> userData =
+            document.data() as Map<String, dynamic>;
+            AddbookingModel bookingData = AddbookingModel.fromMap(userData);
+            Map<String, dynamic>? user = await fetchuserdatabyid(bookingData);
 
+            bookingData.UserName = user!['name'];
+            bookingData.UserPhone = user['phone'];
+            bookingData.UserImg = user['profile_image'];
+            Map<String, dynamic>? Grounddata = await fetchgrounddatabyid(bookingData);
+
+            bookingData.groundName = Grounddata!['groundName'];
+            bookingData.groundphone = Grounddata['phone'];
+            bookingData.groundImage = Grounddata['img'][0];
+            playgroundbook.add(bookingData);
+          }
+          setState(() {});
+        }
         if (playgroundbook.isNotEmpty) {
           for (int i = 0; i < playgroundbook.length; i++) {
 
@@ -366,6 +387,7 @@ class book_playground_pageState extends State<book_playground_page>
             bookingData.groundName = Grounddata!['groundName'];
             bookingData.groundphone = Grounddata['phone'];
             bookingData.groundImage = Grounddata['img'][0];
+            bookingData.AdminId=Grounddata['AdminId'];
             playgroundbook.add(bookingData);
           }
           setState(() {});
@@ -471,6 +493,8 @@ class book_playground_pageState extends State<book_playground_page>
     }
   }
   late var availableData=[];
+  String allow='';
+  String notallow='';
   Future<void> getPlaygroundbyname(String iiid) async {
     try {
       CollectionReference playerchat =
@@ -506,19 +530,29 @@ class book_playground_pageState extends State<book_playground_page>
               timeSlots.add(startTime);
               timeSlots.add(endTime);
               for (var bookType in playgroundAllData[0].bookTypes!) {
+                print('useruseruseruseruser${bookType.bookType}');
                 print("hhhselectedDayName$selectedDayName");
-                if (bookType.day == selectedDayName) {
-                  setState(() {
-                    costboll = 0;
-                    costboll += bookType.cost!;
-                    print("coopppppppp$costboll");
-                    costpeerhour=bookType.costPerHour!.toDouble();
-                    print('costpeerhour${costpeerhour=bookType.costPerHour!.toDouble()}');
-                  });
-                  print("tessst${bookType.cost! + bookType.costPerHour!}");
+                print("shooookatypeofbook${bookType.bookType}");
 
-                }
+             if(bookType.bookType!.contains('حجز الأعضاء')){
+               allow='user allowed';
+               print('@user allowed');
+               if (bookType.day == selectedDayName) {
+                 setState(() {
+                   costboll = 0;
+                   costboll += bookType.cost!;
+                   print("coopppppppp$costboll");
+                   costpeerhour=bookType.costPerHour!.toDouble();
+                   print('costpeerhour${costpeerhour=bookType.costPerHour!.toDouble()}');
+                 });
+                 print("tessst${bookType.cost! + bookType.costPerHour!}");
+
+               }
+             }else if(bookType.bookType!.contains('الحجز العام')){
+print('@user not allowed');
+             }
               }
+
               setState(() {
                 startTimeStr = startTime;
                 endTimeStr = endTime;
@@ -539,6 +573,75 @@ class book_playground_pageState extends State<book_playground_page>
       print("Error getting playground: $e");
     }
   }
+  //if user not in group not show حجز الأعضاء and الحجز العام
+  // Future<List<Widget>> _generateRows(Set<String> selectedTimes, String selectedDay) async {
+  //
+  //   List<Widget> rows = [];
+  //   List<Widget> currentRowChildren = [];
+  //
+  //   print("selectedddddddddddday: $selectedDay");
+  //   List<String> bookedTimes = await _fetchBookedTimes(selectedDay);
+  //   print("Booked Times for $selectedDay: $bookedTimes");
+  //   List<String> combinedTimeSlots =
+  //   _getCombinedTimeSlotsForSelectedDay(selectedDay);
+  //   print("Combined Time Slots for $selectedDay: $combinedTimeSlots");
+  //
+  //   if(allow == 'user allowed'){
+  //     for (String slot in combinedTimeSlots) {
+  //       bool isSelected = selectedTimes.contains(slot);
+  //       bool isTimeSlotBooked = bookedTimes.contains(slot);
+  //
+  //       currentRowChildren.add(
+  //         GestureDetector(
+  //           onTap: () {
+  //             if (isTimeSlotBooked) {
+  //               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //                 content: Text("This time slot is already booked."),
+  //               ));
+  //             } else {
+  //               setState(() {
+  //                 selectedTimes.add(slot);
+  //                 print("slotttttttttttttttttt$slot");
+  //               });
+  //             }
+  //           },
+  //           child: Stack(
+  //             children: [
+  //               FutureBuilder<Widget>(
+  //                 future: _generateTimeSlotWidget(slot, isSelected, isTimeSlotBooked),
+  //                 builder: (context, snapshot) {
+  //                   if (snapshot.hasError) {
+  //                     return Container();
+  //                   } else {
+  //                     return snapshot.data ??
+  //                         Container();
+  //                   }
+  //                 },
+  //               ),
+  //
+  //
+  //             ],
+  //           ),
+  //         ),
+  //       );
+  //       if (currentRowChildren.length >= 3) {
+  //         rows.add(Row(
+  //           mainAxisAlignment: MainAxisAlignment.start,
+  //           children: currentRowChildren,
+  //         ));
+  //         currentRowChildren = [];
+  //       }
+  //     }
+  //   }
+  //   if (currentRowChildren.isNotEmpty) {
+  //     rows.add(Row(
+  //       mainAxisAlignment: MainAxisAlignment.start,
+  //       children: currentRowChildren,
+  //     ));
+  //   }
+  //
+  //   return rows;
+  // }
 
   Future<void> getmaatchedPlaygroundbyname(String iiid) async {
     try {
@@ -635,7 +738,7 @@ class book_playground_pageState extends State<book_playground_page>
 
   String? groundPhoneee;
   String? useridd = "";
-
+bool ddddd=false;
   fetchadmindatabyid(String admin) async {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -718,6 +821,41 @@ class book_playground_pageState extends State<book_playground_page>
       _isLoading = false;
     });
   }
+  Future<void> getUserGroup(String iduser) async {
+    try {
+
+      CollectionReference playerchat =
+      FirebaseFirestore.instance.collection('teamData');
+print("useridinfirst$iduser ........ ${playgroundAllData[0].adminId!}");
+      QuerySnapshot querySnapshot = await playerchat
+          .where('userId', isEqualTo: iduser).where('AdminId',isEqualTo: playgroundAllData[0].adminId!)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        List<userDataofgroup> groupdata = querySnapshot.docs.map((doc) {
+          Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
+          return userDataofgroup.fromMap(userData);
+        }).toList();
+        setState(() {
+          ddddd=true;
+        });
+
+        print("GroupModel : $groupdata");
+
+      }else{
+        print("user not in group");
+        setState(() {
+          ddddd=false;
+        });
+      }
+    } catch (e) {
+      print("Error getting user: $e");
+    } finally {
+      isLoading = false;
+      setState(() {});
+    }
+  }
+  List<GroupModel2> stordataofgroup = [];
 
   Future<void> _sendData(BuildContext context, bool x) async {
     setState(() {
@@ -903,6 +1041,8 @@ class book_playground_pageState extends State<book_playground_page>
       if (querySnapshot.docs.isNotEmpty) {
         var useridd444 = querySnapshot.docs.first.id;
         print("Matched user docId: $useridd444");
+        print("testuserid$useridd444");
+        await getUserGroup(useridd444);
         useridd = useridd444;
         Map<String, dynamic> userData =
             querySnapshot.docs.first.data() as Map<String, dynamic>;
@@ -1106,6 +1246,11 @@ String iddd=widget.IdData;
       print('Error deleting document: $e');
     }
   }
+  Future<void> loadgrounddata() async {
+    print('objectwait');
+  await  getPlaygroundbyname(widget.IdData);
+    print('objectdone');
+  }
   void initState() {
     checkInternetConnection();
     _loadUserData();
@@ -1114,7 +1259,7 @@ String iddd=widget.IdData;
     print("initistatedone");
     _fetchData();
     getAllBookingDocuments();
-    getPlaygroundbyname(widget.IdData);
+    loadgrounddata();
 
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 500),

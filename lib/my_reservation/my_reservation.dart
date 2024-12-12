@@ -346,8 +346,13 @@ int first=0;
 
           user.id = document.id;
         }
-        wait = playgroundbook.length - acccepteeed;
-        print("wait${wait}");
+        if(playgroundbook.length - acccepteeed>0){
+          wait = playgroundbook.length - acccepteeed;
+          print("wait${wait}");
+        }else{
+          wait=0;
+        }
+
       }
     } catch (e) {
       print("Error getting playground: $e");

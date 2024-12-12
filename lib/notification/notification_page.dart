@@ -313,7 +313,7 @@ int x=0;
                          mainAxisAlignment: MainAxisAlignment.end,
                          crossAxisAlignment: CrossAxisAlignment.start,
                          children: [
-                  Text('تم اضافة حجز '+'${ notificationlist[x].groundname}'+' '+'يوم'+' ' +'${ notificationlist[x].day}'+' '+'${notificationlist[x].bookingtime.toString().substring(0,4)}', style: TextStyle(
+                  Text('تم اضافة حجز ${ notificationlist[x].groundname!.length<7? notificationlist[x].groundname: notificationlist[x].groundname?.substring(0,7)} يوم ${ notificationlist[x].day} ${notificationlist[x].bookingtime.toString().substring(0,4)}', style: TextStyle(
 
 
                                fontSize: 14,
@@ -337,7 +337,7 @@ int x=0;
                          crossAxisAlignment: CrossAxisAlignment.start,
                          children: [
 
-                           Text('تم الغاء حجز '+'${ notificationlist[x].groundname}'+' '+'يوم'+' ' +'${ notificationlist[x].day}'+' '+'${notificationlist[x].bookingtime.substring(0,4)}', style: TextStyle(
+                           Text('تم الغاء حجز '+'${ notificationlist[x].groundname!.length<7? notificationlist[x].groundname: notificationlist[x].groundname?.substring(0,7)}'+' '+'يوم'+' ' +'${ notificationlist[x].day}'+' '+'${notificationlist[x].bookingtime.substring(0,4)}', style: TextStyle(
                                fontSize: 14,
                                fontFamily: 'Cairo',
                                fontWeight:notificationlist[x].click==false? FontWeight.w700:FontWeight.w400,
@@ -357,7 +357,7 @@ int x=0;
                          mainAxisAlignment: MainAxisAlignment.end,
                          crossAxisAlignment: CrossAxisAlignment.start,
                          children: [
-                  Text('تم تأكيد حجز '+'${ notificationlist[x].groundname}'+' '+'يوم'+' ' +'${ notificationlist[x].day}'+' '+'${notificationlist[x].bookingtime.substring(0,4)}', style: TextStyle(
+                  Text('تم تأكيد حجز '+'${ notificationlist[x].groundname!.length<7? notificationlist[x].groundname: notificationlist[x].groundname?.substring(0,7)}'+' '+'يوم'+' ' +'${ notificationlist[x].day}'+' '+'${notificationlist[x].bookingtime.substring(0,4)}', style: TextStyle(
 
 
                                fontSize: 14,
@@ -392,7 +392,7 @@ int x=0;
                            crossAxisAlignment: CrossAxisAlignment.start,
                            children: [
 
-                             Text('تم اضافة ملعب '+'${ notificationlist[x].groundname}'+' '+'يوم'+' ' +'${ notificationlist[x].day}'+' '+'${notificationlist[x].bookingtime.substring(0,4)}', style: TextStyle(
+                             Text('تم اضافة ملعب '+'${ notificationlist[x].groundname!.length<5? notificationlist[x].groundname: notificationlist[x].groundname?.substring(0,5)}'+' '+'يوم'+' ' +'${ notificationlist[x].day}', style: TextStyle(
 
                              fontSize: 14,
                                  fontFamily: 'Cairo',
