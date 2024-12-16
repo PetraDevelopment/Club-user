@@ -295,7 +295,7 @@ class book_playground_pageState extends State<book_playground_page>
             .where('userID', isEqualTo: useridddd)
             .get();
 
-        if (bookingSnapshot.docs.isNotEmpty &&ddddd==true) {//in group
+        if (bookingSnapshot.docs.isNotEmpty ) {//in group
           playgroundbook = [];
 
           for (var document in bookingSnapshot.docs) {
@@ -316,7 +316,7 @@ class book_playground_pageState extends State<book_playground_page>
           }
           setState(() {});
         }
-else if (bookingSnapshot.docs.isNotEmpty &&ddddd==false) {
+else if (bookingSnapshot.docs.isNotEmpty ) {
           playgroundbook = [];
           for (var document in bookingSnapshot.docs) {
             Map<String, dynamic> userData =
@@ -493,8 +493,7 @@ else if (bookingSnapshot.docs.isNotEmpty &&ddddd==false) {
     }
   }
   late var availableData=[];
-  String allow='';
-  String notallow='';
+
   Future<void> getPlaygroundbyname(String iiid) async {
     try {
       CollectionReference playerchat =
@@ -510,12 +509,93 @@ else if (bookingSnapshot.docs.isNotEmpty &&ddddd==false) {
           if (document.id == widget.IdData) {
             playgroundAllData.add(user);
             String? bookType = playgroundAllData[0].bookTypes![0].time;
-            availableData = playgroundAllData.isNotEmpty
-                ? playgroundAllData
-                .where((data) =>
-                data.bookTypes!.any((bt) => bt.day == selectedDayName))
-                .toList()
-                : [];
+            print('shimaaaddddddddd$ddddd');
+if(ddddd==true){//in group
+  print("user in group");
+
+  availableData = playgroundAllData.isNotEmpty
+      ? playgroundAllData.where((data) {
+    return data.bookTypes!.any((bt) =>
+    bt.day == selectedDayName );
+  }).toList()
+      : [];
+}
+// this show time of الاعضاء if the same day
+else { // not in group
+  print("not in group");
+  if (playgroundAllData.isNotEmpty) {
+    print("not in group");
+    availableData = playgroundAllData
+        .where((data) => data.bookTypes!.any((bt) =>
+    bt.day == selectedDayName && bt.bookType == "الحجز العام"))
+        .map((data) {
+      data.bookTypes = data.bookTypes!
+          .where((bt) =>
+      bt.day == selectedDayName && bt.bookType == "الحجز العام")
+          .toList();
+      return data;
+    })
+        .toList();
+
+    if (availableData.isEmpty) {
+      print("No general bookings available for the selected day.");
+    } else {
+      print("Filtered Data: $availableData");
+    }
+  } else {
+    availableData = [];
+    print("No data available.");
+  }
+
+
+            }
+
+// else{
+//               print("not in group");
+//               availableData = playgroundAllData.isNotEmpty
+//                   ? playgroundAllData.where((data) {
+//
+//                 return data.bookTypes!.any((bt) =>
+//                 bt.day == selectedDayName &&  bt.bookType !="حجز الأعضاء");
+//               }).toList():[];
+// print('bt.bookType =${availableData}');
+//             }
+// else { // not in group
+//   print("not in group");
+//
+//   if (playgroundAllData.isNotEmpty) {
+//     availableData = playgroundAllData.where((data) {
+//       // Filter for entries with "الحجز العام" for the selected day
+//       bool isGeneralBooking = data.bookTypes!.any((bt) =>
+//       bt.day == selectedDayName && bt.bookType == "الحجز العام");
+//       print("isGeneralBooking: $isGeneralBooking");
+//
+//       // Check for "حجز الأعضاء" for the same day
+//       bool isMemberBooking = data.bookTypes!.any((bt) =>
+//       bt.day == selectedDayName && bt.bookType == "حجز الأعضاء");
+//       print("isMemberBooking: $isMemberBooking");
+//
+//       // Include only "الحجز العام" and exclude "حجز الأعضاء"
+//       return  data.bookTypes!.any((bt) =>
+//       bt.day == selectedDayName && bt.bookType == "الحجز العام")&&!isMemberBooking;
+//     }).toList();
+//
+//     // Print the filtered data
+//     print("Filtered Data: $availableData");
+//   } else {
+//     availableData = [];
+//     print("No data available.");
+//   }
+// }
+
+
+
+            // availableData = playgroundAllData.isNotEmpty
+            //     ? playgroundAllData
+            //     .where((data) =>
+            //     data.bookTypes!.any((bt) => bt.day == selectedDayName))
+            //     .toList()
+            //     : [];
             String timeofAddedPlayground = bookType ?? '';
             print("timeofAddedPlayground: $timeofAddedPlayground");
             List<String> times = timeofAddedPlayground.split(' - ');
@@ -534,9 +614,7 @@ else if (bookingSnapshot.docs.isNotEmpty &&ddddd==false) {
                 print("hhhselectedDayName$selectedDayName");
                 print("shooookatypeofbook${bookType.bookType}");
 
-             if(bookType.bookType!.contains('حجز الأعضاء')){
-               allow='user allowed';
-               print('@user allowed');
+
                if (bookType.day == selectedDayName) {
                  setState(() {
                    costboll = 0;
@@ -546,11 +624,7 @@ else if (bookingSnapshot.docs.isNotEmpty &&ddddd==false) {
                    print('costpeerhour${costpeerhour=bookType.costPerHour!.toDouble()}');
                  });
                  print("tessst${bookType.cost! + bookType.costPerHour!}");
-
                }
-             }else if(bookType.bookType!.contains('الحجز العام')){
-print('@user not allowed');
-             }
               }
 
               setState(() {
@@ -573,75 +647,7 @@ print('@user not allowed');
       print("Error getting playground: $e");
     }
   }
-  //if user not in group not show حجز الأعضاء and الحجز العام
-  // Future<List<Widget>> _generateRows(Set<String> selectedTimes, String selectedDay) async {
-  //
-  //   List<Widget> rows = [];
-  //   List<Widget> currentRowChildren = [];
-  //
-  //   print("selectedddddddddddday: $selectedDay");
-  //   List<String> bookedTimes = await _fetchBookedTimes(selectedDay);
-  //   print("Booked Times for $selectedDay: $bookedTimes");
-  //   List<String> combinedTimeSlots =
-  //   _getCombinedTimeSlotsForSelectedDay(selectedDay);
-  //   print("Combined Time Slots for $selectedDay: $combinedTimeSlots");
-  //
-  //   if(allow == 'user allowed'){
-  //     for (String slot in combinedTimeSlots) {
-  //       bool isSelected = selectedTimes.contains(slot);
-  //       bool isTimeSlotBooked = bookedTimes.contains(slot);
-  //
-  //       currentRowChildren.add(
-  //         GestureDetector(
-  //           onTap: () {
-  //             if (isTimeSlotBooked) {
-  //               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-  //                 content: Text("This time slot is already booked."),
-  //               ));
-  //             } else {
-  //               setState(() {
-  //                 selectedTimes.add(slot);
-  //                 print("slotttttttttttttttttt$slot");
-  //               });
-  //             }
-  //           },
-  //           child: Stack(
-  //             children: [
-  //               FutureBuilder<Widget>(
-  //                 future: _generateTimeSlotWidget(slot, isSelected, isTimeSlotBooked),
-  //                 builder: (context, snapshot) {
-  //                   if (snapshot.hasError) {
-  //                     return Container();
-  //                   } else {
-  //                     return snapshot.data ??
-  //                         Container();
-  //                   }
-  //                 },
-  //               ),
-  //
-  //
-  //             ],
-  //           ),
-  //         ),
-  //       );
-  //       if (currentRowChildren.length >= 3) {
-  //         rows.add(Row(
-  //           mainAxisAlignment: MainAxisAlignment.start,
-  //           children: currentRowChildren,
-  //         ));
-  //         currentRowChildren = [];
-  //       }
-  //     }
-  //   }
-  //   if (currentRowChildren.isNotEmpty) {
-  //     rows.add(Row(
-  //       mainAxisAlignment: MainAxisAlignment.start,
-  //       children: currentRowChildren,
-  //     ));
-  //   }
-  //
-  //   return rows;
-  // }
+
 
   Future<void> getmaatchedPlaygroundbyname(String iiid) async {
     try {
@@ -855,17 +861,17 @@ print("useridinfirst$iduser ........ ${playgroundAllData[0].adminId!}");
       setState(() {});
     }
   }
-  List<GroupModel2> stordataofgroup = [];
-
+  num totalCost = 0;
   Future<void> _sendData(BuildContext context, bool x) async {
     setState(() {
       _isLoading = true;
     });
+    print('xxxxxxxxxxxxxxxxx$x');
     final name = user1[0].name!;
     final phooneNumber = user1[0].phoneNumber!;
     matchedPlaygrounds.clear();
     final selectedDay = selectedDayName;
-    num totalCost = 0;
+
     for (var selectedTime in selectedTimes) {
       print("shokddddddddda${selectedTime}");
       print("shokddddddddda${selectedDay}");
@@ -884,7 +890,7 @@ print("useridinfirst$iduser ........ ${playgroundAllData[0].adminId!}");
         }
       }
     }
-    print("Total cost test: $totalCost");
+
 
     print("Checking phone number: $phooneNumber");
     if (name.isNotEmpty &&
@@ -2261,32 +2267,58 @@ int ro=0;
 
     return hours;
   }
-
   List<String> _getCombinedTimeSlotsForSelectedDay(String selectedDay) {
     List<String> combinedTimeSlots = [];
 
-    for (var bookTypeEntry in playgroundAllData[0].bookTypes!) {
-      if (bookTypeEntry.day == selectedDay) {
-        String? time = bookTypeEntry.time;
-        List<String> times = time!.split(' - ');
-
-        if (times.length == 2) {
-          combinedTimeSlots.addAll(_getHoursBetween(time));
+    // Use the filtered availableData for time slots
+    for (var data in availableData) {
+      for (var bookTypeEntry in data.bookTypes!) {
+        if (bookTypeEntry.day == selectedDay) {
+          String? time = bookTypeEntry.time;
+          if (time != null) {
+            // Split the time range and get individual hours
+            List<String> times = time.split(' - ');
+            if (times.length == 2) {
+              combinedTimeSlots.addAll(_getHoursBetween(time));
+            }
+          }
         }
       }
     }
+
+    // Remove duplicates and sort by time
     combinedTimeSlots = combinedTimeSlots.toSet().toList();
     combinedTimeSlots.sort(
-        (a, b) => DateFormat.jm().parse(a).compareTo(DateFormat.jm().parse(b)));
+            (a, b) => DateFormat.jm().parse(a).compareTo(DateFormat.jm().parse(b)));
 
     return combinedTimeSlots;
   }
+
+  // List<String> _getCombinedTimeSlotsForSelectedDay(String selectedDay) {
+  //   List<String> combinedTimeSlots = [];
+  //
+  //   for (var bookTypeEntry in playgroundAllData[0].bookTypes!) {
+  //     if (bookTypeEntry.day == selectedDay) {
+  //       String? time = bookTypeEntry.time;
+  //       List<String> times = time!.split(' - ');
+  //
+  //       if (times.length == 2) {
+  //         combinedTimeSlots.addAll(_getHoursBetween(time));
+  //       }
+  //     }
+  //   }
+  //   combinedTimeSlots = combinedTimeSlots.toSet().toList();
+  //   combinedTimeSlots.sort(
+  //       (a, b) => DateFormat.jm().parse(a).compareTo(DateFormat.jm().parse(b)));
+  //
+  //   return combinedTimeSlots;
+  // }
 
   Future<List<Widget>> _generateRows(Set<String> selectedTimes, String selectedDay) async {
 
     List<Widget> rows = [];
     List<Widget> currentRowChildren = [];
-
+print("ggggggggselectedtime$selectedTimes");
     print("selectedddddddddddday: $selectedDay");
     List<String> bookedTimes = await _fetchBookedTimes(selectedDay);
     print("Booked Times for $selectedDay: $bookedTimes");

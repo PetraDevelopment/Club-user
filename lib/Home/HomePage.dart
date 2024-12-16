@@ -1070,7 +1070,7 @@ if(selectedTime.contains("PM")){
                                 user1.isNotEmpty && user1[0].name!.isNotEmpty
                                     ? Text(
                                     user1[0].name!.length>12?     user1[0].name!.substring(0,12):user1[0].name!,
-                                  textAlign: TextAlign.start,
+                                  textAlign: TextAlign.right,
                                   style: TextStyle(
                                     fontFamily: 'Cairo',
                                     fontSize: 16.0,
@@ -1147,7 +1147,7 @@ if(selectedTime.contains("PM")){
                                 user1.isNotEmpty && user1[0].name!.isNotEmpty
                                     ? Text(
                                   user1[0].name!.length<12? user1[0].name!:user1[0].name!.substring(0,12),
-                                  textAlign: TextAlign.start,
+                                  textAlign: TextAlign.right,
                                   style: TextStyle(
                                     fontFamily: 'Cairo',
                                     fontSize: 16.0,
@@ -1528,7 +1528,7 @@ if(selectedTime.contains("PM")){
                                             Padding(
                                               padding: const EdgeInsets.only(top: 4.0),
                                               child: Text(
-                                                playgroundbook[i].groundName!.length>12?     playgroundbook[i].groundName!.substring(0,12):playgroundbook[i].groundName!,
+                                                playgroundbook[i].groundName!.length>12?     '${ "..."+playgroundbook[i].groundName!.substring(0,10)}':playgroundbook[i].groundName!,
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
                                                   fontFamily: 'Cairo',

@@ -1135,7 +1135,8 @@ int first=0;
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
-                                      "${playgroundbook[i].groundName!}",
+                                      playgroundbook[i].groundName!.length>22?     '${ "..."+playgroundbook[i].groundName!.substring(0,19)}':playgroundbook[i].groundName!,
+
                                       style: TextStyle(
                                         fontFamily: 'Cairo',
                                         fontSize: 16.0,

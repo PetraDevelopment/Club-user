@@ -843,56 +843,71 @@ print("filledStarsava$filledStars");
 
                       Positioned(
                         top: 40,
-                        left: 20,
-                        child: IconButton(
-                          icon: Icon(Icons.arrow_back_ios,
-                              color: Colors.white, size: 25),
-                          onPressed: () {
-                            print("Back button pressed");
-                            Map<dynamic, dynamic>? arguments = ModalRoute
-                                .of(context)
-                                ?.settings
-                                .arguments as Map<dynamic, dynamic>?;
-                            if (arguments != null && arguments['from'] == 'fav_page') {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => FavouritePage(),
+                        left: 30,
+                        child: Center(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle, // Optional: Ensures a circular shadow around the icon
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.green.shade100, // Green shadow with opacity
+                                  spreadRadius: 4, // Spread of the shadow
+                                  blurRadius: 6, // Blur radius
+                                  offset: Offset(0, 3), // Offset for X and Y
                                 ),
-                              );
-                            }else if (arguments != null && arguments['from'] == 'notification') {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => Notification_page(),
-                                ),
-                              );
-                            }
-                            else if (arguments != null && arguments['from'] == 'playground') {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AppBarandNavigationBTN(),
-                                ),
-                              );
-                            }
-                            else if (arguments != null && arguments['from'] == 'search') {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => Searchpage(),
-                                ),
-                              );
-                            }
-                            else {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => HomePage(),
-                                ),
-                              );
-                            }
-                          },
+                              ],
+                            ),
+                            child: IconButton(
+                              icon: Icon(Icons.arrow_back_ios,
+                                  color: Colors.white, size: 25),
+                              onPressed: () {
+                                print("Back button pressed");
+                                Map<dynamic, dynamic>? arguments = ModalRoute
+                                    .of(context)
+                                    ?.settings
+                                    .arguments as Map<dynamic, dynamic>?;
+                                if (arguments != null && arguments['from'] == 'fav_page') {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => FavouritePage(),
+                                    ),
+                                  );
+                                }else if (arguments != null && arguments['from'] == 'notification') {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Notification_page(),
+                                    ),
+                                  );
+                                }
+                                else if (arguments != null && arguments['from'] == 'playground') {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AppBarandNavigationBTN(),
+                                    ),
+                                  );
+                                }
+                                else if (arguments != null && arguments['from'] == 'search') {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Searchpage(),
+                                    ),
+                                  );
+                                }
+                                else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => HomePage(),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          ),
                         ),
                       ),
 
@@ -1415,13 +1430,13 @@ print("filledStarsava$filledStars");
                                       ? Text(
                                     allplaygrounds[0].width!.length < 5 && allplaygrounds[0].length!.length < 5
                                         ? '   ${allplaygrounds[0].width!}x${allplaygrounds[0].length!} م '
-                                        :  '   ${allplaygrounds[0].width!.substring(0,5)}x${allplaygrounds[0].length!.substring(0,5)} م ',
+                                        :  '   ${ allplaygrounds[0].width!.length > 5?allplaygrounds[0].width!.substring(0,5):allplaygrounds[0].width!}x${allplaygrounds[0].length!.length>5?allplaygrounds[0].length!.substring(0,5):allplaygrounds[0].length!} م ',
                                     textDirection: TextDirection.rtl,
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
-                                      color: Color(0xFF106A35),
+                                       color: Color(0xFF106A35),
                                     ),
                                   )
                                       : Text(

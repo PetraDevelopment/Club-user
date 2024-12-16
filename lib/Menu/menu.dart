@@ -312,36 +312,37 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  user1.isNotEmpty
-                                      ? user1[0].name!.isNotEmpty
-                                      ? Text(
-                                    user1[0].name!.length>12?     user1[0].name!.substring(0,12):user1[0].name!,
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF334154),
+                                  if (user1.isNotEmpty && user1[0].name != null && user1[0].name!.isNotEmpty)
+                                    Text(
+                                      user1[0].name!.length > 12
+                                          ? user1[0].name!.substring(0, 12)
+                                          : user1[0].name!,
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF334154),
+                                      ),
                                     ),
-                                  )
-                                      : Container()
-                                      : Container(),
-                                  user1.isNotEmpty
-                                      ? user1[0].phoneNumber!.isNotEmpty
-                                      ? Text(
-                                    user1[0].phoneNumber!,
-                                    textAlign: TextAlign.start,
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 15.0,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xFF7D90AC),
+                                  if (user1.isNotEmpty &&
+                                      user1[0].phoneNumber != null &&
+                                      user1[0].phoneNumber!.isNotEmpty)
+                                    Text(
+                                      user1[0].phoneNumber!,
+                                      textAlign: TextAlign.start,
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 15.0,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF7D90AC),
+                                      ),
                                     ),
-                                  )
-                                      : Container()
-                                      : Container(),
                                 ],
                               ),
                             ),
+
                           ],
                         ),
                       )
@@ -388,6 +389,7 @@ class menupageState extends State<menupage> with SingleTickerProviderStateMixin 
                                     ? user1[0].name!.isNotEmpty
                                     ? Text(
                                   user1[0].name!.length>12?     user1[0].name!.substring(0,12):user1[0].name!,
+                                  textAlign: TextAlign.right,
                                   style: TextStyle(
                                     fontFamily: 'Cairo',
                                     fontSize: 16.0,

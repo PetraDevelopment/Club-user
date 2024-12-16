@@ -643,7 +643,7 @@ class ProfilepageState extends State<Profilepage>
 
                   GestureDetector(
                     onTap: () async {
-
+print('_nameController.text${_nameController.text}');
 
                         bool hasChanges = false;
 
